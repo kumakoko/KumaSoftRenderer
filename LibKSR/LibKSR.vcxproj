@@ -19,12 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ksr_asm_optimize.h" />
+    <ClInclude Include="include\ksr_bitmap.h" />
     <ClInclude Include="include\ksr_camera.h" />
     <ClInclude Include="include\ksr_constants.h" />
+    <ClInclude Include="include\ksr_light.h" />
     <ClInclude Include="include\ksr_matrix.h" />
     <ClInclude Include="include\ksr_plane.h" />
     <ClInclude Include="include\ksr_polygon.h" />
     <ClInclude Include="include\ksr_quaternion.h" />
+    <ClInclude Include="include\ksr_render_list.h" />
     <ClInclude Include="include\ksr_vector.h" />
     <ClInclude Include="include\ksr_vertex.h" />
     <ClInclude Include="include\ksr_z_buffer.h" />
@@ -32,10 +36,12 @@
   <ItemGroup>
     <ClCompile Include="src\ksr_camera.cpp" />
     <ClCompile Include="src\ksr_constants.cpp" />
+    <ClCompile Include="src\ksr_light.cpp" />
     <ClCompile Include="src\ksr_matrix.cpp" />
     <ClCompile Include="src\ksr_plane.cpp" />
     <ClCompile Include="src\ksr_polygon.cpp" />
     <ClCompile Include="src\ksr_quaternion.cpp" />
+    <ClCompile Include="src\ksr_render_list.cpp" />
     <ClCompile Include="src\ksr_vector.cpp" />
     <ClCompile Include="src\ksr_vertex.cpp" />
     <ClCompile Include="src\ksr_z_buffer.cpp" />

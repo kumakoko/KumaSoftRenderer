@@ -44,7 +44,7 @@ namespace KSR
         if (length < EPSILON_E5)
             return;
 
-        float length_inv = 1.0 / length;
+        float length_inv = 1.0f / length;
 
         // compute normalized version of vector
         vn->x = va->x * length_inv;

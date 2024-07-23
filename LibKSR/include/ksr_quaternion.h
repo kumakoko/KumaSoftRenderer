@@ -63,6 +63,6 @@ void EulerZYX_To_QUAT(QUAT_PTR q, float theta_z, float theta_y, float theta_x);
 
 void QUAT_To_VECTOR3D_Theta(QUAT_PTR q, VECTOR3D_PTR v, float *theta);
 
-void QUAT_Print(QUAT_PTR q, char *name="q");
+void QUAT_Print(QUAT_PTR q, const char* name = "q");
 
 }
