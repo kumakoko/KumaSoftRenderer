@@ -17,4 +17,5 @@ namespace KSR
     const float PI_DIV_2 = 1.570796327f;
     const float PI_DIV_4 = 0.785398163f;
     const float PI_INV = 0.318309886f;
+
 }

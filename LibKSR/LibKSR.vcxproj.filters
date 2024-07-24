@@ -54,6 +54,9 @@
     <ClInclude Include="include\ksr_render_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\ksr_transform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ksr_matrix.cpp">
@@ -87,6 +90,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ksr_render_list.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

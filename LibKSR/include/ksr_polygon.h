@@ -6,6 +6,11 @@
 
 namespace KSR
 {
+    // states of polygons and faces
+    extern const std::uint16_t POLY4DV1_STATE_ACTIVE;
+    extern const std::uint16_t POLY4DV1_STATE_CLIPPED;
+    extern const std::uint16_t POLY4DV1_STATE_BACKFACE;
+
     typedef struct POLYGON2D_TYP
     {
         int state;        // state of polygon
@@ -17,6 +22,20 @@ namespace KSR
 
     } POLYGON2D, * POLYGON2D_PTR;
 
+    // a self contained polygon used for the render list
+    typedef struct POLYF4DV1_TYP
+    {
+        int state;    // state information
+        int attr;     // physical attributes of polygon
+        int color;    // color of polygon
+
+        POINT4D vlist[3];  // the vertices of this triangle
+        POINT4D tvlist[3]; // the vertices after transformation if needed
+
+        POLYF4DV1_TYP* next; // pointer to next polygon in list??
+        POLYF4DV1_TYP* prev; // pointer to previous polygon in list??
+
+    } POLYF4DV1, * POLYF4DV1_PTR;
 
     // a self contained polygon used for the render list version 2 /////////////////////////
     typedef struct POLYF4DV2_TYP

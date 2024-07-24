@@ -1,4 +1,6 @@
-#pragma once
+﻿#pragma once
+
+#include <cstdint>
 
 namespace KSR
 {
@@ -13,11 +15,14 @@ namespace KSR
     extern const int PARM_LINE_INTERSECT_OUT_SEGMENT;
     extern const int PARM_LINE_INTERSECT_EVERYWHERE;
 
+    // 圆周率相关参数
     extern const float PI;
     extern const float PI2;
     extern const float PI_DIV_2;
     extern const float PI_DIV_4;
     extern const float PI_INV;
+
+
 
     inline float DEG_TO_RAD(float ang)
     {

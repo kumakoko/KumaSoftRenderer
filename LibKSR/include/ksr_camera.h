@@ -1,11 +1,43 @@
 #pragma once
 
+#include <cstdint>
 #include "ksr_matrix.h"
 #include "ksr_vector.h"
 #include "ksr_plane.h"
 
 namespace KSR
 {
+    enum CameraModelType
+    {
+        CAM_MODEL_EULER = 0x0008,
+        CAM_MODEL_UVN = 0x0010
+    };
+
+    // defines for camera rotation sequences
+    enum CameraRotationSequences
+    {
+        CAM_ROT_SEQ_XYZ = 0,
+        CAM_ROT_SEQ_YXZ = 1,
+        CAM_ROT_SEQ_XZY = 2,
+        CAM_ROT_SEQ_YZX = 3,
+        CAM_ROT_SEQ_ZYX = 4,
+        CAM_ROT_SEQ_ZXY = 5
+    };
+
+    // defines for special types of camera projections
+    enum CameraProjectionType
+    {
+        CAM_PROJ_NORMALIZED = 0x0001,
+        CAM_PROJ_SCREEN = 0x0002,
+        CAM_PROJ_FOV90 = 0x0004
+    };
+
+    enum UVNCameraType
+    {
+        UVN_MODE_SIMPLE = 0,
+        UVN_MODE_SPHERICAL = 1
+    };
+
     typedef struct CAM4DV1_TYP
     {
         int state;      // state of camera
@@ -62,7 +94,6 @@ namespace KSR
 
     } CAM4DV1, * CAM4DV1_PTR;
 
-
     void Init_CAM4DV1(CAM4DV1_PTR cam,       // the camera object
         int cam_attr,          // attributes
         POINT4D_PTR cam_pos,   // initial camera position
@@ -73,4 +104,11 @@ namespace KSR
         float fov,             // field of view in degrees
         float viewport_width,  // size of final screen viewport
         float viewport_height);
+
+
+
+    void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, CameraRotationSequences cam_rot_seq);
+
+
+    void Build_CAM4DV1_Matrix_UVN(CAM4DV1_PTR cam, UVNCameraType mode);
 }

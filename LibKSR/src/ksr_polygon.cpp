@@ -2,6 +2,11 @@
 
 namespace KSR
 {
+    // states of polygons and faces
+    const std::uint16_t POLY4DV1_STATE_ACTIVE = 0x0001;
+    const std::uint16_t POLY4DV1_STATE_CLIPPED = 0x0002;
+    const std::uint16_t POLY4DV1_STATE_BACKFACE = 0x0004;
+
     void Draw_Filled_Polygon2D(POLYGON2D_PTR poly, std::uint8_t* vbuffer, int mempitch)
     {
         // this function draws a general n sided polygon 
