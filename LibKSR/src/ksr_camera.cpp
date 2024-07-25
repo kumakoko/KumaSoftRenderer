@@ -7,7 +7,7 @@
 namespace KSR
 {
     void Init_CAM4DV1(CAM4DV1_PTR cam,       // the camera object
-        int cam_attr,          // attributes
+        CameraModelType  cam_attr,          // attributes
         POINT4D_PTR cam_pos,   // initial camera position
         VECTOR4D_PTR cam_dir,  // initial camera angles
         POINT4D_PTR cam_target, // UVN target

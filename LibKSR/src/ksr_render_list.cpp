@@ -1,5 +1,6 @@
 #include "ksr_render_list.h"
 #include "ksr_transform.h"
+#include "ksr_shape_drawing.h"
 
 namespace KSR
 {
@@ -459,5 +460,63 @@ namespace KSR
         } // end for poly
 
     } // end Perspective_To_Screen_RENDERLIST4DV1
+
+
+    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR rend_list,uint8_t* video_buffer, int lpitch)
+    {
+        // this function "executes" the render list or in other words
+        // draws all the faces in the list in wire frame 16bit mode
+        // note there is no need to sort wire frame polygons, but 
+        // later we will need to, so hidden surfaces stay hidden
+        // also, we leave it to the function to determine the bitdepth
+        // and call the correct rasterizer
+
+        // at this point, all we have is a list of polygons and it's time
+        // to draw them
+        for (int poly = 0; poly < rend_list->num_polys; poly++)
+        {
+            // render this polygon if and only if it's not clipped, not culled,
+            // active, and visible, note however the concecpt of "backface" is 
+            // irrelevant in a wire frame engine though
+            if (!(rend_list->poly_ptrs[poly]->state & POLY4DV1_STATE_ACTIVE) ||
+                (rend_list->poly_ptrs[poly]->state & POLY4DV1_STATE_CLIPPED) ||
+                (rend_list->poly_ptrs[poly]->state & POLY4DV1_STATE_BACKFACE))
+                continue; // move onto next poly
+
+            // draw the triangle edge one, note that clipping was already set up
+            // by 2D initialization, so line clipper will clip all polys out
+            // of the 2D screen/window boundary
+            Draw_Clip_Line16(
+                (int)rend_list->poly_ptrs[poly]->tvlist[0].x,
+                (int)rend_list->poly_ptrs[poly]->tvlist[0].y,
+                (int)rend_list->poly_ptrs[poly]->tvlist[1].x,
+                (int)rend_list->poly_ptrs[poly]->tvlist[1].y,
+                rend_list->poly_ptrs[poly]->color,
+                video_buffer, lpitch);
+
+            Draw_Clip_Line16(
+                (int)rend_list->poly_ptrs[poly]->tvlist[1].x,
+                (int)rend_list->poly_ptrs[poly]->tvlist[1].y,
+                (int)rend_list->poly_ptrs[poly]->tvlist[2].x,
+                (int)rend_list->poly_ptrs[poly]->tvlist[2].y,
+                rend_list->poly_ptrs[poly]->color,
+                video_buffer, lpitch);
+
+            Draw_Clip_Line16(
+                (int)rend_list->poly_ptrs[poly]->tvlist[2].x,
+                (int)rend_list->poly_ptrs[poly]->tvlist[2].y,
+                (int)rend_list->poly_ptrs[poly]->tvlist[0].x,
+                (int)rend_list->poly_ptrs[poly]->tvlist[0].y,
+                rend_list->poly_ptrs[poly]->color,
+                video_buffer, lpitch);
+
+            // track rendering stats
+#ifdef DEBUG_ON
+            debug_polys_rendered_per_frame++;
+#endif
+
+        } // end for poly
+
+    } // end Draw_RENDERLIST4DV1_Wire
 
 }

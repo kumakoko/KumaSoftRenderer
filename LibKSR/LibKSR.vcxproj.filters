@@ -57,6 +57,15 @@
     <ClInclude Include="include\ksr_transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\ksr_surface.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ksr_shape_drawing.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ksr_color.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ksr_matrix.cpp">
@@ -93,6 +102,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ksr_transform.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_surface.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_shape_drawing.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_color.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,14 +1,7 @@
 #include "render.h"
+#include "ksr_surface.h"
 
-POINT4D         cam_pos = { 0.0f,0.0f,-100.0f,1.0f };
-VECTOR4D        cam_dir = { 0.0f,0.0f,0.0f,1.0f };
-CAM4DV1         cam;
-RENDERLIST4DV1  rend_list;
-POLYF4DV1       poly1;
-POINT4D         poly1_pos = { 0.0f,0.0f,100.0f,1.0f };
-
-const std::uint32_t WINDOW_WIDTH = 400;   // size of window
-const std::uint32_t WINDOW_HEIGHT = 400;
+/*
 
 
 // 初始化这个唯一的待渲染三角形
@@ -73,7 +66,7 @@ int Game_Main(void* parms)
  //   Start_Clock();
 
     // clear the drawing surface 
- //   DDraw_Fill_Surface(lpddsback, 0);
+    DDraw_Fill_Surface(KSR::lpddsback, 0);
 
     // read keyboard and other devices here
   //  DInput_Read_Keyboard();
@@ -115,7 +108,7 @@ int Game_Main(void* parms)
  //   Draw_Text_GDI("Press ESC to exit.", 0, 0, RGB(0, 255, 0), lpddsback);
 
     // lock the back buffer
- //   DDraw_Lock_Back_Surface();
+    DDraw_Lock_Back_Surface();
 
     // render the polygon list
  //   Draw_RENDERLIST4DV1_Wire16(&rend_list, back_buffer, back_lpitch);
@@ -140,3 +133,5 @@ int Game_Main(void* parms)
     return(1);
 
 } // end Game_Main
+
+*/

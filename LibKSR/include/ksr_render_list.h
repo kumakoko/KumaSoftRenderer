@@ -90,15 +90,17 @@ namespace KSR
 
     void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
 
-    ///////////////////////////////////////////////////////////////
+    
 
     void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
 
-    ////////////////////////////////////////////////////////////////
+    
 
     void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
 
-    //////////////////////////////////////////////////////////////
+    
 
     void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
+
+    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR rend_list, uint8_t* video_buffer, int lpitch);
 }

@@ -26,5 +26,8 @@
     <ClInclude Include="render.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Demo01.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
