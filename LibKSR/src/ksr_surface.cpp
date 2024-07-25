@@ -1,5 +1,6 @@
 #include <utility>
 #include "ksr_surface.h"
+#include "ksr_color.h"
 #include "ksr_shape_drawing.h"
 
 // https://stackoverflow.com/questions/28341281/how-can-i-do-double-buffering-in-sdl-2-0
@@ -34,14 +35,18 @@ namespace KSR
             // return false;
         }
 
-        lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        //lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        uint32_t rmask, gmask, bmask, amask;
+        Get16BitSufaceRGBMask(rmask, gmask, bmask, amask);
+        lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 16, rmask, gmask, bmask, amask);
 
         if (lpddsprimary == nullptr) {
             //printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
            // return false;
         }
-
-        lpddsback = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 16, rmask, gmask, bmask, amask);
+        //lpddsback = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        
         if (lpddsback == nullptr) {
             //  printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
             //  return false;
@@ -111,10 +116,16 @@ namespace KSR
     void DDraw_Flip()
     {
         // Copy the contents of the back buffer to the front buffer
-        SDL_BlitSurface(lpddsback, nullptr, lpddsprimary, nullptr);
+   //     SDL_BlitSurface(lpddsback, nullptr, lpddsprimary, nullptr);
 
         // Copy the front buffer to the screen surface
-        SDL_BlitSurface(lpddsprimary, nullptr, gScreenSurface, nullptr);
+       // SDL_BlitSurface(lpddsprimary, nullptr, gScreenSurface, nullptr);
+
+        // Copy the contents of the back buffer to the front buffer
+        SDL_BlitSurface(lpddsback, nullptr, gScreenSurface, nullptr);
+
+        // Copy the front buffer to the screen surface
+       // SDL_BlitSurface(lpddsprimary, nullptr, gScreenSurface, nullptr);
 
         // Update the window surface
         SDL_UpdateWindowSurface(gWindow);
@@ -123,7 +134,7 @@ namespace KSR
         /*SDL_Surface* temp = lpddsprimary;
         lpddsprimary = lpddsback;
         lpddsback = temp;*/
-        std::swap(lpddsback, lpddsprimary);
+    //    std::swap(lpddsback, lpddsprimary);
 
         back_buffer = nullptr;
         back_lpitch = 0; // 因为交换过，所以这些都需要置空

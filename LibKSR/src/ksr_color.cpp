@@ -1,3 +1,4 @@
+#include "SDL.h"
 #include "ksr_color.h"
 
 namespace KSR
@@ -35,4 +36,27 @@ namespace KSR
         return(_RGB16BIT555((r), (g), (b)));
 
     } // end RGB16Bit555
+
+
+    void Get16BitSufaceRGBMask(uint32_t& rmask, uint32_t& gmask, uint32_t& bmask, uint32_t& amask)
+    {  
+        // 定义像素格式掩码
+      
+
+        // 判断系统字节序以设置掩码
+        if (SDL_BYTEORDER == SDL_BIG_ENDIAN) 
+        {
+            rmask = 0xF800;
+            gmask = 0x07E0;
+            bmask = 0x001F;
+            amask = 0x0000;
+        }
+        else
+        {
+            rmask = 0x1F << 11;
+            gmask = 0x3F << 5;
+            bmask = 0x1F;
+            amask = 0x0000;
+        }
+    }
 }

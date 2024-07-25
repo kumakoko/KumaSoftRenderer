@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
         }
 
         KSR::DDraw_Fill_Surface(KSR::lpddsback, 0);
-        KSR::DDraw_Fill_Surface(KSR::lpddsprimary, 0);
+        KSR::DDraw_Fill_Surface(KSR::gScreenSurface, 0);
 
         // initialize the renderlist
         KSR::Reset_RENDERLIST4DV1(&rend_list);
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 
         // Delay to simulate frame time
         //SDL_Delay(100);
-        Sleep(30);
+        Sleep(200);
     }
 
     KSR::ShutdownGraphicSystem();
