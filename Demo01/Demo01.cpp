@@ -1,4 +1,5 @@
-﻿#include "SDL.h"
+﻿#include <chrono>
+#include "SDL.h"
 #include "ksr_vector.h"
 #include "ksr_camera.h"
 #include "ksr_render_list.h"
@@ -6,115 +7,96 @@
 #include "ksr_surface.h"
 #include "ksr_shape_drawing.h"
 #include "ksr_color.h"
-#include <windows.h>
+#include "ksr_timer.h"
 
-using namespace KSR;
+static KSR::POINT4D          s_CameraPosition = { 0.0f,0.0f,-100.0f,1.0f }; // 摄像机的初始位置
+static KSR::VECTOR4D         s_CameraDirection = { 0.0f,0.0f,0.0f,1.0f };    // 摄像机的初始朝向
+static KSR::CAM4DV1          s_Camera;                                  // 主摄像机
+static KSR::RENDERLIST4DV1   s_RenderList;                            // 唯一的渲染列表
+static KSR::POLYF4DV1        s_SinglePolygon;                                // 唯一的待渲染的三角形our lonely polygon
+static KSR::POINT4D          s_SinglePolygonPosition = { 0.0f,0.0f,100.0f,1.0f };// 唯一的待渲染的三角形的世界坐标world position of polygon
+static uint32_t              s_ScreenWidth = 1024;
+static uint32_t              s_ScreenHeight = 768;
+static KSR::MATRIX4X4        s_RotationMatrix; // general rotation matrix
+static float                 s_RotationAngleY = 0;      // rotation angle
+static bool                  s_IsRunning = true;
 
-KSR::POINT4D          cam_pos = { 0.0f,0.0f,-100.0f,1.0f }; // 摄像机的初始位置
-KSR::VECTOR4D         cam_dir = { 0.0f,0.0f,0.0f,1.0f };    // 摄像机的初始朝向
-KSR::CAM4DV1          cam;                                  // 主摄像机
-KSR::RENDERLIST4DV1   rend_list;                            // 唯一的渲染列表
-KSR::POLYF4DV1        poly1;                                // 唯一的待渲染的三角形our lonely polygon
-KSR::POINT4D          poly1_pos = { 0.0f,0.0f,100.0f,1.0f };// 唯一的待渲染的三角形的世界坐标world position of polygon
+static void ProcessInput(SDL_Event& event, bool& s_IsRunning);
 
-static uint32_t screen_width = 640;
-static uint32_t screen_height = 480;
+static void HandleMouseDrag(SDL_Window* window, SDL_Event& event);
 
-void processInput(SDL_Event& event, bool& running);
-
-void handleMouseDrag(SDL_Window* window, SDL_Event& event);
-
-static void _InitSinglePolygon();
+static void InitSinglePolygon();
 
 int main(int argc, char* argv[])
 {
-    KSR::InitializeGraphicSystem(640, 480, "Demo01");
+    KSR::InitializeGraphicSystem(s_ScreenWidth, s_ScreenHeight, "[Kuma Soft Renderer] : 01-Triangle");
 
-    _InitSinglePolygon();
+    InitSinglePolygon();
 
-    // initialize the camera with 90 FOV, normalized coordinates
-    KSR::Init_CAM4DV1(&cam,      // the camera object
-        KSR::CAM_MODEL_EULER, // euler camera model
-        &cam_pos,  // initial camera position
-        &cam_dir,  // initial camera angles
-        nullptr,      // no initial target
-        50.0f,      // near and far clipping planes
-        500.0f,
-        90.0f,      // field of view in degrees
-        screen_width,   // size of final screen viewport
-        screen_height);
+    KSR::Init_CAM4DV1(&s_Camera, KSR::CAM_MODEL_EULER, &s_CameraPosition, &s_CameraDirection, nullptr,
+        50.0f, 500.0f, 90.0f, static_cast<float>(s_ScreenWidth), static_cast<float>(s_ScreenHeight));
 
-    // 主循环
-    bool running = true;
-
-    static KSR::MATRIX4X4 mrot; // general rotation matrix
-    static float ang_y = 0;      // rotation angle
-
-    int index; // looping var
-
-    while (running)
+    while (s_IsRunning)
     {
         SDL_Event event;
 
         while (SDL_PollEvent(&event))
         {
-            processInput(event, running);
-            handleMouseDrag(gWindow, event);
+            ProcessInput(event, s_IsRunning);
+            HandleMouseDrag(KSR::gWindow, event);
         }
 
+        KSR::Start_Clock();
         KSR::DDraw_Fill_Surface(KSR::lpddsback, 0);
         KSR::DDraw_Fill_Surface(KSR::gScreenSurface, 0);
 
         // initialize the renderlist
-        KSR::Reset_RENDERLIST4DV1(&rend_list);
+        KSR::Reset_RENDERLIST4DV1(&s_RenderList);
 
         // insert polygon into the renderlist
-        KSR::Insert_POLYF4DV1_RENDERLIST4DV1(&rend_list, &poly1);
+        KSR::Insert_POLYF4DV1_RENDERLIST4DV1(&s_RenderList, &s_SinglePolygon);
 
         // generate rotation matrix around y axis
-        KSR::Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &mrot);
+        KSR::Build_XYZ_Rotation_MATRIX4X4(0, s_RotationAngleY, 0, &s_RotationMatrix);
 
         // rotate polygon slowly
-        
-        if (++ang_y >= 360.0f)
-            ang_y = 0.0f;
-        
+        s_RotationAngleY += 0.1f;
+
+        if (s_RotationAngleY >= 360.0f)
+            s_RotationAngleY = 0.0f;
+
 
         // rotate the local coords of single polygon in renderlist
-        KSR::Transform_RENDERLIST4DV1(&rend_list, &mrot, KSR::TRANSFORM_LOCAL_ONLY);
+        KSR::Transform_RENDERLIST4DV1(&s_RenderList, &s_RotationMatrix, KSR::TRANSFORM_LOCAL_ONLY);
 
         // perform local/model to world transform
-        KSR::Model_To_World_RENDERLIST4DV1(&rend_list, &poly1_pos);
+        KSR::Model_To_World_RENDERLIST4DV1(&s_RenderList, &s_SinglePolygonPosition);
 
         // generate camera matrix
-        KSR::Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
+        KSR::Build_CAM4DV1_Matrix_Euler(&s_Camera, KSR::CAM_ROT_SEQ_ZYX);
 
         // apply world to camera transform
-        KSR::World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);
+        KSR::World_To_Camera_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
         // apply camera to perspective transformation
-        KSR::Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam);
+        KSR::Camera_To_Perspective_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
         // apply screen transform
-        KSR::Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam);
+        KSR::Perspective_To_Screen_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
         // lock the back buffer
         KSR::DDraw_Lock_Back_Surface();
 
         // render the polygon list
-        KSR::Draw_RENDERLIST4DV1_Wire16(&rend_list, back_buffer, back_lpitch);
+        KSR::Draw_RENDERLIST4DV1_Wire16(&s_RenderList, KSR::back_buffer, KSR::back_lpitch);
 
-        //     KSR::Draw_Rectangle(0,0,300,300, 0xFFFFFFFF, KSR::lpddsback);
-
-             // unlock the back buffer
+        // unlock the back buffer
         KSR::DDraw_Unlock_Back_Surface();
 
         // flip the surfaces
         KSR::DDraw_Flip();
 
-        // Delay to simulate frame time
-        //SDL_Delay(100);
-        Sleep(200);
+        KSR::Wait_Clock(std::chrono::milliseconds(33));
     }
 
     KSR::ShutdownGraphicSystem();
@@ -122,23 +104,23 @@ int main(int argc, char* argv[])
 }
 
 // 处理输入事件
-void processInput(SDL_Event& event, bool& running)
+void ProcessInput(SDL_Event& event, bool& s_IsRunning)
 {
     if (event.type == SDL_QUIT)
     {
-        running = false;
+        s_IsRunning = false;
     }
     else if (event.type == SDL_KEYDOWN)
     {
         if (event.key.keysym.sym == SDLK_ESCAPE)
         {
-            running = false;
+            s_IsRunning = false;
         }
     }
 }
 
 // 处理鼠标拖动事件
-void handleMouseDrag(SDL_Window* window, SDL_Event& event)
+void HandleMouseDrag(SDL_Window* window, SDL_Event& event)
 {
     static bool dragging = false;
     static int offsetX, offsetY;
@@ -166,26 +148,26 @@ void handleMouseDrag(SDL_Window* window, SDL_Event& event)
 }
 
 // 初始化这个唯一的待渲染三角形
-static void _InitSinglePolygon()
+static void InitSinglePolygon()
 {
-    poly1.state = POLY4DV1_STATE_ACTIVE;
-    poly1.attr = 0;
-    poly1.color = 0xFFFF;//RGB16Bit(0, 255, 0);
+    s_SinglePolygon.state = KSR::POLY4DV1_STATE_ACTIVE;
+    s_SinglePolygon.attr = 0;
+    s_SinglePolygon.color = 0xFFFF;//RGB16Bit(0, 255, 0);
 
-    poly1.vlist[0].x = 0.0f;
-    poly1.vlist[0].y = 50.0f;
-    poly1.vlist[0].z = 0.0f;
-    poly1.vlist[0].w = 1.0f;
+    s_SinglePolygon.vlist[0].x = 0.0f;
+    s_SinglePolygon.vlist[0].y = 50.0f;
+    s_SinglePolygon.vlist[0].z = 0.0f;
+    s_SinglePolygon.vlist[0].w = 1.0f;
 
-    poly1.vlist[1].x = 50.0f;
-    poly1.vlist[1].y = -50.0;
-    poly1.vlist[1].z = 0.0f;
-    poly1.vlist[1].w = 1.0;
+    s_SinglePolygon.vlist[1].x = 50.0f;
+    s_SinglePolygon.vlist[1].y = -50.0;
+    s_SinglePolygon.vlist[1].z = 0.0f;
+    s_SinglePolygon.vlist[1].w = 1.0;
 
-    poly1.vlist[2].x = -50.0f;
-    poly1.vlist[2].y = -50.0f;
-    poly1.vlist[2].z = 0.0f;
-    poly1.vlist[2].w = 1.0f;
+    s_SinglePolygon.vlist[2].x = -50.0f;
+    s_SinglePolygon.vlist[2].y = -50.0f;
+    s_SinglePolygon.vlist[2].z = 0.0f;
+    s_SinglePolygon.vlist[2].w = 1.0f;
 
-    poly1.next = poly1.prev = nullptr;
+    s_SinglePolygon.next = s_SinglePolygon.prev = nullptr;
 }

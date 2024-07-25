@@ -1,4 +1,4 @@
-#include <utility>
+ï»¿#include <utility>
 #include "ksr_surface.h"
 #include "ksr_color.h"
 #include "ksr_shape_drawing.h"
@@ -9,8 +9,8 @@ SDL_RenderCopy will render textures to the current rendering buffer.
 SDL_RenderPresent will swap the buffers, showing everything that was rendered using SDL_RenderCopy since the last SDL_RenderClear call.*/
 namespace KSR
 {
-    uint8_t* primary_buffer = nullptr; // Ö÷Ò³ÃæÊ×Ö¸Õë
-    uint8_t* back_buffer = nullptr;    // ºóÌ¨Ò³ÃæµÄÊ×Ö¸Õë
+    uint8_t* primary_buffer = nullptr; // ä¸»é¡µé¢é¦–æŒ‡é’ˆ
+    uint8_t* back_buffer = nullptr;    // åå°é¡µé¢çš„é¦–æŒ‡é’ˆ
     int back_lpitch = 0;
     SDL_Surface* lpddsprimary = nullptr;
     SDL_Surface* lpddsback = nullptr;
@@ -30,7 +30,7 @@ namespace KSR
 
         gScreenSurface = SDL_GetWindowSurface(gWindow);
         if (gScreenSurface == nullptr) {
-            // throw Òì³£
+            // throw å¼‚å¸¸
              // printf("Window surface could not be retrieved! SDL_Error: %s\n", SDL_GetError());
             // return false;
         }
@@ -44,7 +44,8 @@ namespace KSR
             //printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
            // return false;
         }
-        lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 16, rmask, gmask, bmask, amask);
+
+        lpddsback = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 16, rmask, gmask, bmask, amask);
         //lpddsback = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
         
         if (lpddsback == nullptr) {
@@ -83,12 +84,12 @@ namespace KSR
         }
 
 
-        //Ëø¶¨surface
+        //é”å®šsurface
         int ret = SDL_LockSurface(lpddsback);
 
         if (0 != ret)
         {
-            // ÔÚÕâÀïÅ×³öÒì³£
+            // åœ¨è¿™é‡ŒæŠ›å‡ºå¼‚å¸¸
         }
 
         back_buffer = reinterpret_cast<uint8_t*>(lpddsback->pixels);
@@ -137,14 +138,14 @@ namespace KSR
     //    std::swap(lpddsback, lpddsprimary);
 
         back_buffer = nullptr;
-        back_lpitch = 0; // ÒòÎª½»»»¹ı£¬ËùÒÔÕâĞ©¶¼ĞèÒªÖÃ¿Õ
+        back_lpitch = 0; // å› ä¸ºäº¤æ¢è¿‡ï¼Œæ‰€ä»¥è¿™äº›éƒ½éœ€è¦ç½®ç©º
         primary_buffer = nullptr;
 
 
     }
 }
 
-// »ùÓÚsurfaceÊµÏÖµÄdouble buffering
+// åŸºäºsurfaceå®ç°çš„double buffering
 //#include <SDL2/SDL.h>
 //#include <stdio.h>
 //

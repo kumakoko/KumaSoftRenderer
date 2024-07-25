@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include "ksr_camera.h"
 #include "ksr_constants.h"
 #include "ksr_vector.h"
@@ -6,29 +6,14 @@
 
 namespace KSR
 {
-    void Init_CAM4DV1(CAM4DV1_PTR cam,       // the camera object
-        CameraModelType  cam_attr,          // attributes
-        POINT4D_PTR cam_pos,   // initial camera position
-        VECTOR4D_PTR cam_dir,  // initial camera angles
-        POINT4D_PTR cam_target, // UVN target
-        float near_clip_z,     // near and far clipping planes
-        float far_clip_z,
-        float fov,             // field of view in degrees
-        float viewport_width,  // size of final screen viewport
-        float viewport_height)
+    void Init_CAM4DV1(CAM4DV1_PTR cam, CameraModelType cam_attr, POINT4D_PTR cam_pos, VECTOR4D_PTR cam_dir, POINT4D_PTR cam_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height)
     {
-        // this function initializes the camera object cam, the function
-        // doesn't do a lot of error checking or sanity checking since 
-        // I want to allow you to create projections as you wish, also 
-        // I tried to minimize the number of parameters the functions needs
-
-        // first set up parms that are no brainers
         cam->attr = cam_attr;              // camera attributes
 
-        VECTOR4D_COPY(&cam->pos, cam_pos); // positions
-        VECTOR4D_COPY(&cam->dir, cam_dir); // direction vector or angles for
-        // euler camera
-// for UVN camera
+        VECTOR4D_COPY(&cam->pos, cam_pos); // 记录下相机的位置和观察方向
+        VECTOR4D_COPY(&cam->dir, cam_dir);
+
+        // for UVN 设置UVN模式下的相机的三个方向向量
         VECTOR4D_INITXYZ(&cam->u, 1, 0, 0);  // set to +x
         VECTOR4D_INITXYZ(&cam->v, 0, 1, 0);  // set to +y
         VECTOR4D_INITXYZ(&cam->n, 0, 0, 1);  // set to +z        
@@ -38,28 +23,22 @@ namespace KSR
         else
             VECTOR4D_ZERO(&cam->target);
 
-        cam->near_clip_z = near_clip_z;     // near z=constant clipping plane
-        cam->far_clip_z = far_clip_z;      // far z=constant clipping plane
-
-        cam->viewport_width = viewport_width;   // dimensions of viewport
+        cam->near_clip_z = near_clip_z;     // 记录下远近视截面
+        cam->far_clip_z = far_clip_z;
+        cam->viewport_width = viewport_width;   // 记录下视口的高宽值，中心点值，宽高比
         cam->viewport_height = viewport_height;
-
-        cam->viewport_center_x = (viewport_width - 1) / 2; // center of viewport
+        cam->viewport_center_x = (viewport_width - 1) / 2;
         cam->viewport_center_y = (viewport_height - 1) / 2;
-
-        cam->aspect_ratio = (float)viewport_width / (float)viewport_height;
-
-        // set all camera matrices to identity matrix
+        cam->aspect_ratio = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
+        cam->fov = fov; // 记录下FOV值
+        cam->viewplane_width = 2.0f; // set the viewplane dimensions up, they will be 2 x (2/ar)
+        cam->viewplane_height = 2.0f / cam->aspect_ratio;
+        // 记录下M2V V2P P2S矩阵
         MAT_IDENTITY_4X4(&cam->mcam);
         MAT_IDENTITY_4X4(&cam->mper);
         MAT_IDENTITY_4X4(&cam->mscr);
 
-        // set independent vars
-        cam->fov = fov;
 
-        // set the viewplane dimensions up, they will be 2 x (2/ar)
-        cam->viewplane_width = 2.0f;
-        cam->viewplane_height = 2.0f / cam->aspect_ratio;
 
         // now we know fov and we know the viewplane dimensions plug into formula and
         // solve for view distance parameters

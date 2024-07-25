@@ -1,4 +1,4 @@
-#include "ksr_polygon.h"
+﻿#include "ksr_polygon.h"
 
 namespace KSR
 {

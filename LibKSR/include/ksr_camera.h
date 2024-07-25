@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 #include "ksr_matrix.h"
@@ -70,7 +70,7 @@ namespace KSR
         PLANE3D tp_clip_plane;  // the top clipping plane
         PLANE3D bt_clip_plane;  // the bottom clipping plane                        
 
-        float viewplane_width;     // width and height of view plane to project onto
+        float viewplane_width;     // 视平面，物体将会投影到这视平面上，width and height of view plane to project onto
         float viewplane_height;    // usually 2x2 for normalized projection or 
         // the exact same size as the viewport or screen window
 
@@ -88,27 +88,45 @@ namespace KSR
         // and or a concatenated perspective/screen, however, having these 
         // matrices give us more flexibility         
 
-        MATRIX4X4 mcam;   // storage for the world to camera transform matrix
-        MATRIX4X4 mper;   // storage for the camera to perspective transform matrix
-        MATRIX4X4 mscr;   // storage for the perspective to screen transform matrix
+        MATRIX4X4 mcam;   // 世界空间到观察空间的变换矩阵 storage for the world to camera transform matrix
+        MATRIX4X4 mper;   // 观察空间到透视投影空间的变换矩阵 storage for the camera to perspective transform matrix
+        MATRIX4X4 mscr;   // 透视投影空间到屏幕空间的变换矩阵 storage for the perspective to screen transform matrix
 
     } CAM4DV1, * CAM4DV1_PTR;
 
-    void Init_CAM4DV1(CAM4DV1_PTR cam,       // the camera object
-        CameraModelType  cam_attr,          // attributes
-        POINT4D_PTR cam_pos,   // initial camera position
-        VECTOR4D_PTR cam_dir,  // initial camera angles
-        POINT4D_PTR cam_target, // UVN target
-        float near_clip_z,     // near and far clipping planes
-        float far_clip_z,
-        float fov,             // field of view in degrees
-        float viewport_width,  // size of final screen viewport
-        float viewport_height);
+    /**************************************************************************************
 
+    @name: KSR::Init_CAM4DV1
+    @return: void
+    @param: CAM4DV1_PTR cam
+    @param: CameraModelType cam_attr    摄像机的类型，欧拉相机或者时UVN相机
+    @param: POINT4D_PTR cam_pos         摄像机在世界坐标系下的位置值
+    @param: VECTOR4D_PTR cam_dir        摄像机在世界坐标系下的观察朝向
+    @param: POINT4D_PTR cam_target      如果摄像机是UVN相机的话，摄像机的观察目标在世界坐标系下的位置值
+    @param: float near_clip_z           近截平面
+    @param: float far_clip_z            远截平面
+    @param: float fov                   Field of View
+    @param: float viewport_width        视口宽度
+    @param: float viewport_height       视口高度
+    *************************************************************************************/
+    void Init_CAM4DV1(CAM4DV1_PTR cam, CameraModelType  cam_attr, POINT4D_PTR cam_pos, VECTOR4D_PTR cam_dir, 
+        POINT4D_PTR cam_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height);
 
-
+    /**************************************************************************************
+    
+    @name: KSR::Build_CAM4DV1_Matrix_Euler
+    @return: void
+    @param: CAM4DV1_PTR cam
+    @param: CameraRotationSequences cam_rot_seq
+    *************************************************************************************/
     void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, CameraRotationSequences cam_rot_seq);
 
-
+    /**************************************************************************************
+    
+    @name: KSR::Build_CAM4DV1_Matrix_UVN
+    @return: void
+    @param: CAM4DV1_PTR cam
+    @param: UVNCameraType mode
+    *************************************************************************************/
     void Build_CAM4DV1_Matrix_UVN(CAM4DV1_PTR cam, UVNCameraType mode);
 }

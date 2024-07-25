@@ -1,4 +1,4 @@
-#include <cstdlib>
+ï»¿#include <cstdlib>
 #include <cstring>
 #include "ksr_z_buffer.h"
 #include "ksr_asm_optimize.h"
@@ -95,7 +95,7 @@ namespace KSR
         // zbuffer then you must build a quad that has two values each
         // the 16-bit value you want to fill with, otherwise just send 
         // the fill value casted to a std::uint32_t
-        // Õâ¸öº¯ÊýµÄ×÷ÓÃÊÇ½«Ö¸¶¨µÄ32Î»Êý¾Ý data ÖØ¸´Ìî³äµ½ zb->zbuffer Ö¸ÏòµÄÄÚ´æÇøÓò£¬Ìî³äµÄ´ÎÊýÎª  zb->sizeq ´Î¡£
+        // è¿™ä¸ªå‡½æ•°çš„ä½œç”¨æ˜¯å°†æŒ‡å®šçš„32ä½æ•°æ® data é‡å¤å¡«å……åˆ° zb->zbuffer æŒ‡å‘çš„å†…å­˜åŒºåŸŸï¼Œå¡«å……çš„æ¬¡æ•°ä¸º  zb->sizeq æ¬¡ã€‚
         Mem_Set_QUAD(zb->zbuffer, data, zb->sizeq);
     }
 }

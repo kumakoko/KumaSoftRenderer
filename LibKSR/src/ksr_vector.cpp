@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include <utility>
 #include "ksr_vector.h"
 #include "ksr_constants.h"

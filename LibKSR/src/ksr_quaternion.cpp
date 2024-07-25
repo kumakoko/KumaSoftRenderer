@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include "ksr_quaternion.h"
 
 namespace KSR

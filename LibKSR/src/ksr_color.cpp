@@ -1,4 +1,4 @@
-#include "SDL.h"
+ï»¿#include "SDL.h"
 #include "ksr_color.h"
 
 namespace KSR
@@ -40,10 +40,8 @@ namespace KSR
 
     void Get16BitSufaceRGBMask(uint32_t& rmask, uint32_t& gmask, uint32_t& bmask, uint32_t& amask)
     {  
-        // ¶¨ÒåÏñËØ¸ñÊ½ÑÚÂë
-      
-
-        // ÅĞ¶ÏÏµÍ³×Ö½ÚĞòÒÔÉèÖÃÑÚÂë
+        // å®šä¹‰åƒç´ æ ¼å¼æ©ç 
+        // åˆ¤æ–­ç³»ç»Ÿå­—èŠ‚åºä»¥è®¾ç½®æ©ç 
         if (SDL_BYTEORDER == SDL_BIG_ENDIAN) 
         {
             rmask = 0xF800;

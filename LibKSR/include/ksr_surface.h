@@ -1,12 +1,12 @@
-#pragma once
+ï»¿#pragma once
 
 #include <cstdint>
 #include "SDL.h"
 
 namespace KSR
 {
-    extern uint8_t* primary_buffer; // Ö÷Ò³ÃæÊ×Ö¸Õë
-    extern uint8_t* back_buffer;    // ºóÌ¨Ò³ÃæµÄÊ×Ö¸Õë
+    extern uint8_t* primary_buffer; // ä¸»é¡µé¢é¦–æŒ‡é’ˆ
+    extern uint8_t* back_buffer;    // åå°é¡µé¢çš„é¦–æŒ‡é’ˆ
     extern int back_lpitch;
 
     extern SDL_Surface* lpddsprimary;
@@ -16,10 +16,10 @@ namespace KSR
     extern uint32_t SCREEN_WIDTH;
     extern uint32_t SCREEN_HEIGHT;
 
-    // ³õÊ¼»¯Í¼ĞÎÏµÍ³
+    // åˆå§‹åŒ–å›¾å½¢ç³»ç»Ÿ
     void InitializeGraphicSystem(uint32_t sw,uint32_t sh, const char* wn);
 
-    // ¹Ø±ÕÍ¼ĞÎÏµÍ³
+    // å…³é—­å›¾å½¢ç³»ç»Ÿ
     void ShutdownGraphicSystem();
 
     void DDraw_Fill_Surface(SDL_Surface* lpdds, uint32_t color, SDL_Rect* client = nullptr);

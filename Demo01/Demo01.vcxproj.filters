@@ -18,16 +18,5 @@
     <ClCompile Include="Demo01.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="render.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="render.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Demo01.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

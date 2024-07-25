@@ -32,6 +32,7 @@
     <ClInclude Include="include\ksr_render_list.h" />
     <ClInclude Include="include\ksr_shape_drawing.h" />
     <ClInclude Include="include\ksr_surface.h" />
+    <ClInclude Include="include\ksr_timer.h" />
     <ClInclude Include="include\ksr_transform.h" />
     <ClInclude Include="include\ksr_vector.h" />
     <ClInclude Include="include\ksr_vertex.h" />
@@ -49,6 +50,7 @@
     <ClCompile Include="src\ksr_render_list.cpp" />
     <ClCompile Include="src\ksr_shape_drawing.cpp" />
     <ClCompile Include="src\ksr_surface.cpp" />
+    <ClCompile Include="src\ksr_timer.cpp" />
     <ClCompile Include="src\ksr_transform.cpp" />
     <ClCompile Include="src\ksr_vector.cpp" />
     <ClCompile Include="src\ksr_vertex.cpp" />
