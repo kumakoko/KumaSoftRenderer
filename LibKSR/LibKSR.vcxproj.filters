@@ -72,6 +72,15 @@
     <ClInclude Include="include\ksr_rendered_object.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\ksr_error.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ksr_message_box.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ksr_string_convertor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ksr_matrix.cpp">
@@ -123,6 +132,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ksr_rendered_object.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_error.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_message_box.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_string_convertor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

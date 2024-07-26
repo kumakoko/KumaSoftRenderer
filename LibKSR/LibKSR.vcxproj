@@ -24,14 +24,17 @@
     <ClInclude Include="include\ksr_camera.h" />
     <ClInclude Include="include\ksr_color.h" />
     <ClInclude Include="include\ksr_constants.h" />
+    <ClInclude Include="include\ksr_error.h" />
     <ClInclude Include="include\ksr_light.h" />
     <ClInclude Include="include\ksr_matrix.h" />
+    <ClInclude Include="include\ksr_message_box.h" />
     <ClInclude Include="include\ksr_plane.h" />
     <ClInclude Include="include\ksr_polygon.h" />
     <ClInclude Include="include\ksr_quaternion.h" />
     <ClInclude Include="include\ksr_rendered_object.h" />
     <ClInclude Include="include\ksr_render_list.h" />
     <ClInclude Include="include\ksr_shape_drawing.h" />
+    <ClInclude Include="include\ksr_string_convertor.h" />
     <ClInclude Include="include\ksr_surface.h" />
     <ClInclude Include="include\ksr_timer.h" />
     <ClInclude Include="include\ksr_transform.h" />
@@ -43,14 +46,17 @@
     <ClCompile Include="src\ksr_camera.cpp" />
     <ClCompile Include="src\ksr_color.cpp" />
     <ClCompile Include="src\ksr_constants.cpp" />
+    <ClCompile Include="src\ksr_error.cpp" />
     <ClCompile Include="src\ksr_light.cpp" />
     <ClCompile Include="src\ksr_matrix.cpp" />
+    <ClCompile Include="src\ksr_message_box.cpp" />
     <ClCompile Include="src\ksr_plane.cpp" />
     <ClCompile Include="src\ksr_polygon.cpp" />
     <ClCompile Include="src\ksr_quaternion.cpp" />
     <ClCompile Include="src\ksr_rendered_object.cpp" />
     <ClCompile Include="src\ksr_render_list.cpp" />
     <ClCompile Include="src\ksr_shape_drawing.cpp" />
+    <ClCompile Include="src\ksr_string_convertor.cpp" />
     <ClCompile Include="src\ksr_surface.cpp" />
     <ClCompile Include="src\ksr_timer.cpp" />
     <ClCompile Include="src\ksr_transform.cpp" />
@@ -135,7 +141,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include;../libraries/iconv/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -153,7 +159,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include;../libraries/iconv/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
