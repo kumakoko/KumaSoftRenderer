@@ -1,4 +1,28 @@
-﻿#include "ksr_render_list.h"
+﻿/*********************************************************************************************
+MIT License
+
+Copyright (c) 2024 kumakoko www.xionggf.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*********************************************************************************************/
+
+#include "ksr_render_list.h"
 #include "ksr_transform.h"
 #include "ksr_shape_drawing.h"
 
@@ -67,187 +91,107 @@ namespace KSR
 
     } // end Insert_POLYF4DV1_RENDERLIST4DV1
 
-
-    void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, // render list to transform
-        MATRIX4X4_PTR mt,   // transformation matrix
-        TransformControlFlag coord_select)   // selects coords to transform
+    /**************************************************************************************
+     判断给定的多边形polygon要不要被渲染
+     * @name: _Polygon4DV1NeedToRender
+     * @return: bool 要true不要false
+     * @param: POLYF4DV1* polygon  待检查的多边形对象指针
+     *************************************************************************************/
+    static bool _Polygon4DV1NeedToRender(POLYF4DV1* polygon)
     {
-        // this function simply transforms all of the polygons vertices in the local or trans
-        // array of the render list by the sent matrix
+        return nullptr != polygon &&                        // 这个多边形必须不为null
+            polygon->state & POLY4DV1_STATE_ACTIVE &&       // 这个多边形必须为活跃状态
+            !(polygon->state & POLY4DV1_STATE_CLIPPED) &&   // 这个多边形必须没有被裁剪掉
+            !(polygon->state & POLY4DV1_STATE_BACKFACE);    // 这个多边形必须没有背对着摄像机
+    }
 
-        // what coordinates should be transformed?
-        switch (coord_select)
+    void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, MATRIX4X4_PTR mt, TransformControlFlag coord_select)
+    {
+        if (TRANSFORM_LOCAL_ONLY == coord_select) // 查看ksr_transform.h中的TransformControlFlag::TRANSFORM_LOCAL_ONLY枚举值的说明
         {
-        case TRANSFORM_LOCAL_ONLY:
-        {
-            for (int poly = 0; poly < rend_list->num_polys; poly++)
+            for (int poly = 0; poly < rend_list->num_polys; poly++) // 遍历render list中的每一个多边形
             {
-                // acquire current polygon
                 POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(curr_poly))
+                    continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-                // is this polygon valid?
-                // transform this polygon if and only if it's not clipped, not culled,
-                // active, and visible, note however the concept of "backface" is 
-                // irrelevant in a wire frame engine though
-                if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                    (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                    (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                    continue; // move onto next poly
-
-                // all good, let's transform 
+                // 遍历多边形中的三个顶点，对这些存储在vlist数组成员变量的顶点坐标，使用mt矩阵，进行变换，然后再存回到vlist数组中去
                 for (int vertex = 0; vertex < 3; vertex++)
                 {
-                    // transform the vertex by mt
-                    POINT4D presult; // hold result of each transformation
-
-                    // transform point
+                    POINT4D presult;
                     Mat_Mul_VECTOR4D_4X4(&curr_poly->vlist[vertex], mt, &presult);
-
-                    // store result back
                     VECTOR4D_COPY(&curr_poly->vlist[vertex], &presult);
-                } // end for vertex
-
-            } // end for poly
-
-        } break;
-
-        case TRANSFORM_TRANS_ONLY:
+                }
+            }
+        }
+        else if (TRANSFORM_TRANS_ONLY == coord_select) // 查看ksr_transform.h中的TransformControlFlag::TRANSFORM_TRANS_ONLY枚举值的说明
         {
-            // transform each "transformed" vertex of the render list
-            // remember, the idea of the tvlist[] array is to accumulate
-            // transformations
-            for (int poly = 0; poly < rend_list->num_polys; poly++)
+            for (int poly = 0; poly < rend_list->num_polys; poly++) // 遍历render list中的每一个多边形
             {
-                // acquire current polygon
                 POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(curr_poly))
+                    continue; // 当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-                // is this polygon valid?
-                // transform this polygon if and only if it's not clipped, not culled,
-                // active, and visible, note however the concept of "backface" is 
-                // irrelevant in a wire frame engine though
-                if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                    (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                    (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                    continue; // move onto next poly
-
-                // all good, let's transform 
+                // 遍历多边形中的三个顶点，对这些存储在tvlist数组成员变量的顶点坐标，使用mt矩阵，进行变换，然后再存回到tvlist数组中去
                 for (int vertex = 0; vertex < 3; vertex++)
                 {
-                    // transform the vertex by mt
-                    POINT4D presult; // hold result of each transformation
-
-                    // transform point
+                    POINT4D presult;
                     Mat_Mul_VECTOR4D_4X4(&curr_poly->tvlist[vertex], mt, &presult);
-
-                    // store result back
                     VECTOR4D_COPY(&curr_poly->tvlist[vertex], &presult);
-                } // end for vertex
-
-            } // end for poly
-
-        } break;
-
-        case TRANSFORM_LOCAL_TO_TRANS:
+                }
+            }
+        }
+        else if (TRANSFORM_LOCAL_TO_TRANS == coord_select) // 查看ksr_transform.h中的TransformControlFlag::TRANSFORM_LOCAL_TO_TRANS枚举值的说明
         {
-            // transform each local/model vertex of the render list and store result
-            // in "transformed" vertex list
             for (int poly = 0; poly < rend_list->num_polys; poly++)
             {
-                // acquire current polygon
                 POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(curr_poly))
+                    continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-                // is this polygon valid?
-                // transform this polygon if and only if it's not clipped, not culled,
-                // active, and visible, note however the concept of "backface" is 
-                // irrelevant in a wire frame engine though
-                if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                    (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                    (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                    continue; // move onto next poly
-
-                // all good, let's transform 
+                // 遍历多边形中的三个顶点，对这些存储在vlist数组成员变量的顶点坐标，使用mt矩阵，进行变换，然后存到tvlist数组中去
                 for (int vertex = 0; vertex < 3; vertex++)
                 {
-                    // transform the vertex by mt
                     Mat_Mul_VECTOR4D_4X4(&curr_poly->vlist[vertex], mt, &curr_poly->tvlist[vertex]);
-                } // end for vertex
-
-            } // end for poly
-
-        } break;
-
-        default: break;
-
-        } // end switch
-
-    } // end Transform_RENDERLIST4DV1
+                }
+            }
+        }
+    }
 
     void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POINT4D_PTR world_pos, TransformControlFlag coord_select)
     {
-        // NOTE: Not matrix based
-        // this function converts the local model coordinates of the
-        // sent render list into world coordinates, the results are stored
-        // in the transformed vertex list (tvlist) within the renderlist
-
-        // interate thru vertex list and transform all the model/local 
-        // coords to world coords by translating the vertex list by
-        // the amount world_pos and storing the results in tvlist[]
-        // is this polygon valid?
-
         if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
         {
             for (int poly = 0; poly < rend_list->num_polys; poly++)
             {
-                // acquire current polygon
                 POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(curr_poly))
+                    continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-                // transform this polygon if and only if it's not clipped, not culled,
-                // active, and visible, note however the concept of "backface" is 
-                // irrelevant in a wire frame engine though
-                if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                    (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                    (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                    continue; // move onto next poly
-
-                // all good, let's transform 
-                for (int vertex = 0; vertex < 3; vertex++)
+                for (int vertex = 0; vertex < 3; vertex++) // 将vlist中的顶点平移，得出的值，存到tvlist中
                 {
-                    // translate vertex
                     VECTOR4D_Add(&curr_poly->vlist[vertex], world_pos, &curr_poly->tvlist[vertex]);
-                } // end for vertex
-
-            } // end for poly
-        } // end if local
-        else // TRANSFORM_TRANS_ONLY
+                }
+            }
+        }
+        else // TRANSFORM_TRANS_ONLY 和 TRANSFORM_LOCAL_ONLY 都一样，是直接操作tvlist
         {
             for (int poly = 0; poly < rend_list->num_polys; poly++)
             {
-                // acquire current polygon
                 POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(curr_poly))
+                    continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-                // transform this polygon if and only if it's not clipped, not culled,
-                // active, and visible, note however the concept of "backface" is 
-                // irrelevant in a wire frame engine though
-                if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                    (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                    (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                    continue; // move onto next poly
-
-                for (int vertex = 0; vertex < 3; vertex++)
+                for (int vertex = 0; vertex < 3; vertex++) // 将tvlist中的顶点平移，得出的指，原样存回到tvlist中
                 {
-                    // translate vertex
                     VECTOR4D_Add(&curr_poly->tvlist[vertex], world_pos, &curr_poly->tvlist[vertex]);
-                } // end for vertex
-
-            } // end for poly
-
-        } // end else
-
-    } // end Model_To_World_RENDERLIST4DV1
+                }
+            }
+        }
+    }
 
 
-    void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
-        CAM4DV1_PTR cam)
+    void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
     {
         // NOTE: this is a matrix based function
         // this function transforms each polygon in the global render list
@@ -271,15 +215,8 @@ namespace KSR
         {
             // acquire current polygon
             POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-
-            // is this polygon valid?
-            // transform this polygon if and only if it's not clipped, not culled,
-            // active, and visible, note however the concept of "backface" is 
-            // irrelevant in a wire frame engine though
-            if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            if (!_Polygon4DV1NeedToRender(curr_poly))
+                continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
             // all good, let's transform 
             for (int vertex = 0; vertex < 3; vertex++)
@@ -462,7 +399,7 @@ namespace KSR
     } // end Perspective_To_Screen_RENDERLIST4DV1
 
 
-    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR rend_list,uint8_t* video_buffer, int lpitch)
+    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR rend_list, uint8_t* video_buffer, int lpitch)
     {
         // this function "executes" the render list or in other words
         // draws all the faces in the list in wire frame 16bit mode

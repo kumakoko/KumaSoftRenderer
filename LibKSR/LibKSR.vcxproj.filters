@@ -69,6 +69,9 @@
     <ClInclude Include="include\ksr_timer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\ksr_rendered_object.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ksr_matrix.cpp">
@@ -117,6 +120,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ksr_timer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_rendered_object.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -29,6 +29,7 @@
     <ClInclude Include="include\ksr_plane.h" />
     <ClInclude Include="include\ksr_polygon.h" />
     <ClInclude Include="include\ksr_quaternion.h" />
+    <ClInclude Include="include\ksr_rendered_object.h" />
     <ClInclude Include="include\ksr_render_list.h" />
     <ClInclude Include="include\ksr_shape_drawing.h" />
     <ClInclude Include="include\ksr_surface.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="src\ksr_plane.cpp" />
     <ClCompile Include="src\ksr_polygon.cpp" />
     <ClCompile Include="src\ksr_quaternion.cpp" />
+    <ClCompile Include="src\ksr_rendered_object.cpp" />
     <ClCompile Include="src\ksr_render_list.cpp" />
     <ClCompile Include="src\ksr_shape_drawing.cpp" />
     <ClCompile Include="src\ksr_surface.cpp" />

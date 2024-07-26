@@ -1,4 +1,27 @@
-﻿#pragma once
+﻿/*********************************************************************************************
+MIT License
+
+Copyright (c) 2024 kumakoko www.xionggf.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*********************************************************************************************/
+#pragma once
 
 #include "ksr_vector.h"
 #include "ksr_polygon.h"
@@ -68,22 +91,31 @@ namespace KSR
     int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLYF4DV1_PTR poly);
 
     /**************************************************************************************
-
+    利用传递进函数的参数：变换矩阵mt，对render list中的基于局部坐标系顶点，或者在其他坐标系下的顶点
+    进行变换
     @name: KSR::Transform_RENDERLIST4DV1
     @return: void
     @param: RENDERLIST4DV1_PTR rend_list 要变换的那个render list
     @param: MATRIX4X4_PTR mt 用来进行变换操作的矩阵
-    @param: TransformControlFlag coord_select 要变换过去的坐标系
+    @param: TransformControlFlag coord_select 顶点坐标变换的控制标志，参见ksr_transform.h中TransformControlFlag枚举值的定义
     *************************************************************************************/
     void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, MATRIX4X4_PTR mt, TransformControlFlag coord_select);
 
     /**************************************************************************************
+    把渲染列表中的多边形的顶点，从局部坐标系变换到世界坐标系。本函数并没有使用矩阵，而是直接利用位置
+    平移量world_pos去计算
+    
+    当coord_select为TRANSFORM_LOCAL_TO_TRANS时：这函数将多边形的存储在vlist数组成员中的局部（模型）
+    坐标，变换到世界坐标，变换后的结果，存储在多边形的tvlist数组成员变量中。
+
+    当coord_select为TRANSFORM_TRANS_ONLY或者是TRANSFORM_LOCAL_ONLY时：这函数将多边形的存储在tvlist
+    数组成员中的局部（模型）坐标，变换到世界坐标，变换后的结果，原样存回到tvlist数组成员变量中。
 
     @name: KSR::Model_To_World_RENDERLIST4DV1
     @return: void
-    @param: RENDERLIST4DV1_PTR rend_list
-    @param: POINT4D_PTR world_pos
-    @param: int coord_select
+    @param: RENDERLIST4DV1_PTR rend_list  要变换的那个render list
+    @param: POINT4D_PTR world_pos 每一个顶点从局部坐标系变换到世界坐标系时，顶点的平移量
+    @param: int coord_select 顶点坐标变换的控制标志，参见ksr_transform.h中TransformControlFlag枚举值的定义
     *************************************************************************************/
     void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POINT4D_PTR world_pos, TransformControlFlag coord_select = TRANSFORM_LOCAL_TO_TRANS);
 
