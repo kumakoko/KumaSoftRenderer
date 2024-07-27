@@ -118,14 +118,23 @@ namespace KSR
 
     } POLYF4DV2, *POLYF4DV2_PTR;
 
-    /******************************************************************************************************************
-     * Desc:
-     * Method:    Draw_Filled_Polygon2D
-     * Returns:   void
-     * Parameter: POLYGON2D_PTR poly
-     * Parameter: std::uint8_t * vbuffer
-     * Parameter: int mempitch
-     ****************************************************************************************************************/
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Filled_Polygon2D
+    @return: void
+    @param: POLYGON2D_PTR poly
+    @param: std::uint8_t * vbuffer
+    @param: int mempitch
+    *************************************************************************************/
     void Draw_Filled_Polygon2D(POLYGON2D_PTR poly, std::uint8_t* vbuffer, int mempitch);
+
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Filled_Polygon2D16
+    @return: void
+    @param: POLYGON2D_PTR poly
+    @param: std::uint8_t * vbuffer
+    @param: int mempitch
+    *************************************************************************************/
     void Draw_Filled_Polygon2D16(POLYGON2D_PTR poly, std::uint8_t* vbuffer, int mempitch);
 }

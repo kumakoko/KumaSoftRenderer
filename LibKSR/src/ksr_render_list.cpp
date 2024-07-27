@@ -105,141 +105,113 @@ namespace KSR
             !(polygon->state & POLY4DV1_STATE_BACKFACE);    // 这个多边形必须没有背对着摄像机
     }
 
-    void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, MATRIX4X4_PTR mt, TransformControlFlag coord_select)
+    void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, MATRIX4X4_PTR mat_transform, TransformControlFlag coord_select)
     {
         if (TRANSFORM_LOCAL_ONLY == coord_select) // 查看ksr_transform.h中的TransformControlFlag::TRANSFORM_LOCAL_ONLY枚举值的说明
         {
-            for (int poly = 0; poly < rend_list->num_polys; poly++) // 遍历render list中的每一个多边形
+            for (int poly = 0; poly < render_list->num_polys; poly++) // 遍历render list中的每一个多边形
             {
-                POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-                if (!_Polygon4DV1NeedToRender(curr_poly))
+                POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(current_polygon))
                     continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
                 // 遍历多边形中的三个顶点，对这些存储在vlist数组成员变量的顶点坐标，使用mt矩阵，进行变换，然后再存回到vlist数组中去
                 for (int vertex = 0; vertex < 3; vertex++)
                 {
                     POINT4D presult;
-                    Mat_Mul_VECTOR4D_4X4(&curr_poly->vlist[vertex], mt, &presult);
-                    VECTOR4D_COPY(&curr_poly->vlist[vertex], &presult);
+                    Mat_Mul_VECTOR4D_4X4(&current_polygon->vlist[vertex], mat_transform, &presult);
+                    VECTOR4D_COPY(&current_polygon->vlist[vertex], &presult);
                 }
             }
         }
         else if (TRANSFORM_TRANS_ONLY == coord_select) // 查看ksr_transform.h中的TransformControlFlag::TRANSFORM_TRANS_ONLY枚举值的说明
         {
-            for (int poly = 0; poly < rend_list->num_polys; poly++) // 遍历render list中的每一个多边形
+            for (int poly = 0; poly < render_list->num_polys; poly++) // 遍历render list中的每一个多边形
             {
-                POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-                if (!_Polygon4DV1NeedToRender(curr_poly))
+                POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(current_polygon))
                     continue; // 当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
                 // 遍历多边形中的三个顶点，对这些存储在tvlist数组成员变量的顶点坐标，使用mt矩阵，进行变换，然后再存回到tvlist数组中去
                 for (int vertex = 0; vertex < 3; vertex++)
                 {
                     POINT4D presult;
-                    Mat_Mul_VECTOR4D_4X4(&curr_poly->tvlist[vertex], mt, &presult);
-                    VECTOR4D_COPY(&curr_poly->tvlist[vertex], &presult);
+                    Mat_Mul_VECTOR4D_4X4(&current_polygon->tvlist[vertex], mat_transform, &presult);
+                    VECTOR4D_COPY(&current_polygon->tvlist[vertex], &presult);
                 }
             }
         }
         else if (TRANSFORM_LOCAL_TO_TRANS == coord_select) // 查看ksr_transform.h中的TransformControlFlag::TRANSFORM_LOCAL_TO_TRANS枚举值的说明
         {
-            for (int poly = 0; poly < rend_list->num_polys; poly++)
+            for (int poly = 0; poly < render_list->num_polys; poly++)
             {
-                POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-                if (!_Polygon4DV1NeedToRender(curr_poly))
+                POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(current_polygon))
                     continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
                 // 遍历多边形中的三个顶点，对这些存储在vlist数组成员变量的顶点坐标，使用mt矩阵，进行变换，然后存到tvlist数组中去
                 for (int vertex = 0; vertex < 3; vertex++)
                 {
-                    Mat_Mul_VECTOR4D_4X4(&curr_poly->vlist[vertex], mt, &curr_poly->tvlist[vertex]);
+                    Mat_Mul_VECTOR4D_4X4(&current_polygon->vlist[vertex], mat_transform, &current_polygon->tvlist[vertex]);
                 }
             }
         }
     }
 
-    void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POINT4D_PTR world_pos, TransformControlFlag coord_select)
+    void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POINT4D_PTR world_pos, TransformControlFlag coord_select /*= TRANSFORM_LOCAL_TO_TRANS*/)
     {
         if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
         {
-            for (int poly = 0; poly < rend_list->num_polys; poly++)
+            for (int poly = 0; poly < render_list->num_polys; poly++)
             {
-                POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-                if (!_Polygon4DV1NeedToRender(curr_poly))
+                POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(current_polygon))
                     continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
                 for (int vertex = 0; vertex < 3; vertex++) // 将vlist中的顶点平移，得出的值，存到tvlist中
                 {
-                    VECTOR4D_Add(&curr_poly->vlist[vertex], world_pos, &curr_poly->tvlist[vertex]);
+                    VECTOR4D_Add(&current_polygon->vlist[vertex], world_pos, &current_polygon->tvlist[vertex]);
                 }
             }
         }
         else // TRANSFORM_TRANS_ONLY 和 TRANSFORM_LOCAL_ONLY 都一样，是直接操作tvlist
         {
-            for (int poly = 0; poly < rend_list->num_polys; poly++)
+            for (int poly = 0; poly < render_list->num_polys; poly++)
             {
-                POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-                if (!_Polygon4DV1NeedToRender(curr_poly))
+                POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
+                if (!_Polygon4DV1NeedToRender(current_polygon))
                     continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
                 for (int vertex = 0; vertex < 3; vertex++) // 将tvlist中的顶点平移，得出的指，原样存回到tvlist中
                 {
-                    VECTOR4D_Add(&curr_poly->tvlist[vertex], world_pos, &curr_poly->tvlist[vertex]);
+                    VECTOR4D_Add(&current_polygon->tvlist[vertex], world_pos, &current_polygon->tvlist[vertex]);
                 }
             }
         }
     }
 
-
-    void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
+    void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera)
     {
-        // NOTE: this is a matrix based function
-        // this function transforms each polygon in the global render list
-        // to camera coordinates based on the sent camera transform matrix
-        // you would use this function instead of the object based function
-        // if you decided earlier in the pipeline to turn each object into 
-        // a list of polygons and then add them to the global render list
-        // the conversion of an object into polygons probably would have
-        // happened after object culling, local transforms, local to world
-        // and backface culling, so the minimum number of polygons from
-        // each object are in the list, note that the function assumes
-        // that at LEAST the local to world transform has been called
-        // and the polygon data is in the transformed list tvlist of
-        // the POLYF4DV1 object
-
-        // transform each polygon in the render list into camera coordinates
-        // assumes the render list has already been transformed to world
-        // coordinates and the result is in tvlist[] of each polygon object
-
-        for (int poly = 0; poly < rend_list->num_polys; poly++)
+        for (int poly = 0; poly < render_list->num_polys; poly++)
         {
-            // acquire current polygon
-            POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
-            if (!_Polygon4DV1NeedToRender(curr_poly))
+            POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
+
+            if (!_Polygon4DV1NeedToRender(current_polygon))
                 continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-            // all good, let's transform 
             for (int vertex = 0; vertex < 3; vertex++)
             {
-                // transform the vertex by the mcam matrix within the camera
-                // it better be valid!
-                POINT4D presult; // hold result of each transformation
+                // 当下tvlist中的顶点数据是基于世界坐标系的。世界坐标系下的顶点位置数据，乘以
+                // 观察变换矩阵（相机变换矩阵），即相机的mcam。即将其位置数据转变到观察空间下。
+                // 再把经过变换的顶点位置数据回存到tvlist成员变量
+                POINT4D presult; 
+                Mat_Mul_VECTOR4D_4X4(&current_polygon->tvlist[vertex], &camera->mcam, &presult);
+                VECTOR4D_COPY(&current_polygon->tvlist[vertex], &presult);
+            }
+        }
+    }
 
-                // transform point
-                Mat_Mul_VECTOR4D_4X4(&curr_poly->tvlist[vertex], &cam->mcam, &presult);
-
-                // store result back
-                VECTOR4D_COPY(&curr_poly->tvlist[vertex], &presult);
-            } // end for vertex
-
-        } // end for poly
-
-    } // end World_To_Camera_RENDERLIST4DV1
-
-    ///////////////////////////////////////////////////////////////
-
-    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
-        CAM4DV1_PTR cam)
+    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
     {
         // NOTE: this is not a matrix based function
         // this function transforms each polygon in the global render list

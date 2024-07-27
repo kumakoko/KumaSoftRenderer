@@ -34,6 +34,13 @@ namespace KSR
         VECTOR3D n; // normal to the plane (not necessarily a unit vector)
     } PLANE3D, * PLANE3D_PTR;
 
+    /**************************************************************************************
+    
+    @name: KSR::POINT3D_COPY
+    @return: void
+    @param: POINT3D_PTR vdst
+    @param: POINT3D_PTR vsrc
+    *************************************************************************************/
     inline void POINT3D_COPY(POINT3D_PTR vdst, POINT3D_PTR vsrc)
     {
         vdst->x = vsrc->x; 
@@ -41,5 +48,14 @@ namespace KSR
         vdst->z = vsrc->z;
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::PLANE3D_Init
+    @return: void
+    @param: PLANE3D_PTR plane
+    @param: POINT3D_PTR p0
+    @param: VECTOR3D_PTR normal
+    @param: int normalize
+    *************************************************************************************/
     void PLANE3D_Init(PLANE3D_PTR plane, POINT3D_PTR p0, VECTOR3D_PTR normal, int normalize = 0);
 }

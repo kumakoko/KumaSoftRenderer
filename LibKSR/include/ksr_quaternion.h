@@ -60,10 +60,29 @@ namespace KSR
 
     float QUAT_Norm(QUAT_PTR q);
 
+    /**************************************************************************************
+    
+    @name: KSR::QUAT_Norm2
+    @return: float
+    @param: QUAT_PTR q
+    *************************************************************************************/
     float QUAT_Norm2(QUAT_PTR q);
 
+    /**************************************************************************************
+    
+    @name: KSR::QUAT_Normalize
+    @return: void
+    @param: QUAT_PTR q
+    @param: QUAT_PTR qn
+    *************************************************************************************/
     void QUAT_Normalize(QUAT_PTR q, QUAT_PTR qn);
 
+    /**************************************************************************************
+    
+    @name: KSR::QUAT_Normalize
+    @return: void
+    @param: QUAT_PTR q
+    *************************************************************************************/
     void QUAT_Normalize(QUAT_PTR q);
 
     void QUAT_Unit_Inverse(QUAT_PTR q, QUAT_PTR qi);

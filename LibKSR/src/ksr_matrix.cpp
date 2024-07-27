@@ -23,6 +23,10 @@ SOFTWARE.
 *********************************************************************************************/
 
 #include <cmath>
+#if defined(_MSC_VER)
+#include <xmmintrin.h>  // SSE header
+#include <pmmintrin.h>
+#endif
 #include "ksr_matrix.h"
 #include "ksr_constants.h"
 
@@ -156,35 +160,41 @@ namespace KSR
 
     void Mat_Mul_4X4(MATRIX4X4_PTR ma,MATRIX4X4_PTR mb,MATRIX4X4_PTR mprod)
     {
-        // this function multiplies two 4x4 matrices together and 
-        // and stores the result in mprod
-        // note later we will take advantage of the fact that we know
-        // that w=1 always, and that the last column of a 4x4 is
-        // always 0
+#if defined(_MSC_VER)
+        __m128 row1, row2, row3, row4;
+        __m128 col;
 
+        for (int row = 0; row < 4; row++)
+        {
+            row1 = _mm_load_ps(&ma->M[row][0]);  // 加载第一个矩阵的行
+
+            for (int col_idx = 0; col_idx < 4; col_idx++)
+            {
+                col = _mm_set_ps(mb->M[3][col_idx], mb->M[2][col_idx], mb->M[1][col_idx], mb->M[0][col_idx]);
+                row2 = _mm_mul_ps(row1, col);  // 逐元素相乘
+                row3 = _mm_hadd_ps(row2, row2); // 水平加法
+                row4 = _mm_hadd_ps(row3, row3); // 再次水平加法
+                _mm_store_ss(&mprod->M[row][col_idx], row4); // 存储结果
+            }
+        }
+#else
         for (int row = 0; row < 4; row++)
         {
             for (int col = 0; col < 4; col++)
             {
-                // compute dot product from row of ma 
-                // and column of mb
-
-                float sum = 0; // used to hold result
+                float sum = 0;
 
                 for (int index = 0; index < 4; index++)
                 {
-                    // add in next product pair
                     sum += (ma->M[row][index] * mb->M[index][col]);
-                } // end for index
+                }
 
-           // insert resulting row,col element
                 mprod->M[row][col] = sum;
+            }
+        }
+#endif
+    }
 
-            } // end for col
-
-        } // end for row
-
-    } // end Mat_Mul_4X4
 
     void Build_XYZ_Rotation_MATRIX4X4(float theta_x, // euler angles
         float theta_y,

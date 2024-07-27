@@ -30,227 +30,196 @@ SOFTWARE.
 
 namespace KSR
 {
-    void Init_CAM4DV1(CAM4DV1_PTR cam, CameraModelType cam_attr, POINT4D_PTR cam_pos, VECTOR4D_PTR cam_dir, POINT4D_PTR cam_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height)
+    void Init_CAM4DV1(CAM4DV1_PTR camera, CameraModelType camera_attribute, POINT4D_PTR camera_pos, VECTOR4D_PTR camera_direction, POINT4D_PTR camera_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height)
     {
-        cam->attr = cam_attr;              // camera attributes
+        camera->attr = camera_attribute;
 
-        VECTOR4D_COPY(&cam->pos, cam_pos); // 记录下相机的位置和观察方向
-        VECTOR4D_COPY(&cam->dir, cam_dir);
+        VECTOR4D_COPY(&camera->pos, camera_pos); // 记录下相机的位置和观察方向
+        VECTOR4D_COPY(&camera->dir, camera_direction);
 
         // for UVN 设置UVN模式下的相机的三个方向向量
-        VECTOR4D_INITXYZ(&cam->u, 1, 0, 0);  // set to +x
-        VECTOR4D_INITXYZ(&cam->v, 0, 1, 0);  // set to +y
-        VECTOR4D_INITXYZ(&cam->n, 0, 0, 1);  // set to +z        
+        VECTOR4D_INITXYZ(&camera->u, 1, 0, 0);  // 设置为+x轴方向
+        VECTOR4D_INITXYZ(&camera->v, 0, 1, 0);  // 设置为+y轴方向
+        VECTOR4D_INITXYZ(&camera->n, 0, 0, 1);  // 设置为+z轴方向        
 
-        if (cam_target != nullptr)
-            VECTOR4D_COPY(&cam->target, cam_target); // UVN target
+        if (camera_target != nullptr)
+            VECTOR4D_COPY(&camera->target, camera_target); // UVN相机的目标位置
         else
-            VECTOR4D_ZERO(&cam->target);
+            VECTOR4D_ZERO(&camera->target);
 
-        cam->near_clip_z = near_clip_z;     // 记录下远近视截面
-        cam->far_clip_z = far_clip_z;
-        cam->viewport_width = viewport_width;   // 记录下视口的高宽值，中心点值，宽高比
-        cam->viewport_height = viewport_height;
-        cam->viewport_center_x = (viewport_width - 1) / 2;
-        cam->viewport_center_y = (viewport_height - 1) / 2;
-        cam->aspect_ratio = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
-        cam->fov = fov; // 记录下FOV值
-        cam->viewplane_width = 2.0f; // set the viewplane dimensions up, they will be 2 x (2/ar)
-        cam->viewplane_height = 2.0f / cam->aspect_ratio;
-        // 记录下M2V V2P P2S矩阵
-        MAT_IDENTITY_4X4(&cam->mcam);
-        MAT_IDENTITY_4X4(&cam->mper);
-        MAT_IDENTITY_4X4(&cam->mscr);
+        camera->near_clip_z = near_clip_z;     // 记录下远近视截面
+        camera->far_clip_z = far_clip_z;
+        camera->viewport_width = viewport_width;   // 记录下视口的高宽值，中心点值，宽高比
+        camera->viewport_height = viewport_height;
+        camera->viewport_center_x = (viewport_width - 1) / 2;
+        camera->viewport_center_y = (viewport_height - 1) / 2;
+        camera->aspect_ratio = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
+        camera->fov = fov; // 记录下FOV值
+        camera->viewplane_width = 2.0f;
+        camera->viewplane_height = 2.0f / camera->aspect_ratio;
 
+        // 设置M2V V2P P2S矩阵为单位矩阵
+        MAT_IDENTITY_4X4(&camera->mcam);
+        MAT_IDENTITY_4X4(&camera->mper);
+        MAT_IDENTITY_4X4(&camera->mscr);
 
+        // 根据视平面大小和FOV计算出焦距（focal）
+        float tan_fov_div2 = tanf(DEG_TO_RAD(fov / 2.0f));
+        camera->view_dist = 0.5f * (camera->viewplane_width) * tan_fov_div2;
 
-        // now we know fov and we know the viewplane dimensions plug into formula and
-        // solve for view distance parameters
-        float tan_fov_div2 = tanf(DEG_TO_RAD(fov / 2));
-
-        cam->view_dist = 0.5f * (cam->viewplane_width) * tan_fov_div2;
-
-        // test for 90 fov first since it's easy :)
+        // 如果FOV恰好为90度时，计算视截体的裁剪面会取巧得多
         if (fov == 90.0f)
         {
-            // set up the clipping planes -- easy for 90 degrees!
-            POINT3D pt_origin; // point on the plane
-            VECTOR3D_INITXYZ(&pt_origin, 0, 0, 0);
+            // 开始建立视截体的裁剪面，首先指定裁剪面上的一个点和法线，使用点法式面
+            POINT3D plane_origin;  // 面原点
+            VECTOR3D plane_normal; // 面法线
+            VECTOR3D_INITXYZ(&plane_origin, 0, 0, 0);
 
-            VECTOR3D vn; // normal to plane
+            /*
+            当FOV为90度时右视截体裁剪面的法线的示意图
+             \   | A (1,0,1)
+              \  |  /\
+               \ | /  \
+                \|/    \ 这条便是c的法线AB,所以为(1,0,-1)
+                 O------B
+                (0,0,0)（1,0,0)
+            */
+            // 右视截体裁剪面，因为FOV是90度，所以右视截体裁剪面的法线
+            VECTOR3D_INITXYZ(&plane_normal, 1.0f, 0.0f, -1.0f);
+            PLANE3D_Init(&camera->rt_clip_plane, &plane_origin, &plane_normal, 1);
 
-            // right clipping plane 
-            VECTOR3D_INITXYZ(&vn, 1, 0, -1); // x=z plane
-            PLANE3D_Init(&cam->rt_clip_plane, &pt_origin, &vn, 1);
+            // 左视截体裁剪面
+            VECTOR3D_INITXYZ(&plane_normal, -1.0f, 0.0f, -1.0f);
+            PLANE3D_Init(&camera->lt_clip_plane, &plane_origin, &plane_normal, 1);
 
-            // left clipping plane
-            VECTOR3D_INITXYZ(&vn, -1, 0, -1); // -x=z plane
-            PLANE3D_Init(&cam->lt_clip_plane, &pt_origin, &vn, 1);
+            // 上视截体裁剪面
+            VECTOR3D_INITXYZ(&plane_normal, 0.0f, 1.0f, -1.0f);
+            PLANE3D_Init(&camera->tp_clip_plane, &plane_origin, &plane_normal, 1);
 
-            // top clipping plane
-            VECTOR3D_INITXYZ(&vn, 0, 1, -1); // y=z plane
-            PLANE3D_Init(&cam->tp_clip_plane, &pt_origin, &vn, 1);
-
-            // bottom clipping plane
-            VECTOR3D_INITXYZ(&vn, 0, -1, -1); // -y=z plane
-            PLANE3D_Init(&cam->bt_clip_plane, &pt_origin, &vn, 1);
-        } // end if d=1
+            // 下视截体裁剪面
+            VECTOR3D_INITXYZ(&plane_normal, 0.0f, -1.0f, -1.0f);
+            PLANE3D_Init(&camera->bt_clip_plane, &plane_origin, &plane_normal, 1);
+        }
         else
         {
-            // now compute clipping planes yuck!
-            POINT3D pt_origin; // point on the plane
-            VECTOR3D_INITXYZ(&pt_origin, 0, 0, 0);
+            POINT3D plane_origin;  // 面原点
+            VECTOR3D plane_normal; // 面法线
+            VECTOR3D_INITXYZ(&plane_origin, 0, 0, 0);
 
-            VECTOR3D vn; // normal to plane
+            // 首先计算右视截体裁剪面在平面xz和平面yz上的2D投影的向量，然后计算与这两个向量都垂直的向量，便是右视截体裁剪面的面法线
+            VECTOR3D_INITXYZ(&plane_normal, camera->view_dist, 0, -camera->viewplane_width / 2.0f);
+            PLANE3D_Init(&camera->rt_clip_plane, &plane_origin, &plane_normal, 1);
 
-            // since we don't have a 90 fov, computing the normals
-            // are a bit tricky, there are a number of geometric constructions
-            // that solve the problem, but I'm going to solve for the
-            // vectors that represent the 2D projections of the frustrum planes
-            // on the x-z and y-z planes and then find perpendiculars to them
+            // 左视截体裁剪面，因为和右视截体裁剪面关于z轴对称的，所以只需要把左视截体裁剪面法线的x分量取负数即得
+            VECTOR3D_INITXYZ(&plane_normal, -camera->view_dist, 0, -camera->viewplane_width / 2.0f);
+            PLANE3D_Init(&camera->lt_clip_plane, &plane_origin, &plane_normal, 1);
 
-            // right clipping plane, check the math on graph paper 
-            VECTOR3D_INITXYZ(&vn, cam->view_dist, 0, -cam->viewplane_width / 2.0f);
-            PLANE3D_Init(&cam->rt_clip_plane, &pt_origin, &vn, 1);
+            // 上视截体裁剪面和下视截体裁剪面都按此法构建
+            VECTOR3D_INITXYZ(&plane_normal, 0, camera->view_dist, -camera->viewplane_width / 2.0f);
+            PLANE3D_Init(&camera->tp_clip_plane, &plane_origin, &plane_normal, 1);
 
-            // left clipping plane, we can simply reflect the right normal about
-            // the z axis since the planes are symetric about the z axis
-            // thus invert x only
-            VECTOR3D_INITXYZ(&vn, -cam->view_dist, 0, -cam->viewplane_width / 2.0f);
-            PLANE3D_Init(&cam->lt_clip_plane, &pt_origin, &vn, 1);
-
-            // top clipping plane, same construction
-            VECTOR3D_INITXYZ(&vn, 0, cam->view_dist, -cam->viewplane_width / 2.0f);
-            PLANE3D_Init(&cam->tp_clip_plane, &pt_origin, &vn, 1);
-
-            // bottom clipping plane, same inversion
-            VECTOR3D_INITXYZ(&vn, 0, -cam->view_dist, -cam->viewplane_width / 2.0f);
-            PLANE3D_Init(&cam->bt_clip_plane, &pt_origin, &vn, 1);
-        } // end else
-
-    } // end Init_CAM4DV1
+            VECTOR3D_INITXYZ(&plane_normal, 0, -camera->view_dist, -camera->viewplane_width / 2.0f);
+            PLANE3D_Init(&camera->bt_clip_plane, &plane_origin, &plane_normal, 1);
+        }
+    }
 
     void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, CameraRotationSequences cam_rot_seq)
     {
-        // this creates a camera matrix based on Euler angles 
-        // and stores it in the sent camera object
-        // if you recall from chapter 6 to create the camera matrix
-        // we need to create a transformation matrix that looks like:
+        /*
+        根据欧拉角度计算相机变换矩阵
+        即相机平移矩阵的逆矩阵乘以相机绕yxz轴的旋转矩阵的逆矩阵
+        Mcam = mt(-1) * my(-1) * mx(-1) * mz(-1)
+        采用何种旋转顺序可以任意，xyz，xzy，zyx，等等
+        */
+        MATRIX4X4 mt_inv;  // 相机平移矩阵的逆矩阵
+        MATRIX4X4 mx_inv;  // 相机绕x轴的旋转矩阵的逆矩阵
+        MATRIX4X4 my_inv;  // 相机绕y轴的旋转矩阵的逆矩阵
+        MATRIX4X4 mz_inv;  // 相机绕z轴的旋转矩阵的逆矩阵
+        MATRIX4X4 mrot;    // 所有逆旋转矩阵的乘积
+        MATRIX4X4 mtmp;    // 临时中间矩阵，计算使用
 
-        // Mcam = mt(-1) * my(-1) * mx(-1) * mz(-1)
-        // that is the inverse of the camera translation matrix mutilplied
-        // by the inverses of yxz, in that order, however, the order of
-        // the rotation matrices is really up to you, so we aren't going
-        // to force any order, thus its programmable based on the value
-        // of cam_rot_seq which can be any value CAM_ROT_SEQ_XYZ where 
-        // XYZ can be in any order, YXZ, ZXY, etc.
-
-        MATRIX4X4 mt_inv,  // inverse camera translation matrix
-            mx_inv,  // inverse camera x axis rotation matrix
-            my_inv,  // inverse camera y axis rotation matrix
-            mz_inv,  // inverse camera z axis rotation matrix
-            mrot,    // concatenated inverse rotation matrices
-            mtmp;    // temporary working matrix
-
-
-        // step 1: create the inverse translation matrix for the camera
-        // position
-        Mat_Init_4X4(&mt_inv, 1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
+        // 第1步：根据相机的平移位置算出相机平移矩阵的逆矩阵
+        // 这是因为，如果相机把自身的坐标变换到世界坐标用到的平移矩阵为M，
+        // 那么把世界空间下的物体变换到相机空间下的平移矩阵自然就是M的逆矩阵
+        Mat_Init_4X4(&mt_inv,
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
             -cam->pos.x, -cam->pos.y, -cam->pos.z, 1);
 
-        // step 2: create the inverse rotation sequence for the camera
-        // rember either the transpose of the normal rotation matrix or
-        // plugging negative values into each of the rotations will result
-        // in an inverse matrix
-
-        // first compute all 3 rotation matrices
-
-        // extract out euler angles
+        // 要计算旋转矩阵的逆矩阵，可以将它转置，也可以将每个旋转角度取负来求得
+        // 从Direction成员变量中，取出三个方向的欧拉角
         float theta_x = cam->dir.x;
         float theta_y = cam->dir.y;
         float theta_z = cam->dir.z;
 
-        // compute the sine and cosine of the angle x
-        float cos_theta = cosf(theta_x);  // no change since cos(-x) = cos(x)
-        float sin_theta = -sinf(theta_x); // sin(-x) = -sin(x)
+        // 根据欧拉角计算出xyz轴三个方向的旋转矩阵的逆矩阵，每个轴的欧拉角分别求出正余弦值
+        float cos_theta = cosf(theta_x);  // cos(-x) == cos(x)
+        float sin_theta = -sinf(theta_x); // sin(-x) == -sin(x)
 
-        // set the matrix up 
-        Mat_Init_4X4(&mx_inv, 1, 0, 0, 0,
-            0, cos_theta, sin_theta, 0,
-            0, -sin_theta, cos_theta, 0,
-            0, 0, 0, 1);
+        // x轴上的旋转矩阵的逆矩阵
+        Mat_Init_4X4(&mx_inv,
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, cos_theta, sin_theta, 0.0f,
+            0.0f, -sin_theta, cos_theta, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
 
-        // compute the sine and cosine of the angle y
-        cos_theta = cosf(theta_y);  // no change since cos(-x) = cos(x)
-        sin_theta = -sinf(theta_y); // sin(-x) = -sin(x)
+        cos_theta = cosf(theta_y);  // cos(-x) == cos(x)
+        sin_theta = -sinf(theta_y); // sin(-x) == -sin(x)
 
-        // set the matrix up 
-        Mat_Init_4X4(&my_inv, cos_theta, 0, -sin_theta, 0,
-            0, 1, 0, 0,
-            sin_theta, 0, cos_theta, 0,
-            0, 0, 0, 1);
+        // y轴上的旋转矩阵的逆矩阵
+        Mat_Init_4X4(&my_inv,
+            cos_theta, 0.0f, -sin_theta, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            sin_theta, 0.0f, cos_theta, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
 
-        // compute the sine and cosine of the angle z
-        cos_theta = cosf(theta_z);  // no change since cos(-x) = cos(x)
-        sin_theta = -sinf(theta_z); // sin(-x) = -sin(x)
+        cos_theta = cosf(theta_z);  // cos(-x) == cos(x)
+        sin_theta = -sinf(theta_z); // sin(-x) == -sin(x)
 
-        // set the matrix up 
-        Mat_Init_4X4(&mz_inv, cos_theta, sin_theta, 0, 0,
-            -sin_theta, cos_theta, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
+        Mat_Init_4X4(&mz_inv,
+            cos_theta, sin_theta, 0.0f, 0.0f,
+            -sin_theta, cos_theta, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
 
-        // now compute inverse camera rotation sequence
+        // 根据指定的旋转顺序构建旋转矩阵
         switch (cam_rot_seq)
         {
         case CAM_ROT_SEQ_XYZ:
-        {
             Mat_Mul_4X4(&mx_inv, &my_inv, &mtmp);
             Mat_Mul_4X4(&mtmp, &mz_inv, &mrot);
-        } break;
-
+            break;
         case CAM_ROT_SEQ_YXZ:
-        {
             Mat_Mul_4X4(&my_inv, &mx_inv, &mtmp);
             Mat_Mul_4X4(&mtmp, &mz_inv, &mrot);
-        } break;
-
+            break;
         case CAM_ROT_SEQ_XZY:
-        {
             Mat_Mul_4X4(&mx_inv, &mz_inv, &mtmp);
             Mat_Mul_4X4(&mtmp, &my_inv, &mrot);
-        } break;
-
+            break;
         case CAM_ROT_SEQ_YZX:
-        {
             Mat_Mul_4X4(&my_inv, &mz_inv, &mtmp);
             Mat_Mul_4X4(&mtmp, &mx_inv, &mrot);
-        } break;
-
+            break;
         case CAM_ROT_SEQ_ZYX:
-        {
             Mat_Mul_4X4(&mz_inv, &my_inv, &mtmp);
             Mat_Mul_4X4(&mtmp, &mx_inv, &mrot);
-        } break;
-
+            break;
         case CAM_ROT_SEQ_ZXY:
-        {
             Mat_Mul_4X4(&mz_inv, &mx_inv, &mtmp);
             Mat_Mul_4X4(&mtmp, &my_inv, &mrot);
+            break;
+        default:
+            break;
+        }
 
-        } break;
-
-        default: break;
-        } // end switch
-
-  // now mrot holds the concatenated product of inverse rotation matrices
-  // multiply the inverse translation matrix against it and store in the 
-  // camera objects' camera transform matrix we are done!
+        // now mrot holds the concatenated product of inverse rotation matrices
+        // multiply the inverse translation matrix against it and store in the 
+        // camera objects' camera transform matrix we are done!
+        // 用mrot（逆旋转矩阵），乘以逆平移矩阵
         Mat_Mul_4X4(&mt_inv, &mrot, &cam->mcam);
-
-    } // end Build_CAM4DV1_Matrix_Euler
+    }
 
     void Build_CAM4DV1_Matrix_UVN(CAM4DV1_PTR cam, int mode)
     {
@@ -266,8 +235,8 @@ namespace KSR
         //     as usual
 
         MATRIX4X4 mt_inv,  // inverse camera translation matrix
-            mt_uvn,  // the final uvn matrix
-            mtmp;    // temporary working matrix
+            mt_uvn;  // the final uvn matrix
+
 
         // step 1: create the inverse translation matrix for the camera
         // position

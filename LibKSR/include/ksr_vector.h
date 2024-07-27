@@ -150,10 +150,31 @@ namespace KSR
     *************************************************************************************/
     float VECTOR3D_Length(VECTOR3D_PTR va);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR3D_Normalize
+    @return: void
+    @param: VECTOR3D_PTR va
+    *************************************************************************************/
     void VECTOR3D_Normalize(VECTOR3D_PTR va);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR3D_Normalize
+    @return: void
+    @param: VECTOR3D_PTR va
+    @param: VECTOR3D_PTR vn
+    *************************************************************************************/
     void VECTOR3D_Normalize(VECTOR3D_PTR va, VECTOR3D_PTR vn);
 
+    /**************************************************************************************
+    
+    @name: KSR::Fast_Distance_3D
+    @return: float
+    @param: float fx
+    @param: float fy
+    @param: float fz
+    *************************************************************************************/
     float Fast_Distance_3D(float fx, float fy, float fz);
     // ---------------------- vector 4d ---------------------- //
 
@@ -174,6 +195,13 @@ namespace KSR
 
     void VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vsum);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR4D_Add
+    @return: KSR::VECTOR4D
+    @param: VECTOR4D_PTR va
+    @param: VECTOR4D_PTR vb
+    *************************************************************************************/
     VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb);
 
     void VECTOR4D_Sub(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vdiff);
@@ -188,13 +216,45 @@ namespace KSR
 
     void VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vn);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR4D_Cross
+    @return: KSR::VECTOR4D
+    @param: VECTOR4D_PTR va
+    @param: VECTOR4D_PTR vb
+    *************************************************************************************/
     VECTOR4D VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR4D_Length
+    @return: float
+    @param: VECTOR4D_PTR va
+    *************************************************************************************/
     float VECTOR4D_Length(VECTOR4D_PTR va);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR4D_Length_Fast
+    @return: float
+    @param: VECTOR4D_PTR va
+    *************************************************************************************/
     float VECTOR4D_Length_Fast(VECTOR4D_PTR va);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR4D_Normalize
+    @return: void
+    @param: VECTOR4D_PTR va
+    *************************************************************************************/
     void VECTOR4D_Normalize(VECTOR4D_PTR va);
 
+    /**************************************************************************************
+    
+    @name: KSR::VECTOR4D_Normalize
+    @return: void
+    @param: VECTOR4D_PTR va
+    @param: VECTOR4D_PTR vn
+    *************************************************************************************/
     void VECTOR4D_Normalize(VECTOR4D_PTR va, VECTOR4D_PTR vn);
 }

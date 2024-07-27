@@ -121,19 +121,19 @@ namespace KSR
 
     @name: KSR::Init_CAM4DV1
     @return: void
-    @param: CAM4DV1_PTR cam
-    @param: CameraModelType cam_attr    摄像机的类型，欧拉相机或者时UVN相机
-    @param: POINT4D_PTR cam_pos         摄像机在世界坐标系下的位置值
-    @param: VECTOR4D_PTR cam_dir        摄像机在世界坐标系下的观察朝向
-    @param: POINT4D_PTR cam_target      如果摄像机是UVN相机的话，摄像机的观察目标在世界坐标系下的位置值
-    @param: float near_clip_z           近截平面
-    @param: float far_clip_z            远截平面
-    @param: float fov                   Field of View
-    @param: float viewport_width        视口宽度
-    @param: float viewport_height       视口高度
+    @param: CAM4DV1_PTR camera
+    @param: CameraModelType camera_attribute    摄像机的类型，欧拉相机或者时UVN相机
+    @param: POINT4D_PTR camera_pos              摄像机在世界坐标系下的位置值
+    @param: VECTOR4D_PTR camera_direction       摄像机在世界坐标系下的观察朝向
+    @param: POINT4D_PTR cam_target              如果摄像机是UVN相机的话，摄像机的观察目标在世界坐标系下的位置值
+    @param: float near_clip_z                   近截平面
+    @param: float far_clip_z                    远截平面
+    @param: float fov                           Field of View
+    @param: float viewport_width                视口宽度
+    @param: float viewport_height               视口高度
     *************************************************************************************/
-    void Init_CAM4DV1(CAM4DV1_PTR cam, CameraModelType  cam_attr, POINT4D_PTR cam_pos, VECTOR4D_PTR cam_dir, 
-        POINT4D_PTR cam_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height);
+    void Init_CAM4DV1(CAM4DV1_PTR camera, CameraModelType camera_attribute, POINT4D_PTR camera_pos, VECTOR4D_PTR camera_direction, 
+        POINT4D_PTR camera_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height);
 
     /**************************************************************************************
     

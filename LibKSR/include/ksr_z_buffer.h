@@ -55,7 +55,20 @@ namespace KSR
      ****************************************************************************************************************/
     int Create_Zbuffer(ZBUFFERV1_PTR zb, int width, int height, int attr);
 
+    /**************************************************************************************
+    
+    @name: KSR::Delete_Zbuffer
+    @return: int
+    @param: ZBUFFERV1_PTR zb
+    *************************************************************************************/
     int Delete_Zbuffer(ZBUFFERV1_PTR zb);
 
+    /**************************************************************************************
+    
+    @name: KSR::Clear_Zbuffer
+    @return: void
+    @param: ZBUFFERV1_PTR zb
+    @param: std::uint32_t data
+    *************************************************************************************/
     void Clear_Zbuffer(ZBUFFERV1_PTR zb, std::uint32_t data);
 }

@@ -27,5 +27,12 @@ SOFTWARE.
 
 namespace KSR
 {
+    /**************************************************************************************
+    
+    @name: KSR::MessageBox
+    @return: void
+    @param: const std::wstring & title
+    @param: const std::wstring & content
+    *************************************************************************************/
     void MessageBox(const std::wstring& title,const std::wstring& content);
 }

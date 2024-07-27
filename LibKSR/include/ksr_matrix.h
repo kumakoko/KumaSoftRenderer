@@ -135,7 +135,11 @@ namespace KSR
     {
         union
         {
+#if defined _MSC_VER
+            __declspec(align(16)) float M[4][4];
+#else
             float M[4][4];
+#endif
             struct
             {
                 float M00, M01, M02, M03;
@@ -164,7 +168,7 @@ namespace KSR
     void Mat_Mul_3X3(MATRIX3X3_PTR ma, MATRIX3X3_PTR mb, MATRIX3X3_PTR mprod);
 
     /**************************************************************************************
-
+    4x4矩阵ma乘以4x4矩阵mb，将将结果存储在mprod中
     @name: KSR::Mat_Mul_4X4
     @return: void
     @param: MATRIX4X4_PTR ma
@@ -228,47 +232,108 @@ namespace KSR
     extern const MATRIX3X3 IMAT_3X3;
 
     // 2x2 identity matrix
-    extern  const MATRIX2X2 IMAT_2X2;
+    extern const MATRIX2X2 IMAT_2X2;
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_IDENTITY_2X2
+    @return: void
+    @param: MATRIX2X2 * m
+    *************************************************************************************/
     inline void MAT_IDENTITY_2X2(MATRIX2X2* m)
     {
         std::memcpy(m, &IMAT_2X2, sizeof(MATRIX2X2));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_IDENTITY_3X3
+    @return: void
+    @param: MATRIX3X3 * m
+    *************************************************************************************/
     inline void MAT_IDENTITY_3X3(MATRIX3X3* m)
     {
         std::memcpy(m, &IMAT_3X3, sizeof(MATRIX3X3));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_IDENTITY_4X4
+    @return: void
+    @param: MATRIX4X4 * m
+    *************************************************************************************/
     inline void MAT_IDENTITY_4X4(MATRIX4X4* m)
     {
         std::memcpy(m, &IMAT_4X4, sizeof(MATRIX4X4));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_IDENTITY_4X3
+    @return: void
+    @param: MATRIX4X3 * m
+    *************************************************************************************/
     inline void MAT_IDENTITY_4X3(MATRIX4X3* m)
     {
         std::memcpy(m, &IMAT_4X3, sizeof(MATRIX4X3));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_COPY_2X2
+    @return: void
+    @param: MATRIX2X2 * src_mat
+    @param: MATRIX2X2 * dest_mat
+    *************************************************************************************/
     inline void MAT_COPY_2X2(MATRIX2X2* src_mat, MATRIX2X2* dest_mat)
     {
         std::memcpy(dest_mat, src_mat, sizeof(MATRIX2X2));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_COPY_3X3
+    @return: void
+    @param: MATRIX3X3 * src_mat
+    @param: MATRIX3X3 * dest_mat
+    *************************************************************************************/
     inline void MAT_COPY_3X3(MATRIX3X3* src_mat, MATRIX3X3* dest_mat)
     {
         std::memcpy(dest_mat, src_mat, sizeof(MATRIX3X3));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_COPY_4X4
+    @return: void
+    @param: MATRIX4X4 * src_mat
+    @param: MATRIX4X4 * dest_mat
+    *************************************************************************************/
     inline void MAT_COPY_4X4(MATRIX4X4* src_mat, MATRIX4X4* dest_mat)
     {
         std::memcpy(dest_mat, src_mat, sizeof(MATRIX4X4));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::MAT_COPY_4X3
+    @return: void
+    @param: MATRIX4X3 * src_mat
+    @param: MATRIX4X3 * dest_mat
+    *************************************************************************************/
     inline void MAT_COPY_4X3(MATRIX4X3* src_mat, MATRIX4X3* dest_mat)
     {
         std::memcpy(dest_mat, src_mat, sizeof(MATRIX4X3));
     }
 
+    /**************************************************************************************
+    
+    @name: KSR::Build_XYZ_Rotation_MATRIX4X4
+    @return: void
+    @param: float theta_x
+    @param: float theta_y
+    @param: float theta_z
+    @param: MATRIX4X4_PTR mrot
+    *************************************************************************************/
     void Build_XYZ_Rotation_MATRIX4X4(float theta_x, float theta_y, float theta_z, MATRIX4X4_PTR mrot);
 }

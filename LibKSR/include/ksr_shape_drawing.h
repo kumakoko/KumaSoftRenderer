@@ -34,11 +34,94 @@ namespace KSR
     extern int min_clip_y;
     extern int max_clip_y;
 
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Clip_Line
+    @return: int
+    @param: int x0
+    @param: int y0
+    @param: int x1
+    @param: int y1
+    @param: int color
+    @param: uint8_t * dest_buffer
+    @param: int lpitch
+    *************************************************************************************/
     int Draw_Clip_Line(int x0, int y0, int x1, int y1, int color, uint8_t* dest_buffer, int lpitch);
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Clip_Line16
+    @return: int
+    @param: int x0
+    @param: int y0
+    @param: int x1
+    @param: int y1
+    @param: int color
+    @param: uint8_t * dest_buffer
+    @param: int lpitch
+    *************************************************************************************/
     int Draw_Clip_Line16(int x0, int y0, int x1, int y1, int color, uint8_t* dest_buffer, int lpitch);
+
+    /**************************************************************************************
+    
+    @name: KSR::Clip_Line
+    @return: int
+    @param: int & x1
+    @param: int & y1
+    @param: int & x2
+    @param: int & y2
+    *************************************************************************************/
     int Clip_Line(int& x1, int& y1, int& x2, int& y2);
+
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Line
+    @return: int
+    @param: int xo
+    @param: int yo
+    @param: int x1
+    @param: int y1
+    @param: int color
+    @param: uint8_t * vb_start
+    @param: int lpitch
+    *************************************************************************************/
     int Draw_Line(int xo, int yo, int x1, int y1, int color, uint8_t* vb_start, int lpitch);
+
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Line16
+    @return: int
+    @param: int xo
+    @param: int yo
+    @param: int x1
+    @param: int y1
+    @param: int color
+    @param: uint8_t * vb_start
+    @param: int lpitch
+    *************************************************************************************/
     int Draw_Line16(int xo, int yo, int x1, int y1, int color, uint8_t* vb_start, int lpitch);
+
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Pixel
+    @return: int
+    @param: int x
+    @param: int y
+    @param: int color
+    @param: uint8_t * video_buffer
+    @param: int lpitch
+    *************************************************************************************/
     int Draw_Pixel(int x, int y, int color, uint8_t* video_buffer, int lpitch);
+
+    /**************************************************************************************
+    
+    @name: KSR::Draw_Rectangle
+    @return: void
+    @param: int x1
+    @param: int y1
+    @param: int x2
+    @param: int y2
+    @param: uint32_t color
+    @param: SDL_Surface * lpdds
+    *************************************************************************************/
     void Draw_Rectangle(int x1, int y1, int x2, int y2, uint32_t color, SDL_Surface* lpdds);
 }
