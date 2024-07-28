@@ -121,7 +121,6 @@ namespace KSR
     *************************************************************************************/
     void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POINT4D_PTR world_pos, TransformControlFlag coord_select = TRANSFORM_LOCAL_TO_TRANS);
 
-
     /**************************************************************************************
     此函数根据传入的观察变换矩阵（相机变换矩阵），将渲染列表中的每个多边形的坐标变换到基于观察空间（相机空间）
 
@@ -131,7 +130,7 @@ namespace KSR
     将物体转换为多边形的操作是在物体的剔除、把物体的局部坐标系变换到世界坐标系下，以及背面消除之后
     进行的。这样子做可以最大限度地减少了每个物体中被插入到渲染列表中的多边形的数量。
 
-    本函数已经假设了多边形已经进行了局部坐标系到世界坐标系的变换。且这些多边形的坐标数据已经存储
+    本函数假设了多边形已经进行了局部坐标系到世界坐标系的变换。且这些多边形的坐标数据已经存储
     在成员变量tvlist中了
 
     @name: KSR::World_To_Camera_RENDERLIST4DV1
@@ -141,9 +140,22 @@ namespace KSR
     *************************************************************************************/
     void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list,CAM4DV1_PTR camera);
 
-    
+    /**************************************************************************************
+    此函数不基于变换矩阵。它根据传入的相机对象实例，将render list中的每个多边形的坐标变换为透视投影
+    坐标。
 
-    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
+    如果在流水线的上游已经将每个物体转换为多边形了且将其插入到render list中的话，就是使用此函数来
+    进行变换。
+
+    本函数假设了多边形已经进行了把坐标变换到观察空间（相机空间）坐标系。且这些多边形的坐标数据已经存储
+    在成员变量tvlist中了
+
+    @name: KSR::Camera_To_Perspective_RENDERLIST4DV1
+    @return: void
+    @param: RENDERLIST4DV1_PTR render_list
+    @param: CAM4DV1_PTR camera
+    *************************************************************************************/
+    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list,CAM4DV1_PTR camera);
 
     
 

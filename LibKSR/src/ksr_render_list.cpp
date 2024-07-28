@@ -158,7 +158,7 @@ namespace KSR
         }
     }
 
-    void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POINT4D_PTR world_pos, TransformControlFlag coord_select /*= TRANSFORM_LOCAL_TO_TRANS*/)
+    void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POINT4D_PTR world_pos, TransformControlFlag coord_select)
     {
         if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
         {
@@ -211,52 +211,23 @@ namespace KSR
         }
     }
 
-    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
+    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera)
     {
-        // NOTE: this is not a matrix based function
-        // this function transforms each polygon in the global render list
-        // into perspective coordinates, based on the 
-        // sent camera object, 
-        // you would use this function instead of the object based function
-        // if you decided earlier in the pipeline to turn each object into 
-        // a list of polygons and then add them to the global render list
-
-        // transform each polygon in the render list into camera coordinates
-        // assumes the render list has already been transformed to world
-        // coordinates and the result is in tvlist[] of each polygon object
-
-        for (int poly = 0; poly < rend_list->num_polys; poly++)
+        for (int poly = 0; poly < render_list->num_polys; poly++)
         {
-            // acquire current polygon
-            POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+            POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
 
-            // is this polygon valid?
-            // transform this polygon if and only if it's not clipped, not culled,
-            // active, and visible, note however the concept of "backface" is 
-            // irrelevant in a wire frame engine though
-            if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            if (!_Polygon4DV1NeedToRender(current_polygon))
+                continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-            // all good, let's transform 
             for (int vertex = 0; vertex < 3; vertex++)
             {
-                float z = curr_poly->tvlist[vertex].z;
-
-                // transform the vertex by the view parameters in the camera
-                curr_poly->tvlist[vertex].x = cam->view_dist * curr_poly->tvlist[vertex].x / z;
-                curr_poly->tvlist[vertex].y = cam->view_dist * curr_poly->tvlist[vertex].y * cam->aspect_ratio / z;
-                // z = z, so no change
-
-                // not that we are NOT dividing by the homogenous w coordinate since
-                // we are not using a matrix operation for this version of the function 
-
-            } // end for vertex
-
-        } // end for poly
-
-    } // end Camera_To_Perspective_RENDERLIST4DV1
+                float z = current_polygon->tvlist[vertex].z; // z坐标不变因为没使用变换矩阵，所以不用把分量除以w
+                current_polygon->tvlist[vertex].x = camera->view_dist * current_polygon->tvlist[vertex].x / z;
+                current_polygon->tvlist[vertex].y = camera->view_dist * current_polygon->tvlist[vertex].y * camera->aspect_ratio / z;
+            }
+        }
+    }
 
     ////////////////////////////////////////////////////////////////
 

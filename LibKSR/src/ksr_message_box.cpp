@@ -29,7 +29,7 @@ SOFTWARE.
 namespace KSR
 {
 #if defined(WIN32) || defined(_WIN32)
-    void MessageBox(const std::wstring& title, const std::wstring& content)
+    void ErrorMessageBox(const std::wstring& title, const std::wstring& content)
     {
         ::ShowCursor(true);
 

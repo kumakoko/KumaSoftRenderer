@@ -81,6 +81,12 @@
     <ClInclude Include="include\ksr_string_convertor.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\ksr_app.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ksr_aligned_class.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ksr_matrix.cpp">
@@ -141,6 +147,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\ksr_string_convertor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ksr_app.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

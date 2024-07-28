@@ -66,7 +66,7 @@ namespace KSR
         StringConvertor::ANSItoUTF16LE(SDL_GetError(), error_desc);
         std::wstringstream wss;
         wss << message_ << L"\n" << file_name << L"\nLine " << line_;
-        wss << L"\SDL Error Code: " << SDLErrorCode;
+        wss << L"SDL Error Code: " << SDLErrorCode;
         wss << L"\nSDL Error Desc: " << error_desc;
         message_ = wss.str();
     }
@@ -80,7 +80,7 @@ namespace KSR
     {
         std::wstring output;
         output.append(this->AssembleOutput()).append(L"\nQuit Program?");
-        MessageBox(title_, output);
+        ErrorMessageBox(title_, output);
     }
 
     void Error::Notify() const 
@@ -88,6 +88,6 @@ namespace KSR
 #if defined(WIN32) || defined(_WIN32)
         ::ShowCursor(true);
 #endif
-        MessageBox(title_, AssembleOutput());
+        ErrorMessageBox(title_, AssembleOutput());
     }
 }

@@ -34,5 +34,5 @@ namespace KSR
     @param: const std::wstring & title
     @param: const std::wstring & content
     *************************************************************************************/
-    void MessageBox(const std::wstring& title,const std::wstring& content);
+    void ErrorMessageBox(const std::wstring& title,const std::wstring& content);
 }

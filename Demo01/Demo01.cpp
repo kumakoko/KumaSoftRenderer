@@ -26,7 +26,7 @@ static void ProcessInput(SDL_Event& event, bool& s_IsRunning);
 static void HandleMouseDrag(SDL_Window* window, SDL_Event& event);
 
 static void InitSinglePolygon();
-
+/*
 int main(int argc, char* argv[])
 {
     KSR::InitializeGraphicSystem(s_ScreenWidth, s_ScreenHeight, "[Kuma Soft Renderer] : 01-Triangle");
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
         KSR::DDraw_Fill_Surface(KSR::lpddsback, 0);
         KSR::DDraw_Fill_Surface(KSR::gScreenSurface, 0);
 
-        // initialize the renderlist
+        // 初始化render list，即清空render list
         KSR::Reset_RENDERLIST4DV1(&s_RenderList);
 
         // insert polygon into the renderlist
@@ -65,20 +65,19 @@ int main(int argc, char* argv[])
         if (s_RotationAngleY >= 360.0f)
             s_RotationAngleY = 0.0f;
 
-
-        // rotate the local coords of single polygon in renderlist
+        // 把render list中的多边形的顶点坐标，基于其自身的局部坐标系，进行绕Y轴旋转
         KSR::Transform_RENDERLIST4DV1(&s_RenderList, &s_RotationMatrix, KSR::TRANSFORM_LOCAL_ONLY);
 
-        // perform local/model to world transform
+        // 把多边形坐标，从模型空间，变换到世界空间
         KSR::Model_To_World_RENDERLIST4DV1(&s_RenderList, &s_SinglePolygonPosition);
 
-        // generate camera matrix
+        // 构建view matrix，即把顶点从世界空间变换到观察空间的矩阵
         KSR::Build_CAM4DV1_Matrix_Euler(&s_Camera, KSR::CAM_ROT_SEQ_ZYX);
 
-        // apply world to camera transform
+        // 把多边形坐标，从世界空间，变换到观察空间
         KSR::World_To_Camera_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
-        // apply camera to perspective transformation
+        // 把多边形坐标从观察空间，变换到透视投影空间
         KSR::Camera_To_Perspective_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
         // apply screen transform
@@ -102,6 +101,7 @@ int main(int argc, char* argv[])
     KSR::ShutdownGraphicSystem();
     return 0;
 }
+*/
 
 // 处理输入事件
 void ProcessInput(SDL_Event& event, bool& s_IsRunning)
