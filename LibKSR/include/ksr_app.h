@@ -50,11 +50,11 @@ namespace KSR
 
         @name: KSR::App::InitRenderer
         @return: void
-        @param: uint32_t wnd_width      窗口的宽度
-        @param: uint32_t wnd_height     窗口的高度
+        @param: uint32_t wnd_width      窗口的渲染区域的宽度
+        @param: uint32_t wnd_height     窗口的渲染区域的高度
         @param: const char * wnd_title  窗口的标题
         *************************************************************************************/
-        virtual void InitRenderer(uint32_t wnd_width, uint32_t wnd_height, const char* wnd_title);
+        virtual void InitRenderer(uint32_t wnd_render_area_width, uint32_t wnd_render_area_height, const char* wnd_title);
 
         /**************************************************************************************
         初始化demo场景
@@ -96,16 +96,22 @@ namespace KSR
     protected:
         static App* s_instance_;
     protected:
-        /** * @brief 窗口的宽度 */
-        uint32_t window_width_ = 0;
+        /** * @brief 窗口中的渲染区域的的宽度，即窗口中的“client area”，不包含标题栏，状态栏等等的那个渲染区域 */
+        uint32_t window_render_area_width_ = 0;
 
-        /** * @brief 窗口的高度 */
-        uint32_t window_height_ = 0;
+        /** * @brief 窗口中的渲染区域的的高度 */
+        uint32_t window_render_area_height_ = 0;
 
-        bool s_IsRunning = true;
+        /** * @brief 程序是否在运行中 */
+        bool is_running_ = true;
 
-        bool dragging = false;
-        int offsetX;
-        int offsetY;
+        /** * @brief 程序是否在用鼠标拖拽着窗口 */
+        bool is_mouse_dragging_ = false;
+
+        /** * @brief 当鼠标点击窗口，开始拖拽时，鼠标点坐标的x分量，和窗口位置坐标的x分量的差值 */
+        int mouse_wnd_offset_x_;
+
+        /** * @brief 当鼠标点击窗口，开始拖拽时，鼠标点坐标的y分量，和窗口位置坐标的y分量的差值 */
+        int mouse_wnd_offset_y_;
     };
 }

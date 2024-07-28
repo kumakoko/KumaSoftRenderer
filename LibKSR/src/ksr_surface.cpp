@@ -40,17 +40,17 @@ namespace KSR
     SDL_Surface* lpddsback = nullptr;
     SDL_Surface* gScreenSurface = nullptr;
     SDL_Window* gWindow = nullptr;
-    uint32_t SCREEN_WIDTH = 640;
-    uint32_t SCREEN_HEIGHT = 480;
+    uint32_t WINDOW_RENDER_AREA_WIDTH = 640;
+    uint32_t WINDOW_RENDER_AREA_HEIGHT = 480;
 
     void InitializeGraphicSystem(uint32_t sw, uint32_t sh, const char* wn)
     {
-        SCREEN_WIDTH = sw;
-        SCREEN_HEIGHT = sh;
-        max_clip_x = SCREEN_WIDTH - 1;
-        max_clip_y = SCREEN_HEIGHT - 1;
+        WINDOW_RENDER_AREA_WIDTH = sw;
+        WINDOW_RENDER_AREA_HEIGHT = sh;
+        max_clip_x = WINDOW_RENDER_AREA_WIDTH - 1;
+        max_clip_y = WINDOW_RENDER_AREA_HEIGHT - 1;
 
-        gWindow = SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        gWindow = SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_RENDER_AREA_WIDTH, WINDOW_RENDER_AREA_HEIGHT, SDL_WINDOW_SHOWN);
 
         gScreenSurface = SDL_GetWindowSurface(gWindow);
         if (gScreenSurface == nullptr) {
@@ -59,18 +59,18 @@ namespace KSR
             // return false;
         }
 
-        //lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        //lpddsprimary = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
         uint32_t rmask, gmask, bmask, amask;
         Get16BitSufaceRGBMask(rmask, gmask, bmask, amask);
-        lpddsprimary = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 16, rmask, gmask, bmask, amask);
+        lpddsprimary = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, WINDOW_RENDER_AREA_HEIGHT, 16, rmask, gmask, bmask, amask);
 
         if (lpddsprimary == nullptr) {
             //printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
            // return false;
         }
 
-        lpddsback = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 16, rmask, gmask, bmask, amask);
-        //lpddsback = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        lpddsback = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, WINDOW_RENDER_AREA_HEIGHT, 16, rmask, gmask, bmask, amask);
+        //lpddsback = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
         
         if (lpddsback == nullptr) {
             //  printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -174,7 +174,7 @@ namespace KSR
 //#include <stdio.h>
 //
 //// Screen dimensions
-//const int SCREEN_WIDTH = 640;
+//const int WINDOW_RENDER_AREA_WIDTH = 640;
 //const int SCREEN_HEIGHT = 480;
 //
 //bool init();
@@ -192,7 +192,7 @@ namespace KSR
 //        return false;
 //    }
 //
-//    gWindow = SDL_CreateWindow("SDL Flip Example", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+//    gWindow = SDL_CreateWindow("SDL Flip Example", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 //    if (gWindow == nullptr) {
 //        printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 //        return false;
@@ -204,8 +204,8 @@ namespace KSR
 //        return false;
 //    }
 //
-//    frontBuffer = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-//    backBuffer = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+//    frontBuffer = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+//    backBuffer = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 //    if (frontBuffer == nullptr || backBuffer == nullptr) {
 //        printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
 //        return false;

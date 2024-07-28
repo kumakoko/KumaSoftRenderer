@@ -21,12 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
+#include <string>
+#include <cstdint>
+#include <exception>
 
 #include "demo_01_app.h"
 #include "ksr_string_convertor.h"
 #include "ksr_message_box.h"
 #include "ksr_error.h"
-#include <string>
 
 int main(int argc, char* argv[])
 {
@@ -34,9 +36,11 @@ int main(int argc, char* argv[])
 
     try
     {
+        const uint32_t screen_width = 1024;
+        const uint32_t screen_height = 768;
         const char* title = "[Kuma Soft Renderer] : 01-Triangle";
         app = new Demo01App();
-        app->InitRenderer(1024, 768, "[Kuma Soft Renderer] : 01-Triangle");
+        app->InitRenderer(screen_width, screen_height, title);
         app->InitScene();
         app->Run();
     }
@@ -48,8 +52,7 @@ int main(int argc, char* argv[])
     {
         std::wstring exception_desc;
         KSR::StringConvertor::ANSItoUTF16LE(e.what(), exception_desc);
-        //KSR::MessageBox(std::wstring(L"[Kuma Soft Renderer] : 01-Triangle : Unhandled Exception, aborting"), exception_desc);
-        KSR::ErrorMessageBox(std::wstring(), std::wstring());
+        KSR::ErrorMessageBox(std::wstring(L"[Kuma Soft Renderer] : 01-Triangle : Unhandled Exception, aborting"), exception_desc);
     }
 
     delete app;

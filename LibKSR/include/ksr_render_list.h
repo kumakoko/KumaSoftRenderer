@@ -103,15 +103,13 @@ namespace KSR
     void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, MATRIX4X4_PTR mat_transform, TransformControlFlag coord_select);
 
     /**************************************************************************************
-    把渲染列表中的多边形的顶点，从局部坐标系变换到世界坐标系。本函数并没有使用矩阵，而是直接利用位置
-    平移量world_pos去计算
-    
-    当coord_select为TRANSFORM_LOCAL_TO_TRANS时：这函数将多边形的存储在vlist数组成员中的局部（模型）
-    坐标，变换到世界坐标，变换后的结果，存储在多边形的tvlist数组成员变量中。
-
-    当coord_select为TRANSFORM_TRANS_ONLY或者是TRANSFORM_LOCAL_ONLY时：这函数将多边形的存储在tvlist
-    数组成员中的局部（模型）坐标，变换到世界坐标，变换后的结果，原样存回到tvlist数组成员变量中。
-
+    1 把渲染列表中的多边形的顶点，从局部坐标系变换到世界坐标系。本函数并没有使用矩阵，而是直接利用
+      位置平移量world_pos去计算
+    2 当coord_select为TRANSFORM_LOCAL_TO_TRANS时：这函数将多边形的存储在vlist数组成员中的局
+      部（模型）坐标，变换到世界坐标，变换后的结果，存储在多边形的tvlist数组成员变量中。
+    3 当coord_select为TRANSFORM_TRANS_ONLY或者是TRANSFORM_LOCAL_ONLY时：这函数将多边形的存
+      储在tvlist数组成员中的局部（模型）坐标，变换到世界坐标，变换后的结果，原样存回到tvlist
+      数组成员变量中。
     @name: KSR::Model_To_World_RENDERLIST4DV1
     @return: void
     @param: RENDERLIST4DV1_PTR render_list  要变换的那个render list
@@ -122,48 +120,60 @@ namespace KSR
     void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POINT4D_PTR world_pos, TransformControlFlag coord_select = TRANSFORM_LOCAL_TO_TRANS);
 
     /**************************************************************************************
-    此函数根据传入的观察变换矩阵（相机变换矩阵），将渲染列表中的每个多边形的坐标变换到基于观察空间（相机空间）
-
-    如果在流水线的上游已经将每个物体转换为多边形了且将其插入到render list中的话，就是使用此函数来
-    进行变换。
-
-    将物体转换为多边形的操作是在物体的剔除、把物体的局部坐标系变换到世界坐标系下，以及背面消除之后
-    进行的。这样子做可以最大限度地减少了每个物体中被插入到渲染列表中的多边形的数量。
-
-    本函数假设了多边形已经进行了局部坐标系到世界坐标系的变换。且这些多边形的坐标数据已经存储
-    在成员变量tvlist中了
-
+    1 此函数根据传入的观察变换矩阵（相机变换矩阵），将渲染列表中的每个多边形的坐标变换到基于观察空
+      间（相机空间）
+    2 如果在流水线的上游已经将每个物体转换为多边形了且将其插入到render list中的话，就是使用此函
+      数来进行变换。
+    3 将物体转换为多边形的操作是在物体的剔除、把物体的局部坐标系变换到世界坐标系下，以及背面消除
+      之后进行的。这样子做可以最大限度地减少了每个物体中被插入到渲染列表中的多边形的数量。
+    4 本函数假设了多边形已经进行了局部坐标系到世界坐标系的变换。且这些多边形的坐标数据已经存储
+      在成员变量tvlist中了
     @name: KSR::World_To_Camera_RENDERLIST4DV1
     @return: void
     @param: RENDERLIST4DV1_PTR render_list 要变换的那个render list
     @param: CAM4DV1_PTR camera 当前执行渲染的camera
     *************************************************************************************/
-    void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list,CAM4DV1_PTR camera);
+    void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera);
 
     /**************************************************************************************
-    此函数不基于变换矩阵。它根据传入的相机对象实例，将render list中的每个多边形的坐标变换为透视投影
-    坐标。
-
-    如果在流水线的上游已经将每个物体转换为多边形了且将其插入到render list中的话，就是使用此函数来
-    进行变换。
-
-    本函数假设了多边形已经进行了把坐标变换到观察空间（相机空间）坐标系。且这些多边形的坐标数据已经存储
-    在成员变量tvlist中了
-
+    1 此函数不基于变换矩阵。它根据传入的相机对象实例，将render list中的每个多边形的坐标变换为透视
+      投影坐标。
+    2 如果在流水线的上游已经将每个物体转换为多边形了且将其插入到render list中的话，就是使用此函数
+      来进行变换。
+    3 本函数假设了多边形已经进行了把坐标变换到观察空间（相机空间）坐标系。且这些多边形的坐标数据已
+      经存储在成员变量tvlist中了
     @name: KSR::Camera_To_Perspective_RENDERLIST4DV1
     @return: void
     @param: RENDERLIST4DV1_PTR render_list
     @param: CAM4DV1_PTR camera
     *************************************************************************************/
-    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list,CAM4DV1_PTR camera);
+    void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera);
 
-    
+    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam);
 
-    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
+    /**************************************************************************************
+    1 此函数不基于变换矩阵操作
+    2 此函数根据传入的参数camera的viewport参数，将render list中的透视投影坐标变换到屏幕空间
+    3 如果在流水线的上游已经将每个物体转换为多边形了且将其插入到render list中的话，就是使用此函数来
+      进行变换。
+    4 本函数假设了多边形已经进行了把坐标进行了归一化的透视变换。且这些经过变换的多边形的坐标数据已经
+      存储在成员变量tvlist中了
+    @name: KSR::Perspective_To_Screen_RENDERLIST4DV1
+    @return: void
+    @param: RENDERLIST4DV1_PTR render_list
+    @param: CAM4DV1_PTR camera
+    *************************************************************************************/
+    void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera);
 
-    
+    /**************************************************************************************
+    用wireframe模式，和16位颜色，绘制render list中的所有的多边形。本函数会检测surface的位数，对应
+    调用不同的rasterizer
 
-    void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,CAM4DV1_PTR cam);
-
-    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR rend_list, uint8_t* video_buffer, int lpitch);
+    @name: KSR::Draw_RENDERLIST4DV1_Wire16
+    @return: void
+    @param: RENDERLIST4DV1_PTR render_list
+    @param: uint8_t * video_buffer
+    @param: int pitch
+    *************************************************************************************/
+    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR render_list, uint8_t* video_buffer, int pitch);
 }

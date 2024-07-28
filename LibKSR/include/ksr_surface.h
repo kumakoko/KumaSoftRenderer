@@ -36,14 +36,25 @@ namespace KSR
     extern SDL_Surface* lpddsprimary;
     extern SDL_Surface* lpddsback;
     extern SDL_Surface* gScreenSurface;
-    extern SDL_Window* gWindow;// gWindow = SDL_CreateWindow("SDL Flip Example", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    extern uint32_t SCREEN_WIDTH;
-    extern uint32_t SCREEN_HEIGHT;
+    extern SDL_Window* gWindow;
+    extern uint32_t WINDOW_RENDER_AREA_WIDTH;
+    extern uint32_t WINDOW_RENDER_AREA_HEIGHT;
 
-    // 初始化图形系统
+    /**************************************************************************************
+    初始化图形系统
+    @name: KSR::InitializeGraphicSystem
+    @return: void
+    @param: uint32_t sw
+    @param: uint32_t sh
+    @param: const char * wn
+    *************************************************************************************/
     void InitializeGraphicSystem(uint32_t sw,uint32_t sh, const char* wn);
 
-    // 关闭图形系统
+    /**************************************************************************************
+    关闭图形系统
+    @name: KSR::ShutdownGraphicSystem
+    @return: void
+    *************************************************************************************/
     void ShutdownGraphicSystem();
 
     void DDraw_Fill_Surface(SDL_Surface* lpdds, uint32_t color, SDL_Rect* client = nullptr);

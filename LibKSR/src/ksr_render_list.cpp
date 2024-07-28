@@ -204,7 +204,7 @@ namespace KSR
                 // 当下tvlist中的顶点数据是基于世界坐标系的。世界坐标系下的顶点位置数据，乘以
                 // 观察变换矩阵（相机变换矩阵），即相机的mcam。即将其位置数据转变到观察空间下。
                 // 再把经过变换的顶点位置数据回存到tvlist成员变量
-                POINT4D presult; 
+                POINT4D presult;
                 Mat_Mul_VECTOR4D_4X4(&current_polygon->tvlist[vertex], &camera->mcam, &presult);
                 VECTOR4D_COPY(&current_polygon->tvlist[vertex], &presult);
             }
@@ -229,10 +229,7 @@ namespace KSR
         }
     }
 
-    ////////////////////////////////////////////////////////////////
-
-    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
-        CAM4DV1_PTR cam)
+    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
     {
         // NOTE: this is not a matrix based function
         // this function transforms the camera coordinates of an object
@@ -290,111 +287,63 @@ namespace KSR
 
     } // end Camera_To_Perspective_Screen_RENDERLIST4DV1
 
-    //////////////////////////////////////////////////////////////
-
-    void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
-        CAM4DV1_PTR cam)
+    void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera)
     {
-        // NOTE: this is not a matrix based function
-        // this function transforms the perspective coordinates of the render
-        // list into screen coordinates, based on the sent viewport in the camera
-        // assuming that the viewplane coordinates were normalized
-        // you would use this function instead of the object based function
-        // if you decided earlier in the pipeline to turn each object into 
-        // a list of polygons and then add them to the global render list
-        // you would only call this function if you previously performed
-        // a normalized perspective transform
-
-        // transform each polygon in the render list from perspective to screen 
-        // coordinates assumes the render list has already been transformed 
-        // to normalized perspective coordinates and the result is in tvlist[]
-        for (int poly = 0; poly < rend_list->num_polys; poly++)
+        for (int poly = 0; poly < render_list->num_polys; poly++)
         {
-            // acquire current polygon
-            POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+            POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
 
-            // is this polygon valid?
-            // transform this polygon if and only if it's not clipped, not culled,
-            // active, and visible, note however the concept of "backface" is 
-            // irrelevant in a wire frame engine though
-            if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            if (!_Polygon4DV1NeedToRender(current_polygon))
+                continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-            float alpha = (0.5f * cam->viewport_width - 0.5f);
-            float beta = (0.5f * cam->viewport_height - 0.5f);
+            float alpha = (0.5f * camera->viewport_width - 0.5f);
+            float beta = (0.5f * camera->viewport_height - 0.5f);
 
-            // all good, let's transform 
             for (int vertex = 0; vertex < 3; vertex++)
             {
-                // the vertex is in perspective normalized coords from -1 to 1
-                // on each axis, simple scale them and invert y axis and project
-                // to screen
+                // 因为透视坐标基于归一化的裁剪空间（投影空间）中了，取值范围是-1到1，所以在这里对坐标进行缩放，并反转y轴
+                current_polygon->tvlist[vertex].x = alpha + alpha * current_polygon->tvlist[vertex].x;
+                current_polygon->tvlist[vertex].y = beta - beta * current_polygon->tvlist[vertex].y;
+            }
+        }
+    }
 
-                // transform the vertex by the view parameters in the camera
-                curr_poly->tvlist[vertex].x = alpha + alpha * curr_poly->tvlist[vertex].x;
-                curr_poly->tvlist[vertex].y = beta - beta * curr_poly->tvlist[vertex].y;
-            } // end for vertex
-
-        } // end for poly
-
-    } // end Perspective_To_Screen_RENDERLIST4DV1
-
-
-    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR rend_list, uint8_t* video_buffer, int lpitch)
+    void Draw_RENDERLIST4DV1_Wire16(RENDERLIST4DV1_PTR render_list, uint8_t* video_buffer, int pitch)
     {
-        // this function "executes" the render list or in other words
-        // draws all the faces in the list in wire frame 16bit mode
-        // note there is no need to sort wire frame polygons, but 
-        // later we will need to, so hidden surfaces stay hidden
-        // also, we leave it to the function to determine the bitdepth
-        // and call the correct rasterizer
-
-        // at this point, all we have is a list of polygons and it's time
-        // to draw them
-        for (int poly = 0; poly < rend_list->num_polys; poly++)
+        for (int poly = 0; poly < render_list->num_polys; poly++)
         {
-            // render this polygon if and only if it's not clipped, not culled,
-            // active, and visible, note however the concecpt of "backface" is 
-            // irrelevant in a wire frame engine though
-            if (!(rend_list->poly_ptrs[poly]->state & POLY4DV1_STATE_ACTIVE) ||
-                (rend_list->poly_ptrs[poly]->state & POLY4DV1_STATE_CLIPPED) ||
-                (rend_list->poly_ptrs[poly]->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
 
-            // draw the triangle edge one, note that clipping was already set up
-            // by 2D initialization, so line clipper will clip all polys out
-            // of the 2D screen/window boundary
+            if (!_Polygon4DV1NeedToRender(current_polygon))
+                continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
+
+            // 调用画线函数，绘制多边形的每一条边。函数内部会做裁剪，在屏幕外或者窗口外的多边形都会被剔除掉
             Draw_Clip_Line16(
-                (int)rend_list->poly_ptrs[poly]->tvlist[0].x,
-                (int)rend_list->poly_ptrs[poly]->tvlist[0].y,
-                (int)rend_list->poly_ptrs[poly]->tvlist[1].x,
-                (int)rend_list->poly_ptrs[poly]->tvlist[1].y,
-                rend_list->poly_ptrs[poly]->color,
-                video_buffer, lpitch);
+                static_cast<int>(current_polygon->tvlist[0].x),
+                static_cast<int>(current_polygon->tvlist[0].y),
+                static_cast<int>(current_polygon->tvlist[1].x),
+                static_cast<int>(current_polygon->tvlist[1].y),
+                current_polygon->color,
+                video_buffer, pitch);
 
             Draw_Clip_Line16(
-                (int)rend_list->poly_ptrs[poly]->tvlist[1].x,
-                (int)rend_list->poly_ptrs[poly]->tvlist[1].y,
-                (int)rend_list->poly_ptrs[poly]->tvlist[2].x,
-                (int)rend_list->poly_ptrs[poly]->tvlist[2].y,
-                rend_list->poly_ptrs[poly]->color,
-                video_buffer, lpitch);
+                static_cast<int>(current_polygon->tvlist[1].x),
+                static_cast<int>(current_polygon->tvlist[1].y),
+                static_cast<int>(current_polygon->tvlist[2].x),
+                static_cast<int>(current_polygon->tvlist[2].y),
+                current_polygon->color,
+                video_buffer, pitch);
 
             Draw_Clip_Line16(
-                (int)rend_list->poly_ptrs[poly]->tvlist[2].x,
-                (int)rend_list->poly_ptrs[poly]->tvlist[2].y,
-                (int)rend_list->poly_ptrs[poly]->tvlist[0].x,
-                (int)rend_list->poly_ptrs[poly]->tvlist[0].y,
-                rend_list->poly_ptrs[poly]->color,
-                video_buffer, lpitch);
-
-            // track rendering stats
+                static_cast<int>(current_polygon->tvlist[2].x),
+                static_cast<int>(current_polygon->tvlist[2].y),
+                static_cast<int>(current_polygon->tvlist[0].x),
+                static_cast<int>(current_polygon->tvlist[0].y),
+                current_polygon->color,
+                video_buffer, pitch);
 #ifdef DEBUG_ON
             debug_polys_rendered_per_frame++;
 #endif
-
         } // end for poly
 
     } // end Draw_RENDERLIST4DV1_Wire

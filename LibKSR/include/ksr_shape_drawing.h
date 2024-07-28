@@ -47,8 +47,10 @@ namespace KSR
     @param: int lpitch
     *************************************************************************************/
     int Draw_Clip_Line(int x0, int y0, int x1, int y1, int color, uint8_t* dest_buffer, int lpitch);
+
     /**************************************************************************************
-    
+    以(x0,y0)为起点，为终点，基于屏幕空间，以16位的surface位深度，以color指定的颜色值，在内存起始
+    地址为dest_buffer，跨度为pitch的地址空间，绘制一条线段
     @name: KSR::Draw_Clip_Line16
     @return: int
     @param: int x0
@@ -57,18 +59,21 @@ namespace KSR
     @param: int y1
     @param: int color
     @param: uint8_t * dest_buffer
-    @param: int lpitch
+    @param: int pitch
     *************************************************************************************/
-    int Draw_Clip_Line16(int x0, int y0, int x1, int y1, int color, uint8_t* dest_buffer, int lpitch);
+    int Draw_Clip_Line16(int x0, int y0, int x1, int y1, int color, uint8_t* dest_buffer, int pitch);
 
     /**************************************************************************************
-    
+    这段代码是一个用来进行线段裁剪的函数Clip_Line，其目的是将给定的线段裁剪到一个全局定义的剪裁区域
+    内。函数使用 Cohen-Sutherland 剪裁算法，通过检查线段的两个端点是否在裁剪区域之外，然后调整这些
+    点的位置以使得线段在裁剪区域之内。
+
     @name: KSR::Clip_Line
-    @return: int
-    @param: int & x1
-    @param: int & y1
-    @param: int & x2
-    @param: int & y2
+    @return: int 返回值为 0 表示线段在裁剪区域之外，不可见；返回 1 表示线段在裁剪区域之内或部分可见。
+    @param: int & x1 线段的起始端点坐标x分量
+    @param: int & y1 线段的起始端点坐标y分量
+    @param: int & x2 线段的结束端点坐标x分量 
+    @param: int & y2 线段的结束端点坐标y分量 
     *************************************************************************************/
     int Clip_Line(int& x1, int& y1, int& x2, int& y2);
 

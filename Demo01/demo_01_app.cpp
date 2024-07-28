@@ -83,15 +83,15 @@ void Demo01App::RenderScene()
     // 把多边形坐标从观察空间，变换到透视投影空间
     KSR::Camera_To_Perspective_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
-    // apply screen transform
+    // 把多边形坐标从透视投影空间，变换到屏幕空间
     KSR::Perspective_To_Screen_RENDERLIST4DV1(&s_RenderList, &s_Camera);
 
-    // lock the back buffer
+    // lock back buffer，开始画线
     KSR::DDraw_Lock_Back_Surface();
 
     // render the polygon list
     KSR::Draw_RENDERLIST4DV1_Wire16(&s_RenderList, KSR::back_buffer, KSR::back_lpitch);
 
-    // unlock the back buffer
+    // 画线完毕，unlock back buffer
     KSR::DDraw_Unlock_Back_Surface();
 }

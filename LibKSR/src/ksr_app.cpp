@@ -34,12 +34,11 @@ namespace KSR
         KSR::ShutdownGraphicSystem();
     }
 
-    void App::InitRenderer(uint32_t wnd_width, uint32_t wnd_height, const char* wnd_title)
+    void App::InitRenderer(uint32_t wnd_render_area_width, uint32_t wnd_render_area_height, const char* wnd_title)
     {
-        window_height_ = wnd_height;
-        window_width_ = wnd_width;
-
-        KSR::InitializeGraphicSystem(window_width_, window_height_, wnd_title);
+        window_render_area_height_ = wnd_render_area_height;
+        window_render_area_width_ = wnd_render_area_width;
+        KSR::InitializeGraphicSystem(window_render_area_width_, window_render_area_height_, wnd_title);
     }
 
     void App::InitScene()
@@ -48,7 +47,7 @@ namespace KSR
 
     void App::Run()
     {
-        while (s_IsRunning)
+        while (is_running_)
         {
             SDL_Event event;
 
@@ -80,13 +79,13 @@ namespace KSR
     {
         if (event.type == SDL_QUIT)
         {
-            s_IsRunning = false;
+            is_running_ = false;
         }
         else if (event.type == SDL_KEYDOWN)
         {
             if (event.key.keysym.sym == SDLK_ESCAPE)
             {
-                s_IsRunning = false;
+                is_running_ = false;
             }
         }
     }
@@ -96,23 +95,23 @@ namespace KSR
     {
         if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
         {
-            dragging = true;
+            is_mouse_dragging_ = true;
             int mouseX, mouseY;
             SDL_GetMouseState(&mouseX, &mouseY);
             int windowX, windowY;
             SDL_GetWindowPosition(window, &windowX, &windowY);
-            offsetX = mouseX - windowX;
-            offsetY = mouseY - windowY;
+            mouse_wnd_offset_x_ = mouseX - windowX;
+            mouse_wnd_offset_y_ = mouseY - windowY;
         }
         else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT)
         {
-            dragging = false;
+            is_mouse_dragging_ = false;
         }
-        else if (event.type == SDL_MOUSEMOTION && dragging)
+        else if (event.type == SDL_MOUSEMOTION && is_mouse_dragging_)
         {
             int mouseX, mouseY;
             SDL_GetMouseState(&mouseX, &mouseY);
-            SDL_SetWindowPosition(window, mouseX - offsetX, mouseY - offsetY);
+            SDL_SetWindowPosition(window, mouseX - mouse_wnd_offset_x_, mouseY - mouse_wnd_offset_y_);
         }
     }
 }
