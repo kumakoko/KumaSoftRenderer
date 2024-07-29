@@ -88,7 +88,7 @@ namespace KSR
     @param: RENDERLIST4DV1_PTR rend_list
     @param: POLYF4DV1_PTR poly
     *************************************************************************************/
-    int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLYF4DV1_PTR poly);
+    int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly);
 
     /**************************************************************************************
     利用传递进函数的参数：变换矩阵mt，对render list中的基于局部坐标系顶点，或者在其他坐标系下的顶点

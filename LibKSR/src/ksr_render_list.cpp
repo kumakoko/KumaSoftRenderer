@@ -46,45 +46,45 @@ namespace KSR
     }  // Reset_RENDERLIST4DV1
 
 
-    int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLYF4DV1_PTR poly)
+    int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly)
     {
         // inserts the sent polyface POLYF4DV1 into the render list
 
         // step 0: are we full?
-        if (rend_list->num_polys >= RENDERLIST4DV1_MAX_POLYS)
+        if (render_list->num_polys >= RENDERLIST4DV1_MAX_POLYS)
             return(0);
 
         // step 1: copy polygon into next opening in polygon render list
 
         // point pointer to polygon structure
-        rend_list->poly_ptrs[rend_list->num_polys] = &rend_list->poly_data[rend_list->num_polys];
+        render_list->poly_ptrs[render_list->num_polys] = &render_list->poly_data[render_list->num_polys];
 
         // copy face right into array, thats it
-        memcpy((void*)&rend_list->poly_data[rend_list->num_polys], (void*)poly, sizeof(POLYF4DV1));
+        memcpy((void*)&render_list->poly_data[render_list->num_polys], (void*)poly, sizeof(POLYF4DV1));
 
         // now the polygon is loaded into the next free array position, but
         // we need to fix up the links
         // test if this is the first entry
-        if (rend_list->num_polys == 0)
+        if (render_list->num_polys == 0)
         {
             // set pointers to null, could loop them around though to self
-            rend_list->poly_data[0].next = nullptr;
-            rend_list->poly_data[0].prev = nullptr;
+            render_list->poly_data[0].next = nullptr;
+            render_list->poly_data[0].prev = nullptr;
         } // end if
         else
         {
             // first set this node to point to previous node and next node (null)
-            rend_list->poly_data[rend_list->num_polys].next = nullptr;
-            rend_list->poly_data[rend_list->num_polys].prev =
-                &rend_list->poly_data[rend_list->num_polys - 1];
+            render_list->poly_data[render_list->num_polys].next = nullptr;
+            render_list->poly_data[render_list->num_polys].prev =
+                &render_list->poly_data[render_list->num_polys - 1];
 
             // now set previous node to point to this node
-            rend_list->poly_data[rend_list->num_polys - 1].next =
-                &rend_list->poly_data[rend_list->num_polys];
+            render_list->poly_data[render_list->num_polys - 1].next =
+                &render_list->poly_data[render_list->num_polys];
         } // end else
 
      // increment number of polys in list
-        rend_list->num_polys++;
+        render_list->num_polys++;
 
         // return successful insertion
         return(1);

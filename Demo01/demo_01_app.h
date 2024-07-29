@@ -41,14 +41,14 @@ public:
     virtual void InitScene() override;
     virtual void RenderScene() override;
 private:
-    KSR::POINT4D          s_CameraPosition = { 0.0f,0.0f,-100.0f,1.0f }; // 摄像机的初始位置
-    KSR::VECTOR4D         s_CameraDirection = { 0.0f,0.0f,0.0f,1.0f };    // 摄像机的初始朝向
-    KSR::CAM4DV1          s_Camera;                                  // 主摄像机
-    KSR::RENDERLIST4DV1   s_RenderList;                            // 唯一的渲染列表
-    KSR::POLYF4DV1        s_SinglePolygon;                                // 唯一的待渲染的三角形our lonely polygon
-    KSR::POINT4D          s_SinglePolygonPosition = { 0.0f,0.0f,100.0f,1.0f };// 唯一的待渲染的三角形的世界坐标world position of polygon
-    uint32_t              s_ScreenWidth = 1024;
-    uint32_t              s_ScreenHeight = 768;
-    KSR::MATRIX4X4        s_RotationMatrix; // general rotation matrix
-    float                 s_RotationAngleY = 0;      // rotation angle
+    KSR::POINT4D          camera_position_ = { 0.0f,0.0f,-100.0f,1.0f };    // 摄像机的初始位置
+    KSR::VECTOR4D         camera_direction_ = { 0.0f,0.0f,0.0f,1.0f };      // 摄像机的初始朝向
+    KSR::CAM4DV1          camera_;                                          // 主摄像机
+    KSR::RENDERLIST4DV1   render_list_;                                     // 唯一的渲染列表
+    KSR::POLYF4DV1        single_polygon_;                                      // 唯一的待渲染的三角形our lonely polygon
+    KSR::POINT4D          single_polygon_position_ = { 0.0f,0.0f,100.0f,1.0f }; // 唯一的待渲染的三角形的世界坐标world position of polygon
+    uint32_t              wnd_render_area_width_ = 1024;
+    uint32_t              wnd_render_area_height_ = 768;
+    KSR::MATRIX4X4        rotation_matrix_;                                     // 多边形的旋转矩阵
+    float                 rotation_angle_y_ = 0;                                // 多边形绕自身的y轴旋转的角度
 };
