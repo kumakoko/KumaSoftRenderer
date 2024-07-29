@@ -5,11 +5,12 @@
 #include "ksr_model_object.h"
 #include "ksr_error.h"
 #include "ksr_constants.h"
+#include "ksr_color.h"
 
 namespace KSR
 {
 
-    static const char* Get_Line_PLG(char* buffer, int maxlength, FILE* fp)
+    static char* Get_Line_PLG(char* buffer, int maxlength, FILE* fp)
     {
         // this little helper function simply read past comments 
         // and blank lines in a PLG file and always returns full 
