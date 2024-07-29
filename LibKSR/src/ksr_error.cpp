@@ -33,11 +33,27 @@ SOFTWARE.
 
 namespace KSR
 {
-    Error::Error(const std::wstring& message): 
-        title_(L"Kuma Soft Renderer Exception"), 
-        type_(EXCEPTION_MESSAGE), 
-        message_(message)
+    Error::Error(const std::wstring& message) :
+        title_(L"Kuma Soft Renderer Exception"),
+        type_(EXCEPTION_MESSAGE),
+        message_(message),
+        line_(0)
     {
+    }
+
+    Error::Error(const std::string& message) :
+        title_(L"Kuma Soft Renderer Exception"),
+        type_(EXCEPTION_MESSAGE)
+    {
+        StringConvertor::ANSItoUTF16LE(message.c_str(), message_);
+    }
+
+    Error::Error(const char* message) :
+        title_(L"Kuma Soft Renderer Exception"),
+        type_(EXCEPTION_MESSAGE),
+        line_(0)
+    {
+        StringConvertor::ANSItoUTF16LE(message, message_);
     }
 
     Error::Error(const std::wstring& message, const char* file, uint32_t line):
@@ -51,6 +67,32 @@ namespace KSR
         StringConvertor::ANSItoUTF16LE(file_.c_str(), file_name);
         std::wstringstream wss;
         wss << message << L"\n" << file_name << L"\nLine " << line_;
+        message_ = wss.str();
+    }
+
+    Error::Error(const std::string& message, const char* file, uint32_t line) :
+        title_(L"Kuma Soft Renderer Exception"),
+        type_(EXCEPTION_REGULAR),
+        file_(file),
+        line_(line)
+    {
+        std::wstring file_name;
+        StringConvertor::ANSItoUTF16LE(file_.c_str(), file_name);
+        std::wstringstream wss;
+        wss << StringConvertor::ANSItoUTF16LE(message.c_str()) << L"\n" << file_name << L"\nLine " << line_;
+        message_ = wss.str();
+    }
+
+    Error::Error(const char* message, const char* file, uint32_t line) :
+        title_(L"Kuma Soft Renderer Exception"),
+        type_(EXCEPTION_REGULAR),
+        file_(file),
+        line_(line)
+    {
+        std::wstring file_name;
+        StringConvertor::ANSItoUTF16LE(file_.c_str(), file_name);
+        std::wstringstream wss;
+        wss << StringConvertor::ANSItoUTF16LE(message) << L"\n" << file_name << L"\nLine " << line_;
         message_ = wss.str();
     }
 

@@ -40,6 +40,10 @@ namespace KSR
          *************************************************************************************/
         Error(const std::wstring& message);
 
+        Error(const std::string& message);
+
+        Error(const char* message);
+
         /**************************************************************************************
 
          * @name: Error
@@ -49,6 +53,10 @@ namespace KSR
          * @param: uint32_t line 一般传__LINE__值进去
          *************************************************************************************/
         Error(const std::wstring& message, const char* file, uint32_t line);
+
+        Error(const std::string& message, const char* file, uint32_t line);
+
+        Error(const char* message, const char* file, uint32_t line);
 
         /**************************************************************************************
 

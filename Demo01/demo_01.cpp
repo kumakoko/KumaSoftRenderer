@@ -33,14 +33,14 @@ SOFTWARE.
 int main(int argc, char* argv[])
 {
     Demo01App* app = nullptr;
+    const uint32_t wnd_render_area_width = 1024;
+    const uint32_t wnd_render_area_height = 768;
+    const char* title = "[Kuma Soft Renderer] : 01-Triangle";
 
     try
-    {
-        const uint32_t screen_width = 1024;
-        const uint32_t screen_height = 768;
-        const char* title = "[Kuma Soft Renderer] : 01-Triangle";
+    {   
         app = new Demo01App();
-        app->InitRenderer(screen_width, screen_height, title);
+        app->InitRenderer(wnd_render_area_width, wnd_render_area_height, title);
         app->InitScene();
         app->Run();
     }
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     {
         std::wstring exception_desc;
         KSR::StringConvertor::ANSItoUTF16LE(e.what(), exception_desc);
-        KSR::ErrorMessageBox(std::wstring(L"[Kuma Soft Renderer] : 01-Triangle : Unhandled Exception, aborting"), exception_desc);
+        KSR::ErrorMessageBox(KSR::StringConvertor::ANSItoUTF16LE(title).append(L" : Unhandled Exception, aborting"), exception_desc);
     }
 
     delete app;

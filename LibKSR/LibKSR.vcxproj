@@ -30,6 +30,7 @@
     <ClInclude Include="include\ksr_light.h" />
     <ClInclude Include="include\ksr_matrix.h" />
     <ClInclude Include="include\ksr_message_box.h" />
+    <ClInclude Include="include\ksr_model_object.h" />
     <ClInclude Include="include\ksr_plane.h" />
     <ClInclude Include="include\ksr_polygon.h" />
     <ClInclude Include="include\ksr_quaternion.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="src\ksr_light.cpp" />
     <ClCompile Include="src\ksr_matrix.cpp" />
     <ClCompile Include="src\ksr_message_box.cpp" />
+    <ClCompile Include="src\ksr_model_object.cpp" />
     <ClCompile Include="src\ksr_plane.cpp" />
     <ClCompile Include="src\ksr_polygon.cpp" />
     <ClCompile Include="src\ksr_quaternion.cpp" />
@@ -140,11 +142,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;FMT_HEADER_ONLY;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include;../libraries/iconv/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include;../libraries/iconv/include;../libraries/fmt-11.0.2/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -159,11 +161,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;FMT_HEADER_ONLY;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include;../libraries/iconv/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../libraries/SDL2-2.30.5/include;../libraries/iconv/include;../libraries/fmt-11.0.2/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

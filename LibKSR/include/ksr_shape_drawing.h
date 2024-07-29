@@ -92,7 +92,9 @@ namespace KSR
     int Draw_Line(int xo, int yo, int x1, int y1, int color, uint8_t* vb_start, int lpitch);
 
     /**************************************************************************************
-    
+    本函数使用了Bresenham算法来在16位颜色深度的视频缓冲区中绘制一条从 (xo, yo) 到 (x1, y1) 的直线。
+    Bresenham算法效率很高，因为只使用了整数运算
+c
     @name: KSR::Draw_Line16
     @return: int
     @param: int xo
@@ -101,9 +103,9 @@ namespace KSR
     @param: int y1
     @param: int color
     @param: uint8_t * vb_start
-    @param: int lpitch
+    @param: int pitch
     *************************************************************************************/
-    int Draw_Line16(int xo, int yo, int x1, int y1, int color, uint8_t* vb_start, int lpitch);
+    int Draw_Line16(int xo, int yo, int x1, int y1, int color, uint8_t* vb_start, int pitch);
 
     /**************************************************************************************
     

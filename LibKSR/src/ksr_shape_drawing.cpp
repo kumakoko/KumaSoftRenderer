@@ -124,32 +124,32 @@ namespace KSR
         // 计算线段与裁剪区域的交点
         // 对于每个端点，根据其裁剪码计算线段与裁剪区域边界的交点，并更新端点坐标。
         if (CLIP_CODE_C == p1_code)
-        {    
+        {
             // 如果 p1_code 是 CLIP_CODE_C，表示点 p1 在裁剪区域内，不需要裁剪。
         }
         else if (CLIP_CODE_N == p1_code)
-        {    
+        {
             /*如果 p1_code 是 CLIP_CODE_N，表示点 p1 在裁剪区域的上方。此时，需要计算点 p1 与裁剪区域上边界的交点。
             计算新的 yc1 为 min_clip_y。使用直线方程计算新的 xc1。*/
             yc1 = min_clip_y;
             xc1 = x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1);
         }
         else if (CLIP_CODE_S == p1_code)
-        {   
+        {
             /*如果 p1_code 是 CLIP_CODE_S，表示点 p1 在裁剪区域的下方。此时，需要计算点 p1 与裁剪区域下边界的交点。
             计算新的 yc1 为 max_clip_y。使用直线方程计算新的 xc1。*/
             yc1 = max_clip_y;
             xc1 = x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1);
         }
         else if (CLIP_CODE_W == p1_code) // 西边界
-        {   
+        {
             /*如果 p1_code 是 CLIP_CODE_W，表示点 p1 在裁剪区域的左边。此时，需要计算点 p1 与裁剪区域左边界的交点。
             计算新的 xc1 为 min_clip_x。使用直线方程计算新的 yc1。*/
             xc1 = min_clip_x;
             yc1 = y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1);
         }
         else if (CLIP_CODE_E == p1_code)// 东边界
-        {   
+        {
             /*如果 p1_code 是 CLIP_CODE_E，表示点 p1 在裁剪区域的右边。此时，需要计算点 p1 与裁剪区域右边界的交点。
             计算新的 xc1 为 max_clip_x。使用直线方程计算新的 yc1。*/
             xc1 = max_clip_x;
@@ -200,7 +200,7 @@ namespace KSR
                 yc1 = y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1);
             } // end if
         }
-        else if( CLIP_CODE_SW == p1_code)
+        else if (CLIP_CODE_SW == p1_code)
         {
             /*如果 p1_code 是 CLIP_CODE_SW，表示点 p1 在裁剪区域的左下角。此时，需要计算点 p1 与裁剪区域下边界和左边界的交点。
             先计算点 p1 与下边界的交点。如果交点在裁剪区域的左右边界外，则再计算点 p1 与左边界的交点。*/
@@ -215,7 +215,7 @@ namespace KSR
                 yc1 = y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1);
             }
         }
-      
+
 
         if (CLIP_CODE_C == p2_code)
         {
@@ -424,128 +424,89 @@ namespace KSR
 
     ///////////////////////////////////////////////////////////
 
-    int Draw_Line16(int x0, int y0, // starting position 
-        int x1, int y1, // ending position
-        int color,     // color index
-        uint8_t* vb_start, int lpitch) // video buffer and memory pitch
+    int Draw_Line16(int xo, int yo, int x1, int y1, int color, uint8_t* vb_start, int pitch)
     {
-        // this function draws a line from xo,yo to x1,y1 using differential error
-        // terms (based on Bresenahams work)
+        int dx, dy;         // 计算水平和垂直方向的差值。
+        int dx2, dy2;       // 差值的两倍，用于误差项的计算。         
+        int x_inc, y_inc;   // 用于确定线条绘制的方向
+        int error;          // Bresenham算法中的误差项
+        uint16_t color_16bits = static_cast<uint16_t>(color);
+        int pitch_2 = pitch >> 1;   /* 将字节步幅转换为16位单位（2字节）。比如原来每1个1个字节来读取，3
+                                       2个字节一行，pitch为32现在每2个2个字节来读取，32个字节一行，
+                                       读取16次就要换行了，所以pitch为16，pitch右移1位等于除以2*/
 
-        int dx,             // difference in x's
-            dy,             // difference in y's
-            dx2,            // dx,dy * 2
-            dy2,
-            x_inc,          // amount in pixel space to move during drawing
-            y_inc,          // amount in pixel space to move during drawing
-            error,          // the discriminant i.e. error i.e. decision variable
-            index;          // used for looping
+        // 计算视频缓冲区中第一个像素地址
+        ptrdiff_t px_offset = static_cast<ptrdiff_t>(xo + yo * pitch_2);
+        uint16_t* vb_start2 = reinterpret_cast<uint16_t*>(vb_start) + px_offset;
 
-        int lpitch_2 = lpitch >> 1; // uint16_t strided lpitch
+        // 计算水平和垂直的差值
+        dx = x1 - xo;
+        dy = y1 - yo;
 
-        // pre-compute first pixel address in video buffer based on 16bit data
-        uint16_t* vb_start2 = (uint16_t*)vb_start + x0 + y0 * lpitch_2;
-
-        // compute horizontal and vertical deltas
-        dx = x1 - x0;
-        dy = y1 - y0;
-
-        // test which direction the line is going in i.e. slope angle
+        // 确定线的方向-水平方向增量
         if (dx >= 0)
         {
-            x_inc = 1;
-
-        } // end if line is moving right
+            x_inc = 1; // 线向右边绘制
+        }
         else
         {
-            x_inc = -1;
-            dx = -dx;  // need absolute value
+            x_inc = -1; // 线向左边绘制
+            dx = -dx;
+        }
 
-        } // end else moving left
-
-     // test y component of slope
-
-        if (dy >= 0)
+        if (dy >= 0) // 垂直方向增量
         {
-            y_inc = lpitch_2;
-        } // end if line is moving down
+            y_inc = pitch_2; // 线向下边绘制
+        }
         else
         {
-            y_inc = -lpitch_2;
-            dy = -dy;  // need absolute value
+            y_inc = -pitch_2; // 线向上边绘制
+            dy = -dy;
+        }
 
-        } // end else moving up
-
-     // compute (dx,dy) * 2
+        // 计算 dx 和 dy 的两倍
         dx2 = dx << 1;
         dy2 = dy << 1;
 
-        // now based on which delta is greater we can draw the line
-        if (dx > dy)
+        if (dx > dy)     // 根据较大的 delta 值决定绘制算法
         {
-            // initialize error term
-            error = dy2 - dx;
+            error = dy2 - dx; // 初始化误差项
 
-            // draw the line
-            for (index = 0; index <= dx; index++)
+            for (int index = 0; index <= dx; index++) // 绘制线段
             {
-                // set the pixel
-                *vb_start2 = (uint16_t)color;
+                *vb_start2 = color_16bits; // 设置像素颜色
 
-                // test if error has overflowed
-                if (error >= 0)
+                if (error >= 0) // 检查误差项是否溢出
                 {
                     error -= dx2;
+                    vb_start2 += y_inc; // 移动到下一行
+                }
 
-                    // move to next line
-                    vb_start2 += y_inc;
-
-                } // end if error overflowed
-
-                // adjust the error term
-                error += dy2;
-
-                // move to the next pixel
-                vb_start2 += x_inc;
-
-            } // end for
-
-        } // end if |slope| <= 1
+                error += dy2;       // 调整误差项
+                vb_start2 += x_inc; // 移动到下一个像素
+            }
+        }
         else
         {
-            // initialize error term
-            error = dx2 - dy;
+            error = dx2 - dy; // 初始化误差项
 
-            // draw the line
-            for (index = 0; index <= dy; index++)
+            for (int index = 0; index <= dy; index++) // 绘制线段
             {
-                // set the pixel
-                *vb_start2 = (uint16_t)color;
+                *vb_start2 = color_16bits; // 设置像素颜色
 
-                // test if error overflowed
-                if (error >= 0)
+                if (error >= 0)  // 检查误差项是否溢出
                 {
                     error -= dy2;
+                    vb_start2 += x_inc;  // 移动到下一行
+                }
 
-                    // move to next line
-                    vb_start2 += x_inc;
+                error += dx2;       // 调整误差项
+                vb_start2 += y_inc; // 移动到下一个像素
+            }
+        }
 
-                } // end if error overflowed
-
-             // adjust the error term
-                error += dx2;
-
-                // move to the next pixel
-                vb_start2 += y_inc;
-
-            } // end for
-
-        } // end else |slope| > 1
-
-     // return success
-        return(1);
-
-    } // end Draw_Line16
+        return 1;
+    }
 
     ///////////////////////////////////////////////////////////
 
@@ -580,39 +541,12 @@ namespace KSR
 
     void Draw_Rectangle(int x1, int y1, int x2, int y2, uint32_t color, SDL_Surface* lpdds)
     {
-        // this function uses directdraw to draw a filled rectangle
-
-        //DDBLTFX ddbltfx; // this contains the DDBLTFX structure
-        //RECT fill_area;  // this contains the destination rectangle
-
-        //// clear out the structure and set the size field 
-        //DDRAW_INIT_STRUCT(ddbltfx);
-
-        //// set the dwfillcolor field to the desired color
-        //ddbltfx.dwFillColor = color;
-
-        //// fill in the destination rectangle data (your data)
-        //fill_area.top = y1;
-        //fill_area.left = x1;
-        //fill_area.bottom = y2;
-        //fill_area.right = x2;
-
-        //// ready to blt to surface, in this case blt to primary
-        //lpdds->Blt(&fill_area, // ptr to dest rectangle
-        //    NULL,       // ptr to source surface, NA            
-        //    NULL,       // ptr to source rectangle, NA
-        //    DDBLT_COLORFILL | DDBLT_WAIT,   // fill and wait                   
-        //    &ddbltfx);  // ptr to DDBLTFX structure
-
         SDL_Rect rect;
         rect.x = x1;
         rect.y = y1;
         rect.w = x2 - x1;
         rect.h = y2 - y1;
-
         SDL_FillRect(lpdds, &rect, color);
-
-        // return success
-    } // end Draw_Rectangle
+    }
 
 }
