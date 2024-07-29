@@ -61,6 +61,14 @@ namespace KSR
 
     /**************************************************************************************
 
+    @name: KSR::Compute_OBJECT4DV1_Radius
+    @return: float
+    @param: OBJECT4DV1_PTR obj
+    *************************************************************************************/
+    float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj);
+
+    /**************************************************************************************
+
      * @name: Load_OBJECT4DV1_PLG
      * @return: bool
      * @param: OBJECT4DV1_PTR obj

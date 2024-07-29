@@ -26,6 +26,8 @@ SOFTWARE.
 
 namespace KSR
 {
+    uint16_t (*RGB16Bit)(int32_t r, int32_t g, int32_t b) = nullptr;
+
     // this builds a 16 bit color value in 5.5.5 format (1-bit alpha mode)
     static uint16_t _RGB16BIT555(int32_t r, int32_t g, int32_t b)
     {

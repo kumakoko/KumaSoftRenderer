@@ -4,15 +4,16 @@
 #include "fmt/format.h"
 #include "ksr_model_object.h"
 #include "ksr_error.h"
+#include "ksr_constants.h"
 
 namespace KSR
 {
 
-    static char* Get_Line_PLG(const char* buffer, int maxlength, FILE* fp)
+    static const char* Get_Line_PLG(char* buffer, int maxlength, FILE* fp)
     {
         // this little helper function simply read past comments 
         // and blank lines in a PLG file and always returns full 
-        // lines with something on them on NULL if the file is empty
+        // lines with something on them on nullptr if the file is empty
 
         int index = 0;  // general index
         int length = 0; // general length
@@ -22,7 +23,7 @@ namespace KSR
         {
             // read the next line
             if (!fgets(buffer, maxlength, fp))
-                return(NULL);
+                return(nullptr);
 
             // kill the whitespace
             for (length = strlen(buffer), index = 0; isspace(buffer[index]); index++);
@@ -36,6 +37,42 @@ namespace KSR
         } // end while
 
     } // end Get_Line_PLG
+
+    float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj)
+    {
+        // this function computes the average and maximum radius for 
+        // sent object and opdates the object data
+
+        // reset incase there's any residue
+        obj->avg_radius = 0;
+        obj->max_radius = 0;
+
+        // loop thru and compute radius
+        for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+        {
+            // update the average and maximum radius
+            float dist_to_vertex =
+                sqrt(obj->vlist_local[vertex].x * obj->vlist_local[vertex].x +
+                    obj->vlist_local[vertex].y * obj->vlist_local[vertex].y +
+                    obj->vlist_local[vertex].z * obj->vlist_local[vertex].z);
+
+            // accumulate total radius
+            obj->avg_radius += dist_to_vertex;
+
+            // update maximum radius   
+            if (dist_to_vertex > obj->max_radius)
+                obj->max_radius = dist_to_vertex;
+
+        } // end for vertex
+
+    // finallize average radius computation
+        obj->avg_radius /= obj->num_vertices;
+
+        // return max radius
+        return(obj->max_radius);
+
+    } // end Compute_OBJECT4DV1_Radius
+
 
     bool Load_OBJECT4DV1_PLG(OBJECT4DV1_PTR obj, // pointer to object
         const char* filename,     // filename of plg file
@@ -99,7 +136,7 @@ namespace KSR
         if (!(token_string = Get_Line_PLG(buffer, 255, fp)))
         {
             throw Error(fmt::format("PLG file error with file {} (object descriptor invalid).", filename), __FILE__, __LINE__);
-            return(0);
+            return false;
         } // end if
 
         //Write_Error("Object Descriptor: %s", token_string);
@@ -155,9 +192,9 @@ namespace KSR
             // get the next polygon descriptor
             if (!(token_string = Get_Line_PLG(buffer, 255, fp)))
             {
-             //   Write_Error("PLG file error with file %s (polygon descriptor invalid).", filename);
+                //   Write_Error("PLG file error with file %s (polygon descriptor invalid).", filename);
                 throw Error(fmt::format("PLG file error with file {} (polygon descriptor invalid).", filename), __FILE__, __LINE__);
-                return(0);
+                return false;
             } // end if
 
             //Write_Error("\nPolygon %d:", poly);
@@ -167,7 +204,7 @@ namespace KSR
             // read in surface descriptor, number of vertices, and vertex list
             /*
             sscanf(token_string, "%s %d %d %d %d", tmp_string,
-                &poly_num_verts, // should always be 3 
+                &poly_num_verts, // should always be 3
                 &obj->plist[poly].vert[0],
                 &obj->plist[poly].vert[1],
                 &obj->plist[poly].vert[2]);
@@ -185,7 +222,7 @@ namespace KSR
             // note that this is redundant since the polylist is contained
             // within the object in this case and its up to the user to select
             // whether the local or transformed vertex list is used when building up
-            // polygon geometry, might be a better idea to set to NULL in the context
+            // polygon geometry, might be a better idea to set to nullptr in the context
             // of polygons that are part of an object
             obj->plist[poly].vlist = obj->vlist_local;
 
@@ -207,12 +244,12 @@ namespace KSR
             if ((poly_surface_desc & PLX_2SIDED_FLAG))
             {
                 SET_BIT(obj->plist[poly].attr, POLY4DV1_ATTR_2SIDED);
-                Write_Error("\n2 sided.");
+                // Write_Error("\n2 sided.");
             } // end if
             else
             {
                 // one sided
-                Write_Error("\n1 sided.");
+               // Write_Error("\n1 sided.");
             } // end else
 
          // now let's set the color type and color
@@ -233,7 +270,7 @@ namespace KSR
                 // 8.8.8 into 5.5.5 or 5.6.5 for us, but we have to first scale all
                 // these 4.4.4 values into 8.8.8
                 obj->plist[poly].color = RGB16Bit(red * 16, green * 16, blue * 16);
-                Write_Error("\nRGB color = [%d, %d, %d]", red, green, blue);
+                //Write_Error("\nRGB color = [%d, %d, %d]", red, green, blue);
             } // end if
             else
             {
@@ -243,7 +280,7 @@ namespace KSR
                 // and simple extract the last 8 bits and that's the color index
                 obj->plist[poly].color = (poly_surface_desc & 0x00ff);
 
-                Write_Error("\n8-bit color index = %d", obj->plist[poly].color);
+                //  Write_Error("\n8-bit color index = %d", obj->plist[poly].color);
 
             } // end else
 
@@ -253,28 +290,35 @@ namespace KSR
             // set polygon shading mode
             switch (shade_mode)
             {
-            case PLX_SHADE_MODE_PURE_FLAG: {
+            case PLX_SHADE_MODE_PURE_FLAG:
+            {
                 SET_BIT(obj->plist[poly].attr, POLY4DV1_ATTR_SHADE_MODE_PURE);
-                Write_Error("\nShade mode = pure");
-            } break;
+                //Write_Error("\nShade mode = pure");
+            }
+            break;
 
-            case PLX_SHADE_MODE_FLAT_FLAG: {
+            case PLX_SHADE_MODE_FLAT_FLAG:
+            {
                 SET_BIT(obj->plist[poly].attr, POLY4DV1_ATTR_SHADE_MODE_FLAT);
-                Write_Error("\nShade mode = flat");
+                //Write_Error("\nShade mode = flat");
 
             } break;
 
-            case PLX_SHADE_MODE_GOURAUD_FLAG: {
+            case PLX_SHADE_MODE_GOURAUD_FLAG:
+            {
                 SET_BIT(obj->plist[poly].attr, POLY4DV1_ATTR_SHADE_MODE_GOURAUD);
-                Write_Error("\nShade mode = gouraud");
+                //Write_Error("\nShade mode = gouraud");
             } break;
 
-            case PLX_SHADE_MODE_PHONG_FLAG: {
+            case PLX_SHADE_MODE_PHONG_FLAG:
+            {
                 SET_BIT(obj->plist[poly].attr, POLY4DV1_ATTR_SHADE_MODE_PHONG);
-                Write_Error("\nShade mode = phong");
-            } break;
+                //Write_Error("\nShade mode = phong");
+            }
+            break;
 
-            default: break;
+            default:
+                break;
             } // end switch
 
        // finally set the polygon to active
@@ -286,7 +330,7 @@ namespace KSR
         fclose(fp);
 
         // return success
-        return(1);
+        return true;
 
     } // end Load_OBJECT4DV1_PLG
 

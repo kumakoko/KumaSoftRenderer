@@ -42,4 +42,11 @@ namespace KSR
     const float PI_DIV_4 = 0.785398163f;
     const float PI_INV = 0.318309886f;
 
+    const int PLX_SHADE_MODE_PURE_FLAG = 0x0000;  // this poly is a constant color
+    const int PLX_SHADE_MODE_CONSTANT_FLAG = 0x0000;  // alias
+    const int PLX_SHADE_MODE_FLAT_FLAG = 0x2000;  // this poly uses flat shading
+    const int PLX_SHADE_MODE_GOURAUD_FLAG = 0x4000;  // this poly used gouraud shading
+    const int PLX_SHADE_MODE_PHONG_FLAG = 0x6000; // this poly uses phong shading
+    const int PLX_SHADE_MODE_FASTPHONG_FLAG = 0x6000;  // this poly uses phong shading (alias)
+
 }

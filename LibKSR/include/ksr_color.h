@@ -47,6 +47,9 @@ namespace KSR
      *************************************************************************************/
     uint16_t RGB16Bit555(int32_t r, int32_t g, int32_t b);
 
+
+    extern uint16_t (*RGB16Bit)(int32_t r, int32_t g, int32_t b);
+
     /**************************************************************************************
     当创建16位的surface时，获取到创建所需的RGBA四个通道各自的 掩码值
      * @name: Get16BitSufaceRGBMask
@@ -57,4 +60,16 @@ namespace KSR
      * @param: uint32_t & amask 获取到创建所需的A通道的掩码值
      *************************************************************************************/
     void Get16BitSufaceRGBMask(uint32_t& rmask, uint32_t& gmask, uint32_t& bmask, uint32_t& amask);
+
+    template<typename T1,typename T2>
+    inline void SET_BIT(T1& word, T2& bit_flag)
+    {
+        word = word | bit_flag;
+    }
+
+    template<typename T1,typename T2>
+    inline void RESET_BIT(T1& word, T2& bit_flag)
+    {
+        word = word & (~bit_flag);
+    }
 }
