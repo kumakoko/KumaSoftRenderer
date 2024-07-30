@@ -26,6 +26,7 @@ SOFTWARE.
 
 void Demo02App::InitScene()
 {
+    KSR::RGB16Bit = KSR::RGB16Bit565;
 
     float near_clip_z = 50.0f;
     float far_clip_z = 500.0f;
@@ -50,13 +51,34 @@ void Demo02App::InitScene()
     obj.world_pos.z = 100;
 }
 
+void Demo02App::OnKeyUp(SDL_Event& event)
+{
+    if (SDLK_UP == event.key.keysym.sym )
+    {
+        x_ang = 0.01f;
+    }
+    else if (SDLK_DOWN == event.key.keysym.sym)
+    {
+        x_ang = -0.01f;
+    }
+
+    if (SDLK_LEFT == event.key.keysym.sym)
+    {
+        z_ang = 0.01f;
+    }
+    else if (SDLK_RIGHT == event.key.keysym.sym)
+    {
+        z_ang = -0.01f;
+    }
+}
+
 void Demo02App::RenderScene()
 {
     // reset the object (this only matters for backface and object removal)
     KSR::Reset_OBJECT4DV1(&obj);
 
     // reset angles
-    x_ang = z_ang = 0;
+    //x_ang = z_ang = 0;
 
     // generate rotation matrix around y axis
     KSR::Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);

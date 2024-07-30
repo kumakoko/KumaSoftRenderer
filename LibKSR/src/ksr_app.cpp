@@ -83,11 +83,25 @@ namespace KSR
         }
         else if (event.type == SDL_KEYDOWN)
         {
-            if (event.key.keysym.sym == SDLK_ESCAPE)
-            {
-                is_running_ = false;
-            }
+            OnKeyDown(event);
         }
+        else if (event.type == SDL_KEYUP)
+        {
+            OnKeyUp(event);
+        }
+    }
+
+    void App::OnKeyDown(SDL_Event& event)
+    {
+        if (event.key.keysym.sym == SDLK_ESCAPE)
+        {
+            is_running_ = false;
+        }
+    }
+
+    void App::OnKeyUp(SDL_Event& event)
+    {
+
     }
 
     // 处理鼠标拖动事件

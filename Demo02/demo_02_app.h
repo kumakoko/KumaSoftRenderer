@@ -41,6 +41,8 @@ class alignas(16) Demo02App : public KSR::App
 public:
     virtual void InitScene() override;
     virtual void RenderScene() override;
+protected:
+    virtual void OnKeyUp(SDL_Event& event) override;
 private:
     // initialize camera position and direction
     KSR::POINT4D  cam_pos = { 0.0f,0.0f,0.0f,1.0f };
