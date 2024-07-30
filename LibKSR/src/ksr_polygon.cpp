@@ -26,10 +26,10 @@ SOFTWARE.
 
 namespace KSR
 {
-    // states of polygons and faces
-    const std::uint16_t POLY4DV1_STATE_ACTIVE = 0x0001;
-    const std::uint16_t POLY4DV1_STATE_CLIPPED = 0x0002;
-    const std::uint16_t POLY4DV1_STATE_BACKFACE = 0x0004;
+    //// states of polygons and faces
+    //const std::uint16_t POLY4DV1_STATE_ACTIVE = 0x0001;
+    //const std::uint16_t POLY4DV1_STATE_CLIPPED = 0x0002;
+    //const std::uint16_t POLY4DV1_STATE_BACKFACE = 0x0004;
 
     void Draw_Filled_Polygon2D(POLYGON2D_PTR poly, std::uint8_t* vbuffer, int mempitch)
     {
@@ -57,7 +57,7 @@ namespace KSR
 
         int firstvert = 0;         // start by assuming vertex 0 is at top
 
-        int min_y = poly->vlist[0].y; // find y coordinate of vertex 0
+        int min_y = static_cast<int>(poly->vlist[0].y); // find y coordinate of vertex 0
 
         for (int index = 1; index < poly->num_verts; index++)
         {
@@ -66,7 +66,7 @@ namespace KSR
             {
                 // is another vertex higher?
                 firstvert = index;
-                min_y = poly->vlist[index].y;
+                min_y = static_cast<int>(poly->vlist[index].y);
             } // end if
 
         } // end for index
@@ -74,10 +74,10 @@ namespace KSR
     // finding starting and ending vertices of first two edges:
         int startvert1 = firstvert;      // get starting vertex of edge 1
         int startvert2 = firstvert;      // get starting vertex of edge 2
-        int xstart1 = static_cast<float>(poly->vlist[startvert1].x + poly->x0);
-        int ystart1 = static_cast<float>(poly->vlist[startvert1].y + poly->y0);
-        int xstart2 = static_cast<float>(poly->vlist[startvert2].x + poly->x0);
-        int ystart2 = static_cast<float>(poly->vlist[startvert2].y + poly->y0);
+        int xstart1 = static_cast<int>(poly->vlist[startvert1].x + poly->x0);
+        int ystart1 = static_cast<int>(poly->vlist[startvert1].y + poly->y0);
+        int xstart2 = static_cast<int>(poly->vlist[startvert2].x + poly->x0);
+        int ystart2 = static_cast<int>(poly->vlist[startvert2].y + poly->y0);
         int endvert1 = startvert1 - 1;           // get ending vertex of edge 1
 
         if (endvert1 < 0)
@@ -90,8 +90,8 @@ namespace KSR
         if (endvert2 == (poly->num_verts))
             endvert2 = 0;  // Check for wrap
 
-        int xend2 = poly->vlist[endvert2].x + poly->x0;      // get x & y coordinates
-        int yend2 = poly->vlist[endvert2].y + poly->y0;      // of ending vertices
+        int xend2 = static_cast<int>(poly->vlist[endvert2].x + poly->x0);      // get x & y coordinates
+        int yend2 = static_cast<int>(poly->vlist[endvert2].y + poly->y0);      // of ending vertices
 
         // draw the polygon:
 
@@ -440,8 +440,8 @@ namespace KSR
                 if (endvert2 == (poly->num_verts))
                     endvert2 = 0;                // check for wrap
 
-                xend2 = poly->vlist[endvert2].x + poly->x0;  // get x & y of new end vertex
-                yend2 = poly->vlist[endvert2].y + poly->y0;
+                xend2 = static_cast<int>(poly->vlist[endvert2].x + poly->x0);  // get x & y of new end vertex
+                yend2 = static_cast<int>(poly->vlist[endvert2].y + poly->y0);
 
             } // end if
 
@@ -484,7 +484,7 @@ namespace KSR
 
         int firstvert = 0;         // start by assuming vertex 0 is at top
 
-        int min_y = poly->vlist[0].y; // find y coordinate of vertex 0
+        int min_y = static_cast<int>(poly->vlist[0].y); // find y coordinate of vertex 0
 
         for (int index = 1; index < poly->num_verts; index++)
         {
@@ -493,7 +493,7 @@ namespace KSR
             {
                 // is another vertex higher?
                 firstvert = index;
-                min_y = poly->vlist[index].y;
+                min_y = static_cast<int>(poly->vlist[index].y);
             } // end if
 
         } // end for index
@@ -501,10 +501,10 @@ namespace KSR
     // finding starting and ending vertices of first two edges:
         int startvert1 = firstvert;      // get starting vertex of edge 1
         int startvert2 = firstvert;      // get starting vertex of edge 2
-        int xstart1 = poly->vlist[startvert1].x + poly->x0;
-        int ystart1 = poly->vlist[startvert1].y + poly->y0;
-        int xstart2 = poly->vlist[startvert2].x + poly->x0;
-        int ystart2 = poly->vlist[startvert2].y + poly->y0;
+        int xstart1 = static_cast<int>(poly->vlist[startvert1].x + poly->x0);
+        int ystart1 = static_cast<int>(poly->vlist[startvert1].y + poly->y0);
+        int xstart2 = static_cast<int>(poly->vlist[startvert2].x + poly->x0);
+        int ystart2 = static_cast<int>(poly->vlist[startvert2].y + poly->y0);
         int endvert1 = startvert1 - 1;           // get ending vertex of edge 1
 
         if (endvert1 < 0)
@@ -517,8 +517,8 @@ namespace KSR
         if (endvert2 == (poly->num_verts))
             endvert2 = 0;  // Check for wrap
 
-        int xend2 = poly->vlist[endvert2].x + poly->x0;      // get x & y coordinates
-        int yend2 = poly->vlist[endvert2].y + poly->y0;      // of ending vertices
+        int xend2 = static_cast<int>(poly->vlist[endvert2].x + poly->x0);      // get x & y coordinates
+        int yend2 = static_cast<int>(poly->vlist[endvert2].y + poly->y0);      // of ending vertices
 
         // draw the polygon:
 
@@ -854,8 +854,8 @@ namespace KSR
                 if (endvert1 < 0)
                     endvert1 = poly->num_verts - 1; // check for wrap
 
-                xend1 = poly->vlist[endvert1].x + poly->x0;  // get x & y of new end vertex
-                yend1 = poly->vlist[endvert1].y + poly->y0;
+                xend1 = static_cast<int>(poly->vlist[endvert1].x + poly->x0);  // get x & y of new end vertex
+                yend1 = static_cast<int>(poly->vlist[endvert1].y + poly->y0);
             } // end if
 
             if (!count2)
@@ -867,8 +867,8 @@ namespace KSR
                 if (endvert2 == (poly->num_verts))
                     endvert2 = 0;                // check for wrap
 
-                xend2 = poly->vlist[endvert2].x + poly->x0;  // get x & y of new end vertex
-                yend2 = poly->vlist[endvert2].y + poly->y0;
+                xend2 = static_cast<int>(poly->vlist[endvert2].x + poly->x0);  // get x & y of new end vertex
+                yend2 = static_cast<int>(poly->vlist[endvert2].y + poly->y0);
 
             } // end if
 

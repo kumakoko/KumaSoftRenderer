@@ -30,9 +30,9 @@ SOFTWARE.
 namespace KSR
 {
     // states of polygons and faces
-    extern const std::uint16_t POLY4DV1_STATE_ACTIVE;
+   /* extern const std::uint16_t POLY4DV1_STATE_ACTIVE;
     extern const std::uint16_t POLY4DV1_STATE_CLIPPED;
-    extern const std::uint16_t POLY4DV1_STATE_BACKFACE;
+    extern const std::uint16_t POLY4DV1_STATE_BACKFACE;*/
 
     typedef struct POLYGON2D_TYP
     {

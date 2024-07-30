@@ -25,6 +25,7 @@ SOFTWARE.
 #include "ksr_render_list.h"
 #include "ksr_transform.h"
 #include "ksr_shape_drawing.h"
+#include "ksr_constants.h"
 
 namespace KSR
 {
@@ -323,24 +324,21 @@ namespace KSR
                 static_cast<int>(current_polygon->tvlist[0].y),
                 static_cast<int>(current_polygon->tvlist[1].x),
                 static_cast<int>(current_polygon->tvlist[1].y),
-                current_polygon->color,
-                video_buffer, pitch);
+                current_polygon->color,video_buffer, pitch);
 
             Draw_Clip_Line16(
                 static_cast<int>(current_polygon->tvlist[1].x),
                 static_cast<int>(current_polygon->tvlist[1].y),
                 static_cast<int>(current_polygon->tvlist[2].x),
                 static_cast<int>(current_polygon->tvlist[2].y),
-                current_polygon->color,
-                video_buffer, pitch);
+                current_polygon->color,video_buffer, pitch);
 
             Draw_Clip_Line16(
                 static_cast<int>(current_polygon->tvlist[2].x),
                 static_cast<int>(current_polygon->tvlist[2].y),
                 static_cast<int>(current_polygon->tvlist[0].x),
                 static_cast<int>(current_polygon->tvlist[0].y),
-                current_polygon->color,
-                video_buffer, pitch);
+                current_polygon->color,video_buffer, pitch);
 #ifdef DEBUG_ON
             debug_polys_rendered_per_frame++;
 #endif

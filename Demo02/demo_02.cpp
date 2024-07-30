@@ -21,27 +21,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
+#include <string>
+#include <cstdint>
+#include <exception>
 
-#include "ksr_constants.h"
+#include "demo_02_app.h"
+#include "ksr_string_convertor.h"
+#include "ksr_message_box.h"
+#include "ksr_error.h"
 
-namespace KSR
+int main(int argc, char* argv[])
 {
-    const float EPSILON_E3 = (float)(1E-3);
-    const float EPSILON_E4 = (float)(1E-4);
-    const float EPSILON_E5 = (float)(1E-5);
-    const float EPSILON_E6 = (float)(1E-6);
+    Demo02App* app = nullptr;
+    const uint32_t wnd_render_area_width = 1024;
+    const uint32_t wnd_render_area_height = 768;
+    const char* title = "[Kuma Soft Renderer] : 02-Cube and back face cull";
 
-    const int PARM_LINE_NO_INTERSECT = 0;
-    const int PARM_LINE_INTERSECT_IN_SEGMENT = 1;
-    const int PARM_LINE_INTERSECT_OUT_SEGMENT = 2;
-    const int PARM_LINE_INTERSECT_EVERYWHERE = 3;
+    try
+    {   
+        app = new Demo02App();
+        app->InitRenderer(wnd_render_area_width, wnd_render_area_height, title);
+        app->InitScene();
+        app->Run();
+    }
+    catch (KSR::Error e)
+    {
+        e.Notify();
+    }
+    catch (std::exception e)
+    {
+        std::wstring exception_desc;
+        KSR::StringConvertor::ANSItoUTF16LE(e.what(), exception_desc);
+        KSR::ErrorMessageBox(KSR::StringConvertor::ANSItoUTF16LE(title).append(L" : Unhandled Exception, aborting"), exception_desc);
+    }
 
-    const float PI = 3.141592654f;
-    const float PI2 = 6.283185307f;
-    const float PI_DIV_2 = 1.570796327f;
-    const float PI_DIV_4 = 0.785398163f;
-    const float PI_INV = 0.318309886f;
-
-    const uint32_t OBJECT4DV1_MAX_VERTICES = 1024;
-    const uint32_t OBJECT4DV1_MAX_POLYS = 1024;
+    delete app;
+    return 0;
 }

@@ -25,6 +25,9 @@ SOFTWARE.
 
 #include "ksr_vector.h"
 #include "ksr_polygon.h"
+#include "ksr_matrix.h"
+#include "ksr_camera.h"
+#include "ksr_transform.h"
 
 namespace KSR
 {
@@ -59,6 +62,61 @@ namespace KSR
         POLY4DV1 plist[OBJECT4DV1_MAX_POLYS];  // array of polygons
     } OBJECT4DV1, * OBJECT4DV1_PTR;
 
+    // an object ver 2.0 based on a vertex list and list of polygons //////////////////////////
+// this new object has a lot more flexibility and it supports "framed" animation
+// that is this object can hold hundreds of frames of an animated mesh as long as
+// the mesh has the same polygons and geometry, but with changing vertex positions
+// similar to the Quake II .md2 format
+    typedef struct OBJECT4DV2_TYP
+    {
+        int   id;           // numeric id of this object
+        char  name[64];     // ASCII name of object just for kicks
+        int   state;        // state of object
+        int   attr;         // attributes of object
+        int   mati;         // material index overide (-1) - no material (new)
+        float* avg_radius;  // [OBJECT4DV2_MAX_FRAMES];   // average radius of object used for collision detection
+        float* max_radius;  // [OBJECT4DV2_MAX_FRAMES];   // maximum radius of object
+
+        POINT4D world_pos;  // position of object in world
+
+        VECTOR4D dir;       // rotation angles of object in local
+        // cords or unit direction vector user defined???
+
+        VECTOR4D ux, uy, uz;  // local axes to track full orientation
+        // this is updated automatically during
+        // rotation calls
+
+        int num_vertices;   // number of vertices per frame of this object
+        int num_frames;     // number of frames
+        int total_vertices; // total vertices, redudant, but it saves a multiply in a lot of places
+        int curr_frame;     // current animation frame (0) if single frame
+
+        VERTEX4DTV1_PTR vlist_local; // [OBJECT4DV1_MAX_VERTICES]; // array of local vertices
+        VERTEX4DTV1_PTR vlist_trans; // [OBJECT4DV1_MAX_VERTICES]; // array of transformed vertices
+
+        // these are needed to track the "head" of the vertex list for mult-frame objects
+        VERTEX4DTV1_PTR head_vlist_local;
+        VERTEX4DTV1_PTR head_vlist_trans;
+
+        // texture coordinates list (new)
+        POINT2D_PTR tlist;       // 3*num polys at max
+
+        BITMAP_IMAGE_PTR texture; // pointer to the texture information for simple texture mapping (new)
+
+        int num_polys;           // number of polygons in object mesh
+        POLY4DV2_PTR plist;      // ptr to polygons (new)
+
+        int   ivar1, ivar2;      // auxiliary vars
+        float fvar1, fvar2;      // auxiliary vars
+
+        // METHODS //////////////////////////////////////////////////
+
+        // setting the frame is so important that it should be a member function
+        // calling functions without doing this can wreak havok!
+        int Set_Frame(int frame);
+
+    } OBJECT4DV2, * OBJECT4DV2_PTR;
+
     /**************************************************************************************
 
     @name: KSR::Compute_OBJECT4DV1_Radius
@@ -79,4 +137,86 @@ namespace KSR
      *************************************************************************************/
     bool Load_OBJECT4DV1_PLG(OBJECT4DV1_PTR obj, const char* filename, VECTOR4D_PTR scale, VECTOR4D_PTR pos, VECTOR4D_PTR rot);
 
+    /**************************************************************************************
+
+     * @name: Reset_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     *************************************************************************************/
+    void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj);
+
+    /**************************************************************************************
+
+     * @name: Transform_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj object to transform
+     * @param: MATRIX4X4_PTR mt transformation matrix
+     * @param: int coord_select  selects coords to transform
+     * @param: int transform_basis
+     *************************************************************************************/
+    void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, MATRIX4X4_PTR mt, int coord_select, int transform_basis);
+
+    /**************************************************************************************
+
+     * @name: Model_To_World_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: int coord_select
+     *************************************************************************************/
+    void Model_To_World_OBJECT4DV1(OBJECT4DV1_PTR obj, int coord_select = TRANSFORM_LOCAL_TO_TRANS);
+
+    /**************************************************************************************
+
+     * @name: Remove_Backfaces_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: CAM4DV1_PTR cam
+     *************************************************************************************/
+    void Remove_Backfaces_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+
+    /**************************************************************************************
+
+     * @name: World_To_Camera_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: CAM4DV1_PTR cam
+     *************************************************************************************/
+    void World_To_Camera_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+
+    /**************************************************************************************
+
+     * @name: Camera_To_Perspective_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: CAM4DV1_PTR cam
+     *************************************************************************************/
+    void Camera_To_Perspective_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+
+    /**************************************************************************************
+
+     * @name: Camera_To_Perspective_Screen_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: CAM4DV1_PTR cam
+     *************************************************************************************/
+    void Camera_To_Perspective_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+
+    /**************************************************************************************
+
+     * @name: Perspective_To_Screen_OBJECT4DV1
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: CAM4DV1_PTR cam
+     *************************************************************************************/
+    void Perspective_To_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+
+    /**************************************************************************************
+     
+     * @name: Draw_OBJECT4DV1_Wire16
+     * @return: void
+     * @param: OBJECT4DV1_PTR obj
+     * @param: uint8_t * video_buffer
+     * @param: int lpitch
+     *************************************************************************************/
+     void Draw_OBJECT4DV1_Wire16(OBJECT4DV1_PTR obj, uint8_t* video_buffer, int lpitch);
 }

@@ -132,28 +132,28 @@ namespace KSR
             /*如果 p1_code 是 CLIP_CODE_N，表示点 p1 在裁剪区域的上方。此时，需要计算点 p1 与裁剪区域上边界的交点。
             计算新的 yc1 为 min_clip_y。使用直线方程计算新的 xc1。*/
             yc1 = min_clip_y;
-            xc1 = x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1);
+            xc1 = static_cast<int>(x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1));
         }
         else if (CLIP_CODE_S == p1_code)
         {
             /*如果 p1_code 是 CLIP_CODE_S，表示点 p1 在裁剪区域的下方。此时，需要计算点 p1 与裁剪区域下边界的交点。
             计算新的 yc1 为 max_clip_y。使用直线方程计算新的 xc1。*/
             yc1 = max_clip_y;
-            xc1 = x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1);
+            xc1 = static_cast<int>(x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1));
         }
         else if (CLIP_CODE_W == p1_code) // 西边界
         {
             /*如果 p1_code 是 CLIP_CODE_W，表示点 p1 在裁剪区域的左边。此时，需要计算点 p1 与裁剪区域左边界的交点。
             计算新的 xc1 为 min_clip_x。使用直线方程计算新的 yc1。*/
             xc1 = min_clip_x;
-            yc1 = y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1);
+            yc1 = static_cast<int>(y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1));
         }
         else if (CLIP_CODE_E == p1_code)// 东边界
         {
             /*如果 p1_code 是 CLIP_CODE_E，表示点 p1 在裁剪区域的右边。此时，需要计算点 p1 与裁剪区域右边界的交点。
             计算新的 xc1 为 max_clip_x。使用直线方程计算新的 yc1。*/
             xc1 = max_clip_x;
-            yc1 = y1 + 0.5f + (max_clip_x - x1) * (y2 - y1) / (x2 - x1);
+            yc1 = static_cast<int>(y1 + 0.5f + (max_clip_x - x1) * (y2 - y1) / (x2 - x1));
         }
         else if (CLIP_CODE_NE == p1_code) // 东北边界
         {
@@ -161,13 +161,13 @@ namespace KSR
             先计算点 p1 与上边界的交点。如果交点在裁剪区域的左右边界外，则再计算点 p1 与右边界的交点。*/
             // 先计算北向的水平边界是否相交
             yc1 = min_clip_y;
-            xc1 = x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1);
+            xc1 = static_cast<int>(x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1));
 
             if (xc1 < min_clip_x || xc1 > max_clip_x)
             {
                 // 再计算东向的垂直边界是否相交
                 xc1 = max_clip_x;
-                yc1 = y1 + 0.5f + (max_clip_x - x1) * (y2 - y1) / (x2 - x1);
+                yc1 = static_cast<int>(y1 + 0.5f + (max_clip_x - x1) * (y2 - y1) / (x2 - x1));
             }
         }
         else if (CLIP_CODE_SE == p1_code) // 东南边界
@@ -176,13 +176,13 @@ namespace KSR
               先计算点 p1 与下边界的交点。如果交点在裁剪区域的左右边界外，则再计算点 p1 与右边界的交点。*/
               // 先计算南向的水平边界是否相交
             yc1 = max_clip_y;
-            xc1 = x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1);
+            xc1 = static_cast<int>(x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1));
 
             if (xc1 < min_clip_x || xc1 > max_clip_x)
             {
                 // 再计算东向的垂直边界是否相交
                 xc1 = max_clip_x;
-                yc1 = y1 + 0.5f + (max_clip_x - x1) * (y2 - y1) / (x2 - x1);
+                yc1 = static_cast<int>(y1 + 0.5f + (max_clip_x - x1) * (y2 - y1) / (x2 - x1));
             }
         }
         else if (CLIP_CODE_NW == p1_code)
@@ -191,13 +191,13 @@ namespace KSR
             先计算点 p1 与上边界的交点。如果交点在裁剪区域的左右边界外，则再计算点 p1 与左边界的交点。*/
             // 先计算北向的水平边界是否相交
             yc1 = min_clip_y;
-            xc1 = x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1);
+            xc1 = static_cast<int>(x1 + 0.5f + (min_clip_y - y1) * (x2 - x1) / (y2 - y1));
 
             if (xc1 < min_clip_x || xc1 > max_clip_x)
             {
                 // 再计算西向的垂直边界是否相交
                 xc1 = min_clip_x;
-                yc1 = y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1);
+                yc1 = static_cast<int>(y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1));
             } // end if
         }
         else if (CLIP_CODE_SW == p1_code)
@@ -206,16 +206,15 @@ namespace KSR
             先计算点 p1 与下边界的交点。如果交点在裁剪区域的左右边界外，则再计算点 p1 与左边界的交点。*/
             // 先计算南向的水平边界是否相交
             yc1 = max_clip_y;
-            xc1 = x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1);
+            xc1 = static_cast<int>(x1 + 0.5f + (max_clip_y - y1) * (x2 - x1) / (y2 - y1));
 
             if (xc1 < min_clip_x || xc1 > max_clip_x)
             {
                 // 再计算西向的垂直边界是否相交
                 xc1 = min_clip_x;
-                yc1 = y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1);
+                yc1 = static_cast<int>(y1 + 0.5f + (min_clip_x - x1) * (y2 - y1) / (x2 - x1));
             }
         }
-
 
         if (CLIP_CODE_C == p2_code)
         {
@@ -243,45 +242,45 @@ namespace KSR
         else if (CLIP_CODE_NE == p2_code)
         {
             yc2 = min_clip_y;
-            xc2 = x2 + 0.5f + (min_clip_y - y2) * (x1 - x2) / (y1 - y2);
+            xc2 = static_cast<int>(x2 + 0.5f + (min_clip_y - y2) * (x1 - x2) / (y1 - y2));
 
             if (xc2 < min_clip_x || xc2 > max_clip_x)
             {
                 xc2 = max_clip_x;
-                yc2 = y2 + 0.5f + (max_clip_x - x2) * (y1 - y2) / (x1 - x2);
+                yc2 = static_cast<int>(y2 + 0.5f + (max_clip_x - x2) * (y1 - y2) / (x1 - x2));
             }
         }
         else if (CLIP_CODE_SE == p2_code)
         {
             yc2 = max_clip_y;
-            xc2 = x2 + 0.5 + (max_clip_y - y2) * (x1 - x2) / (y1 - y2);
+            xc2 = static_cast<int>(x2 + 0.5f + (max_clip_y - y2) * (x1 - x2) / (y1 - y2));
 
             if (xc2 < min_clip_x || xc2 > max_clip_x)
             {
                 xc2 = max_clip_x;
-                yc2 = y2 + 0.5f + (max_clip_x - x2) * (y1 - y2) / (x1 - x2);
+                yc2 = static_cast<int>(y2 + 0.5f + (max_clip_x - x2) * (y1 - y2) / (x1 - x2));
             }
         }
         else if (CLIP_CODE_NW == p2_code)
         {
             yc2 = min_clip_y;
-            xc2 = x2 + 0.5f + (min_clip_y - y2) * (x1 - x2) / (y1 - y2);
+            xc2 = static_cast<int>(x2 + 0.5f + (min_clip_y - y2) * (x1 - x2) / (y1 - y2));
 
             if (xc2 < min_clip_x || xc2 > max_clip_x)
             {
                 xc2 = min_clip_x;
-                yc2 = y2 + 0.5f + (min_clip_x - x2) * (y1 - y2) / (x1 - x2);
+                yc2 = static_cast<int>(y2 + 0.5f + (min_clip_x - x2) * (y1 - y2) / (x1 - x2));
             }
         }
         else if (CLIP_CODE_SW == p2_code)
         {
             yc2 = max_clip_y;
-            xc2 = x2 + 0.5 + (max_clip_y - y2) * (x1 - x2) / (y1 - y2);
+            xc2 = static_cast<int>(x2 + 0.5f + (max_clip_y - y2) * (x1 - x2) / (y1 - y2));
 
             if (xc2 < min_clip_x || xc2 > max_clip_x)
             {
                 xc2 = min_clip_x;
-                yc2 = y2 + 0.5f + (min_clip_x - x2) * (y1 - y2) / (x1 - x2);
+                yc2 = static_cast<int>(y2 + 0.5f + (min_clip_x - x2) * (y1 - y2) / (x1 - x2));
             }
         }
 
