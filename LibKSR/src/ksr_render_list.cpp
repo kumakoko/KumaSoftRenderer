@@ -346,4 +346,75 @@ namespace KSR
 
     } // end Draw_RENDERLIST4DV1_Wire
 
+
+    int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,POLY4DV1_PTR poly)
+    {
+        // converts the sent POLY4DV1 into a FACE4DV1 and inserts it
+        // into the render list
+
+        // step 0: are we full?
+        if (rend_list->num_polys >= RENDERLIST4DV1_MAX_POLYS)
+            return(0);
+
+        // step 1: copy polygon into next opening in polygon render list
+
+        // point pointer to polygon structure
+        rend_list->poly_ptrs[rend_list->num_polys] = &rend_list->poly_data[rend_list->num_polys];
+
+        // copy fields
+        rend_list->poly_data[rend_list->num_polys].state = poly->state;
+        rend_list->poly_data[rend_list->num_polys].attr = poly->attr;
+        rend_list->poly_data[rend_list->num_polys].color = poly->color;
+
+        // now copy vertices, be careful! later put a loop, but for now
+        // know there are 3 vertices always!
+        VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[0],
+            &poly->vlist[poly->vert[0]]);
+
+        VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[1],
+            &poly->vlist[poly->vert[1]]);
+
+        VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[2],
+            &poly->vlist[poly->vert[2]]);
+
+        // and copy into local vertices too
+        VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[0],
+            &poly->vlist[poly->vert[0]]);
+
+        VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[1],
+            &poly->vlist[poly->vert[1]]);
+
+        VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[2],
+            &poly->vlist[poly->vert[2]]);
+
+        // now the polygon is loaded into the next free array position, but
+        // we need to fix up the links
+
+        // test if this is the first entry
+        if (rend_list->num_polys == 0)
+        {
+            // set pointers to null, could loop them around though to self
+            rend_list->poly_data[0].next = NULL;
+            rend_list->poly_data[0].prev = NULL;
+        } // end if
+        else
+        {
+            // first set this node to point to previous node and next node (null)
+            rend_list->poly_data[rend_list->num_polys].next = NULL;
+            rend_list->poly_data[rend_list->num_polys].prev =
+                &rend_list->poly_data[rend_list->num_polys - 1];
+
+            // now set previous node to point to this node
+            rend_list->poly_data[rend_list->num_polys - 1].next =
+                &rend_list->poly_data[rend_list->num_polys];
+        } // end else
+
+     // increment number of polys in list
+        rend_list->num_polys++;
+
+        // return successful insertion
+        return(1);
+
+    } // end Insert_POLY4DV1_RENDERLIST4DV1
+
 }

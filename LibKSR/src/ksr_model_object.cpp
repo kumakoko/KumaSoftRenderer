@@ -749,4 +749,87 @@ namespace KSR
         } // end for poly
 
     } // end Draw_OBJECT4DV1_Wire16
+
+    int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj,  // object to cull
+        CAM4DV1_PTR cam,     // camera to cull relative to
+        int cull_flags)     // clipping planes to consider
+    {
+        // NOTE: is matrix based
+        // this function culls an entire object from the viewing
+        // frustrum by using the sent camera information and object
+        // the cull_flags determine what axes culling should take place
+        // x, y, z or all which is controlled by ORing the flags
+        // together
+        // if the object is culled its state is modified thats all
+        // this function assumes that both the camera and the object
+        // are valid!
+
+        // step 1: transform the center of the object's bounding
+        // sphere into camera space
+
+        POINT4D sphere_pos; // hold result of transforming center of bounding sphere
+
+        // transform point
+        Mat_Mul_VECTOR4D_4X4(&obj->world_pos, &cam->mcam, &sphere_pos);
+
+        // step 2:  based on culling flags remove the object
+        if (cull_flags & CULL_OBJECT_Z_PLANE)
+        {
+            // cull only based on z clipping planes
+
+            // test far plane
+            if (((sphere_pos.z - obj->max_radius) > cam->far_clip_z) ||
+                ((sphere_pos.z + obj->max_radius) < cam->near_clip_z))
+            {
+                SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
+                return(1);
+            } // end if
+
+        } // end if
+
+        if (cull_flags & CULL_OBJECT_X_PLANE)
+        {
+            // cull only based on x clipping planes
+            // we could use plane equations, but simple similar triangles
+            // is easier since this is really a 2D problem
+            // if the view volume is 90 degrees the the problem is trivial
+            // buts lets assume its not
+
+            // test the the right and left clipping planes against the leftmost and rightmost
+            // points of the bounding sphere
+            float z_test = (0.5) * cam->viewplane_width * sphere_pos.z / cam->view_dist;
+
+            if (((sphere_pos.x - obj->max_radius) > z_test) || // right side
+                ((sphere_pos.x + obj->max_radius) < -z_test))  // left side, note sign change
+            {
+                SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
+                return(1);
+            } // end if
+        } // end if
+
+        if (cull_flags & CULL_OBJECT_Y_PLANE)
+        {
+            // cull only based on y clipping planes
+            // we could use plane equations, but simple similar triangles
+            // is easier since this is really a 2D problem
+            // if the view volume is 90 degrees the the problem is trivial
+            // buts lets assume its not
+
+            // test the the top and bottom clipping planes against the bottommost and topmost
+            // points of the bounding sphere
+            float z_test = (0.5) * cam->viewplane_height * sphere_pos.z / cam->view_dist;
+
+            if (((sphere_pos.y - obj->max_radius) > z_test) || // top side
+                ((sphere_pos.y + obj->max_radius) < -z_test))  // bottom side, note sign change
+            {
+                SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
+                return(1);
+            } // end if
+
+        } // end if
+
+        // return failure to cull
+        return(0);
+
+    } // end Cull_OBJECT4DV1
 }

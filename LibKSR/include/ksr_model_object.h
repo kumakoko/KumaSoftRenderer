@@ -211,12 +211,22 @@ namespace KSR
     void Perspective_To_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
 
     /**************************************************************************************
-     
+
      * @name: Draw_OBJECT4DV1_Wire16
      * @return: void
      * @param: OBJECT4DV1_PTR obj
      * @param: uint8_t * video_buffer
      * @param: int lpitch
      *************************************************************************************/
-     void Draw_OBJECT4DV1_Wire16(OBJECT4DV1_PTR obj, uint8_t* video_buffer, int lpitch);
+    void Draw_OBJECT4DV1_Wire16(OBJECT4DV1_PTR obj, uint8_t* video_buffer, int lpitch);
+
+    /**************************************************************************************
+
+    @name: KSR::Cull_OBJECT4DV1
+    @return: int
+    @param: OBJECT4DV1_PTR obj object to cull
+    @param: CAM4DV1_PTR        cam camera to cull relative to
+    @param: int cull_flags     clipping planes to consider
+    *************************************************************************************/
+    int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags);
 }
