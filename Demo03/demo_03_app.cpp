@@ -23,21 +23,22 @@ SOFTWARE.
 *********************************************************************************************/
 
 #include "demo_03_app.h"
+#include "ksr_light.h"
 
-void Demo02App::InitScene()
+void Demo03App::InitScene()
 {
     KSR::RGB16Bit = KSR::RGB16Bit565;
 
-    float near_clip_z = 50.0f;
-    float far_clip_z = 500.0f;
-    float fov = 90.0f;
+    float near_clip_z = 200.0f;
+    float far_clip_z = 12000.0f;
+    float fov = 120.0f;
 
     // initialize the camera with 90 FOV, normalized coordinates
     KSR::Init_CAM4DV1(&cam,      // the camera object
         KSR::CAM_MODEL_EULER, // the euler model
         &cam_pos,  // initial camera position
         &cam_dir,  // initial camera angles
-        nullptr,      // no target
+        &cam_target,      // no target
         near_clip_z,      // near and far clipping planes
         far_clip_z,
         fov,      // field of view in degrees
@@ -51,7 +52,83 @@ void Demo02App::InitScene()
     obj.world_pos.z = 100;
 }
 
-void Demo02App::OnKeyUp(SDL_Event& event)
+void Demo03App::InitLights()
+{
+    KSR::RGBAV1 white, gray, black, red, green, blue;
+
+    white.rgba = KSR::_RGBA32BIT(255, 255, 255, 0);
+    gray.rgba = KSR::_RGBA32BIT(100, 100, 100, 0);
+    black.rgba = KSR::_RGBA32BIT(0, 0, 0, 0);
+    red.rgba = KSR::_RGBA32BIT(255, 0, 0, 0);
+    green.rgba = KSR::_RGBA32BIT(0, 255, 0, 0);
+    blue.rgba = KSR::_RGBA32BIT(0, 0, 255, 0);
+
+    // ambient light
+    KSR::Init_Light_LIGHTV1(KSR::AMBIENT_LIGHT_INDEX,
+        KSR::LIGHTV1_STATE_ON,      // turn the light on
+        KSR::LIGHTV1_ATTR_AMBIENT,  // ambient light type
+        gray, black, black,    // color for ambient term only
+        NULL, NULL,            // no need for pos or dir
+        0.0f, 0.0f, 0.0f,                 // no need for attenuation
+        0.0f, 0.0f, 0.0f);                // spotlight info NA
+
+
+    KSR::VECTOR4D dlight_dir = { -1.0f,0.0f,-1.0f,0.0f };
+
+    // directional light
+    Init_Light_LIGHTV1(KSR::INFINITE_LIGHT_INDEX,
+        KSR::LIGHTV1_STATE_ON,      // turn the light on
+        KSR::LIGHTV1_ATTR_INFINITE, // infinite light type
+        black, gray, black,    // color for diffuse term only
+        NULL, &dlight_dir,     // need direction only
+        0.0f, 0.0f, 0.0f,                 // no need for attenuation
+        0.0f, 0.0f, 0.0f);                // spotlight info NA
+
+
+    KSR::VECTOR4D plight_pos = { 0.0f,200.0f,0.0f,0.0f };
+
+    // point light
+    Init_Light_LIGHTV1(KSR::POINT_LIGHT_INDEX,
+        KSR::LIGHTV1_STATE_ON,      // turn the light on
+        KSR::LIGHTV1_ATTR_POINT,    // pointlight type
+        black, green, black,   // color for diffuse term only
+        &plight_pos, NULL,     // need pos only
+        0.0f, 0.001f, 0.0f,              // linear attenuation only
+        0.0f, 0.0f, 1.0f);                // spotlight info NA
+
+    KSR::VECTOR4D slight_pos = { 0.0f,200.0f,0.0f,0.0f };
+    KSR::VECTOR4D slight_dir = { -1.0f,0.0f,-1.0f,0.0f };
+
+    // spot light
+    Init_Light_LIGHTV1(KSR::SPOT_LIGHT_INDEX,
+        KSR::LIGHTV1_STATE_ON,         // turn the light on
+        KSR::LIGHTV1_ATTR_SPOTLIGHT2,  // spot light type 2
+        black, red, black,      // color for diffuse term only
+        &slight_pos, &slight_dir, // need pos only
+        0.0f, 0.001f, 0.0f,                 // linear attenuation only
+        0.0f, 0.0f, 1.0f);                   // spotlight powerfactor only
+}
+
+void Demo03App::UpdateLights()
+{
+    // move point light source in ellipse around game world
+    KSR::lights[KSR::POINT_LIGHT_INDEX].pos.x = 4000.0f * cosf(plight_ang);
+    KSR::lights[KSR::POINT_LIGHT_INDEX].pos.y = 200.0f;
+    KSR::lights[KSR::POINT_LIGHT_INDEX].pos.z = 4000.0f * sinf(plight_ang);
+
+    if ((plight_ang += 3) > 360)
+        plight_ang = 0;
+
+    // move spot light source in ellipse around game world
+    KSR::lights[KSR::SPOT_LIGHT_INDEX].pos.x = 2000.0f * cosf(slight_ang);
+    KSR::lights[KSR::SPOT_LIGHT_INDEX].pos.y = 200.0f;
+    KSR::lights[KSR::SPOT_LIGHT_INDEX].pos.z = 2000.0f * sinf(slight_ang);
+
+    if ((slight_ang -= 5) < 0)
+        slight_ang = 360;
+}
+
+void Demo03App::OnKeyUp(SDL_Event& event)
 {
     if (SDLK_UP == event.key.keysym.sym )
     {
@@ -72,44 +149,24 @@ void Demo02App::OnKeyUp(SDL_Event& event)
     }
 }
 
-void Demo02App::RenderScene()
+void Demo03App::RenderScene()
 {
-    // reset the object (this only matters for backface and object removal)
-    KSR::Reset_OBJECT4DV1(&obj);
+    // draw the sky
+    KSR::Draw_Rectangle(0, 0, wnd_render_area_width_ - 1, wnd_render_area_height_ / 2, KSR::RGB16Bit(0, 140, 192), KSR::lpddsback);
 
-    // reset angles
-    //x_ang = z_ang = 0;
+    // draw the ground
+    KSR::Draw_Rectangle(0, 0, wnd_render_area_width_ - 1, wnd_render_area_height_ / 2, KSR::RGB16Bit(103, 62, 3), KSR::lpddsback);
 
-    // generate rotation matrix around y axis
-    KSR::Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);
+    KSR::Reset_RENDERLIST4DV1(&rend_list);
 
-    // rotate the local coords of single polygon in renderlist
-    KSR::Transform_OBJECT4DV1(&obj, &mrot, KSR::TRANSFORM_LOCAL_ONLY, 1);
-
-    // perform local/model to world transform
-    KSR::Model_To_World_OBJECT4DV1(&obj);
+    UpdateLights();
 
     // generate camera matrix
-    KSR::Build_CAM4DV1_Matrix_Euler(&cam, KSR::CAM_ROT_SEQ_ZYX);
+    Build_CAM4DV1_Matrix_Euler(&cam, KSR::CAM_ROT_SEQ_ZYX);
 
-    // remove backfaces
-    KSR::Remove_Backfaces_OBJECT4DV1(&obj, &cam);
+    if (lighting_mode == 1)
+        Light_OBJECT4DV1_World16(&obj_player, &cam, KSR::lights, 4);
 
-    // apply world to camera transform
-    KSR::World_To_Camera_OBJECT4DV1(&obj, &cam);
-
-    // apply camera to perspective transformation
-    KSR::Camera_To_Perspective_OBJECT4DV1(&obj, &cam);
-
-    // apply screen transform
-    KSR::Perspective_To_Screen_OBJECT4DV1(&obj, &cam);
-
-    // lock the back buffer
-    KSR::DDraw_Lock_Back_Surface();
-
-    // render the object
-    KSR::Draw_OBJECT4DV1_Wire16(&obj, KSR::back_buffer, KSR::back_lpitch);
-
-    // unlock the back buffer
-    KSR::DDraw_Unlock_Back_Surface();
+    // insert the object into render list
+    Insert_OBJECT4DV1_RENDERLIST4DV12(&rend_list, &obj_player, 0, lighting_mode);
 }

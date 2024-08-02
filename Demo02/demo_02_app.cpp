@@ -80,36 +80,36 @@ void Demo02App::RenderScene()
     // reset angles
     //x_ang = z_ang = 0;
 
-    // generate rotation matrix around y axis
+    // 根据绕轴旋转的角度，构建出模型旋转的欧拉角
     KSR::Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);
 
-    // rotate the local coords of single polygon in renderlist
-    KSR::Transform_OBJECT4DV1(&obj, &mrot, KSR::TRANSFORM_LOCAL_ONLY, 1);
+    // 根据构建出来的旋转矩阵，旋转model object
+    KSR::Transform_OBJECT4DV1(&obj, &mrot, KSR::TRANSFORM_LOCAL_ONLY, true);
 
-    // perform local/model to world transform
+    // 把模型从局部坐标系变换到世界坐标系去
     KSR::Model_To_World_OBJECT4DV1(&obj);
 
-    // generate camera matrix
+    // 构建camera matrix，用来执行world->view变换
     KSR::Build_CAM4DV1_Matrix_Euler(&cam, KSR::CAM_ROT_SEQ_ZYX);
 
-    // remove backfaces
+    // 模型网格的背面剔除
     KSR::Remove_Backfaces_OBJECT4DV1(&obj, &cam);
 
-    // apply world to camera transform
+    // 把模型从世界坐标系变换到观察空间坐标系去
     KSR::World_To_Camera_OBJECT4DV1(&obj, &cam);
 
-    // apply camera to perspective transformation
+    // 把模型从观察空间坐标系变换到投影坐标系去
     KSR::Camera_To_Perspective_OBJECT4DV1(&obj, &cam);
 
-    // apply screen transform
+    // 把模型从投影坐标系变换到屏幕坐标系去
     KSR::Perspective_To_Screen_OBJECT4DV1(&obj, &cam);
 
-    // lock the back buffer
+    // 锁定back buffer，准备写屏
     KSR::DDraw_Lock_Back_Surface();
 
-    // render the object
+    // 渲染model buffer到back buffer
     KSR::Draw_OBJECT4DV1_Wire16(&obj, KSR::back_buffer, KSR::back_lpitch);
 
-    // unlock the back buffer
+    // 解锁back buffer
     KSR::DDraw_Unlock_Back_Surface();
 }

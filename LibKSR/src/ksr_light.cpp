@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
 #include "ksr_light.h"
+#include "ksr_model_object.h"
+#include "ksr_constants.h"
+#include "ksr_surface.h"
 
 namespace KSR
 {
@@ -37,8 +40,8 @@ namespace KSR
     }
 
     int Init_Light_LIGHTV1(int           index,      // index of light to create (0..MAX_LIGHTS-1)
-        int          _state,      // state of light
-        int          _attr,       // type of light, and extra qualifiers
+        LightOnOffState          _state,      // state of light
+        LightType          _attr,       // type of light, and extra qualifiers
         RGBAV1       _c_ambient,  // ambient light intensity
         RGBAV1       _c_diffuse,  // diffuse light intensity
         RGBAV1       _c_specular, // specular light intensity
@@ -90,7 +93,6 @@ namespace KSR
         return(index);
 
     } // end Create_Light_LIGHTV1
-
 
 
     int Light_OBJECT4DV1_World16(OBJECT4DV1_PTR obj,  // object to process

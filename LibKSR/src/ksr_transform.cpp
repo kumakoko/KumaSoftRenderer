@@ -21,7 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
-
+#include <xmmintrin.h>
+#include <pmmintrin.h>
 #include "ksr_transform.h"
 
 namespace KSR
@@ -38,13 +39,13 @@ namespace KSR
         // does not carry out the last column multiply since
         // we are assuming w=1, there is no point
         int col, row;
-        for ( col = 0; col < 3; col++)
+        for (col = 0; col < 3; col++)
         {
             // compute dot product from row of ma 
             // and column of mb
             float sum = 0; // used to hold result
 
-            for ( row = 0; row < 3; row++)
+            for (row = 0; row < 3; row++)
             {
                 // add in next product pair
                 sum += (va->M[row] * mb->M[row][col]);
@@ -96,12 +97,29 @@ namespace KSR
 
     } // end Mat_Mul_VECTOR3D_4X3
 
-    ////////////////////////////////////////////////////////////////////
 
-    void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR  va,
-        MATRIX4X4_PTR mb,
-        VECTOR4D_PTR  vprod)
+    void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va, MATRIX4X4_PTR mb, VECTOR4D_PTR vprod)
     {
+#if defined(_MSC_VER)
+        // Load the vector into an SSE register
+        __m128 vecA = _mm_loadu_ps(va->M);
+
+        for (int col = 0; col < 4; col++)
+        {
+            // Load the corresponding column of the matrix into an SSE register
+            __m128 colB = _mm_set_ps(mb->M[3][col], mb->M[2][col], mb->M[1][col], mb->M[0][col]);
+
+            // Perform dot product of the vector and the matrix column
+            __m128 result = _mm_mul_ps(vecA, colB);
+
+            // Sum up the elements of the result using horizontal add
+            result = _mm_hadd_ps(result, result);
+            result = _mm_hadd_ps(result, result);
+
+            // Store the result in the product vector
+            vprod->M[col] = _mm_cvtss_f32(result);
+        }
+#else
         // this function multiplies a VECTOR4D against a 
         // 4x4 matrix - ma*mb and stores the result in mprod
         // the function makes no assumptions
@@ -122,7 +140,7 @@ namespace KSR
             vprod->M[col] = sum;
 
         } // end for col
-
+#endif
     } // end Mat_Mul_VECTOR4D_4X4
 
     ////////////////////////////////////////////////////////////////////

@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
 
+#if defined(_MSC_VER)
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+#endif
 #include <cmath>
 #include <utility>
 #include "ksr_vector.h"
@@ -98,7 +102,7 @@ namespace KSR
 
         if (y < x) std::swap(x, y);
 
-                    int dist = (z + 11 * (y >> 5) + (x >> 2));
+        int dist = (z + 11 * (y >> 5) + (x >> 2));
 
         // compute distance with 8% error
         return((float)(dist >> 10));
@@ -201,6 +205,22 @@ namespace KSR
 
     void VECTOR4D_Scale(float k, VECTOR4D_PTR va, VECTOR4D_PTR vscaled)
     {
+#if defined(_MSC_VER)
+        // Load the vector into an SSE register
+        __m128 vecA = _mm_loadu_ps(va->M);
+
+        // Load the scalar k into an SSE register, replicated across all elements
+        __m128 scale = _mm_set1_ps(k);
+
+        // Perform the scaling by multiplying the vector with the scalar
+        __m128 scaledVec = _mm_mul_ps(vecA, scale);
+
+        // Set the w component to 1.0f manually
+        scaledVec = _mm_move_ss(scaledVec, _mm_set_ss(1.0f));
+
+        // Store the result back to the output vector
+        _mm_storeu_ps(vscaled->M, scaledVec);
+#else
         // this function scales a vector by the constant k,
         // leaves the original unchanged, and returns the result
         // in vres as well as on the stack
@@ -210,7 +230,7 @@ namespace KSR
         vscaled->y = k * va->y;
         vscaled->z = k * va->z;
         vscaled->w = 1;
-
+#endif
     } // end VECTOR4D_Scale
 
     //////////////////////////////////////////////////////////////
@@ -280,6 +300,34 @@ namespace KSR
 
     void VECTOR4D_Normalize(VECTOR4D_PTR va)
     {
+#if defined(_MSC_VER)
+        __m128 vecA = _mm_loadu_ps(va->M); // Load the vector into an SSE register
+        __m128 dotProduct = _mm_mul_ps(vecA, vecA); // Calculate the dot product of the vector with itself
+        dotProduct = _mm_hadd_ps(dotProduct, dotProduct);
+        dotProduct = _mm_hadd_ps(dotProduct, dotProduct);
+
+        __m128 length = _mm_sqrt_ss(dotProduct); // Compute the square root of the dot product to get the length
+
+        float len = _mm_cvtss_f32(length); // Check if the length is less than EPSILON_E5
+        if (len < EPSILON_E5) {
+            return;  // Zero length vector, do nothing
+        }
+
+        // Calculate the inverse of the length
+        __m128 lengthInv = _mm_rcp_ss(length);
+
+        // Broadcast the inverse length across all elements
+        lengthInv = _mm_shuffle_ps(lengthInv, lengthInv, _MM_SHUFFLE(0, 0, 0, 0));
+
+        // Normalize the vector
+        __m128 normalizedVec = _mm_mul_ps(vecA, lengthInv);
+
+        // Set the w component to 1.0f
+        normalizedVec = _mm_move_ss(normalizedVec, _mm_set_ss(1.0f));
+
+        // Store the normalized vector back to va
+        _mm_storeu_ps(va->M, normalizedVec);
+#else
         // normalizes the sent vector and returns the result
 
         // compute length
@@ -297,7 +345,7 @@ namespace KSR
         va->y *= length_inv;
         va->z *= length_inv;
         va->w = 1;
-
+#endif
     } // end VECTOR4D_Normalize
 
     ///////////////////////////////////////////////////////////////
@@ -307,6 +355,40 @@ namespace KSR
         // normalizes the sent vector and returns the result in vn
 
         VECTOR4D_ZERO(vn);
+
+#if defined(_MSC_VER)
+        // Load the vector into an SSE register
+        __m128 vecA = _mm_loadu_ps(va->M);
+
+        // Calculate the dot product of the vector with itself
+        __m128 dotProduct = _mm_mul_ps(vecA, vecA);
+        dotProduct = _mm_hadd_ps(dotProduct, dotProduct);
+        dotProduct = _mm_hadd_ps(dotProduct, dotProduct);
+
+        // Compute the square root of the dot product to get the length
+        __m128 length = _mm_sqrt_ss(dotProduct);
+
+        // Check if the length is less than EPSILON_E5
+        float len = _mm_cvtss_f32(length);
+        if (len < EPSILON_E5) {
+            return;  // Zero length vector, do nothing
+        }
+
+        // Calculate the inverse of the length
+        __m128 lengthInv = _mm_rcp_ss(length);
+
+        // Broadcast the inverse length across all elements
+        lengthInv = _mm_shuffle_ps(lengthInv, lengthInv, _MM_SHUFFLE(0, 0, 0, 0));
+
+        // Normalize the vector
+        __m128 normalizedVec = _mm_mul_ps(vecA, lengthInv);
+
+        // Set the w component to 1.0f
+        normalizedVec = _mm_move_ss(normalizedVec, _mm_set_ss(1.0f));
+
+        // Store the normalized vector back to vn
+        _mm_storeu_ps(vn->M, normalizedVec);
+#else
 
         // compute length
         float length = sqrt(va->x * va->x + va->y * va->y + va->z * va->z);
@@ -323,6 +405,6 @@ namespace KSR
         vn->y = va->y * length_inv;
         vn->z = va->z * length_inv;
         vn->w = 1;
-
+#endif
     } // end VECTOR4D_Normalize
 }

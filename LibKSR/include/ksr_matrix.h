@@ -34,7 +34,11 @@ namespace KSR
     {
         union
         {
+#if defined(_MSC_VER)
+            __declspec(align(16)) float M[2];
+#else
             float M[2];
+#endif
             struct
             {
                 float M00, M01;
@@ -89,7 +93,11 @@ namespace KSR
     {
         union
         {
+#if defined(_MSC_VER)
+            __declspec(align(16)) float M[3][2];
+#else
             float M[3][2];
+#endif
             struct
             {
                 float M00, M01;
@@ -103,7 +111,11 @@ namespace KSR
     {
         union
         {
+#if defined(_MSC_VER)
+            __declspec(align(16)) float M[3][3];
+#else
             float M[3][3];
+#endif
             struct
             {
                 float M00, M01, M02;
@@ -135,7 +147,7 @@ namespace KSR
     {
         union
         {
-#if defined _MSC_VER
+#if defined(_MSC_VER)
             __declspec(align(16)) float M[4][4];
 #else
             float M[4][4];
@@ -327,10 +339,10 @@ namespace KSR
     }
 
     /**************************************************************************************
-    
+    根据绕轴旋转的欧拉角算出旋转矩阵
     @name: KSR::Build_XYZ_Rotation_MATRIX4X4
     @return: void
-    @param: float theta_x
+    @param: float theta_x 
     @param: float theta_y
     @param: float theta_z
     @param: MATRIX4X4_PTR mrot

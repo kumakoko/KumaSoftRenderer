@@ -26,6 +26,7 @@ SOFTWARE.
 #include "ksr_surface.h"
 #include "ksr_color.h"
 #include "ksr_shape_drawing.h"
+#include "ksr_constants.h"
 
 // https://stackoverflow.com/questions/28341281/how-can-i-do-double-buffering-in-sdl-2-0
 /*SDL_RenderClear will clear the current rendering buffer.
@@ -33,6 +34,7 @@ SDL_RenderCopy will render textures to the current rendering buffer.
 SDL_RenderPresent will swap the buffers, showing everything that was rendered using SDL_RenderCopy since the last SDL_RenderClear call.*/
 namespace KSR
 {
+    int32_t dd_pixel_format = DD_PIXEL_FORMAT565;
     uint8_t* primary_buffer = nullptr; // 主页面首指针
     uint8_t* back_buffer = nullptr;    // 后台页面的首指针
     int back_lpitch = 0;

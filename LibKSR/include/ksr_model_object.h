@@ -49,7 +49,10 @@ namespace KSR
         VECTOR4D dir;       // rotation angles of object in local
         // cords or unit direction vector user defined???
 
-        VECTOR4D ux, uy, uz;  // local axes to track full orientation
+        VECTOR4D ux; 
+        VECTOR4D uy;
+        VECTOR4D uz;  // 模型自身的基于局部坐标系的坐标轴，用来跟踪自身的朝向
+        
         // this is updated automatically during
         // rotation calls
 
@@ -146,15 +149,17 @@ namespace KSR
     void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj);
 
     /**************************************************************************************
+     利用传递进函数的参数：变换矩阵mt，对object中的基于局部坐标系顶点，或者在其他坐标系下的顶点
+     进行变换
 
      * @name: Transform_OBJECT4DV1
      * @return: void
      * @param: OBJECT4DV1_PTR obj object to transform
      * @param: MATRIX4X4_PTR mt transformation matrix
-     * @param: int coord_select  selects coords to transform
-     * @param: int transform_basis
+     * @param: TransformControlFlag coord_select  selects coords to transform
+     * @param: bool transform_basis 指定是否要对model object自身的朝向向量进行变换
      *************************************************************************************/
-    void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, MATRIX4X4_PTR mt, int coord_select, int transform_basis);
+    void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, MATRIX4X4_PTR mt, TransformControlFlag coord_select, bool transform_basis);
 
     /**************************************************************************************
 
@@ -211,14 +216,14 @@ namespace KSR
     void Perspective_To_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
 
     /**************************************************************************************
-
+     详细解释参见KSR：：Draw_RENDERLIST4DV1_Wire16函数
      * @name: Draw_OBJECT4DV1_Wire16
      * @return: void
      * @param: OBJECT4DV1_PTR obj
      * @param: uint8_t * video_buffer
      * @param: int lpitch
      *************************************************************************************/
-    void Draw_OBJECT4DV1_Wire16(OBJECT4DV1_PTR obj, uint8_t* video_buffer, int lpitch);
+    void Draw_OBJECT4DV1_Wire16(OBJECT4DV1_PTR obj, uint8_t* video_buffer, int pitch);
 
     /**************************************************************************************
 

@@ -110,6 +110,19 @@ namespace KSR
     constexpr uint16_t OBJECT4DV1_STATE_VISIBLE = 0x0002;
     constexpr uint16_t OBJECT4DV1_STATE_CULLED = 0x0004;
 
+
+    // general culling flags
+    constexpr uint16_t CULL_OBJECT_X_PLANE = 0x0001;// cull on the x clipping planes
+    constexpr uint16_t CULL_OBJECT_Y_PLANE = 0x0002;// cull on the y clipping planes
+    constexpr uint16_t CULL_OBJECT_Z_PLANE = 0x0004; // cull on the z clipping planes
+    constexpr uint16_t CULL_OBJECT_XYZ_PLANES = (CULL_OBJECT_X_PLANE | CULL_OBJECT_Y_PLANE | CULL_OBJECT_Z_PLANE);
+
+    constexpr int32_t DD_PIXEL_FORMAT8 = 8;
+    constexpr int32_t DD_PIXEL_FORMAT555 = 15;
+    constexpr int32_t DD_PIXEL_FORMAT565 = 16;
+    constexpr int32_t DD_PIXEL_FORMAT888 = 24;
+    constexpr int32_t DD_PIXEL_FORMATALPHA888 = 32;
+
     /**************************************************************************************
 
     @name: KSR::DEG_TO_RAD

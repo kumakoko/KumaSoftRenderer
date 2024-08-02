@@ -32,14 +32,14 @@ SOFTWARE.
 
 int main(int argc, char* argv[])
 {
-    Demo02App* app = nullptr;
+    Demo03App* app = nullptr;
     const uint32_t wnd_render_area_width = 1024;
     const uint32_t wnd_render_area_height = 768;
     const char* title = "[Kuma Soft Renderer] : 02-Cube and back face cull";
 
     try
     {   
-        app = new Demo02App();
+        app = new Demo03App();
         app->InitRenderer(wnd_render_area_width, wnd_render_area_height, title);
         app->InitScene();
         app->Run();

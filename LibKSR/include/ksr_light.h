@@ -23,13 +23,38 @@ SOFTWARE.
 *********************************************************************************************/
 #pragma once
 
+#include <cstdint>
 #include "ksr_color.h"
 #include "ksr_vector.h"
 #include "ksr_model_object.h"
+#include "ksr_render_list.h"
 #include "ksr_camera.h"
 
 namespace KSR
 {
+    // create some constants for ease of access
+    constexpr uint32_t AMBIENT_LIGHT_INDEX = 0; // ambient light index
+    constexpr uint32_t INFINITE_LIGHT_INDEX = 1; // infinite light index
+    constexpr uint32_t POINT_LIGHT_INDEX = 2; // point light index
+    constexpr uint32_t SPOT_LIGHT_INDEX = 3; // spot light index
+
+    // 灯光的开关状态
+    enum LightOnOffState
+    {
+        LIGHTV1_STATE_ON = 1,   // 开
+        LIGHTV1_STATE_OFF = 0   // 关
+    };
+
+    enum LightType 
+    {
+        LIGHTV1_ATTR_AMBIENT = 0x0001,    // basic ambient light
+        LIGHTV1_ATTR_INFINITE = 0x0002,    // infinite light source
+        LIGHTV1_ATTR_DIRECTIONAL = 0x0002,    // infinite light source (alias)
+        LIGHTV1_ATTR_POINT = 0x0004,    // point light source
+        LIGHTV1_ATTR_SPOTLIGHT1 = 0x0008,    // spotlight type 1 (simple)
+        LIGHTV1_ATTR_SPOTLIGHT2 = 0x0010    // spotlight type 2 (complex)
+    };
+
 
     // first light structure
     typedef struct LIGHTV1_TYP
@@ -53,25 +78,25 @@ namespace KSR
         float faux1, faux2;
         void* ptr;
 
-    } LIGHTV1, *LIGHTV1_PTR;
-    
+    } LIGHTV1, * LIGHTV1_PTR;
+
     LIGHTV1 lights[MAX_LIGHTS];  // lights in system
-    
+
     extern int num_lights;              // current number of lights
 
     /**************************************************************************************
-    
+
     @name: KSR::Reset_Lights_LIGHTV1
     @return: void
     *************************************************************************************/
     void Reset_Lights_LIGHTV1();
 
     /**************************************************************************************
-    
+
     @name: KSR::Init_Light_LIGHTV1
     @return: int
     @param: int index
-    @param: int _state
+    @param: LightOnOffState _state
     @param: int _attr
     @param: RGBAV1 _c_ambient
     @param: RGBAV1 _c_diffuse
@@ -86,8 +111,8 @@ namespace KSR
     @param: float _pf
     *************************************************************************************/
     int Init_Light_LIGHTV1(int           index,      // index of light to create (0..MAX_LIGHTS-1)
-        int          _state,      // state of light
-        int          _attr,       // type of light, and extra qualifiers
+        LightOnOffState          _state,      // state of light
+        LightType          _attr,       // type of light, and extra qualifiers
         RGBAV1       _c_ambient,  // ambient light intensity
         RGBAV1       _c_diffuse,  // diffuse light intensity
         RGBAV1       _c_specular, // specular light intensity
@@ -101,7 +126,7 @@ namespace KSR
         float        _pf);
 
     /**************************************************************************************
-    
+
     @name: KSR::Light_OBJECT4DV1_World16
     @return: int
     @param: OBJECT4DV1_PTR obj  object to process

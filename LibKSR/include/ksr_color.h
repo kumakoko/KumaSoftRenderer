@@ -109,13 +109,13 @@ namespace KSR
     /**************************************************************************************
 
     @name: KSR::_RGBA32BIT
-    @return: uint32_t
-    @param: uint32_t r
-    @param: uint32_t g
-    @param: uint32_t b
-    @param: uint32_t a
+    @return: int32_t
+    @param: int32_t r
+    @param: int32_t g
+    @param: int32_t b
+    @param: int32_t a
     *************************************************************************************/
-    inline uint32_t _RGBA32BIT(uint32_t r, uint32_t g, uint32_t b, uint32_t a)
+    inline int32_t _RGBA32BIT(int32_t r, int32_t g, int32_t b, int32_t a)
     {
         return a + (b << 8) + (g << 16) + (r << 24);
     }

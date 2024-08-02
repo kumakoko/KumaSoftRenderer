@@ -29,6 +29,8 @@ SOFTWARE.
 
 namespace KSR
 {
+    extern int32_t dd_pixel_format;                         // default pixel format
+
     extern uint8_t* primary_buffer; // 主页面首指针
     extern uint8_t* back_buffer;    // 后台页面的首指针
     extern int back_lpitch;

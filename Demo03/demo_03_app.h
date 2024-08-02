@@ -36,16 +36,20 @@ SOFTWARE.
 #include "ksr_timer.h"
 #include "ksr_model_object.h"
 
-class alignas(16) Demo02App : public KSR::App
+class alignas(16) Demo03App : public KSR::App
 {
 public:
     virtual void InitScene() override;
     virtual void RenderScene() override;
 protected:
     virtual void OnKeyUp(SDL_Event& event) override;
+protected:
+    void InitLights();
+    void UpdateLights();
 private:
     // initialize camera position and direction
     KSR::POINT4D  cam_pos = { 0.0f,0.0f,0.0f,1.0f };
+    KSR::POINT4D  cam_target = { 0.0f,0.0f,0.0f,1.0f };
     KSR::VECTOR4D cam_dir = { 0.0f,0.0f,0.0f,1.0f };
 
     // all your initialization code goes here...
@@ -63,4 +67,11 @@ private:
     float x_ang = 0.0f;
     float y_ang = 0.0f;
     float z_ang = 0.0f;
+
+    KSR::RENDERLIST4DV1 rend_list; // the render list
+
+    float plight_ang = 0.0f;
+    float slight_ang = 0.0f; // angles for light motion
+
+    int lighting_mode;
 };
