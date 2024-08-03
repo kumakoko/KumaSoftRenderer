@@ -125,7 +125,7 @@ namespace KSR
 
     } // end VECTOR4D_Build
 
-    ////////////////////////////////////////////////////////////////
+    ///
 
     void VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vsum)
     {
@@ -137,7 +137,7 @@ namespace KSR
 
     } // end VECTOR4D_Add
 
-    ////////////////////////////////////////////////////////////
+
 
     VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb)
     {
@@ -155,7 +155,7 @@ namespace KSR
 
     } // end VECTOR4D_Add
 
-    ////////////////////////////////////////////////////////////
+
 
     void VECTOR4D_Sub(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vdiff)
     {
@@ -168,7 +168,7 @@ namespace KSR
 
     } // end VECTOR4D_Sub
 
-    ////////////////////////////////////////////////////////////
+
 
     VECTOR4D VECTOR4D_Sub(VECTOR4D_PTR va, VECTOR4D_PTR vb)
     {
@@ -186,40 +186,22 @@ namespace KSR
 
     } // end VECTOR4D_Sub
 
-    ////////////////////////////////////////////////////////////
-
     void VECTOR4D_Scale(float k, VECTOR4D_PTR va)
     {
-        // this function scales a vector by the constant k,
-        // in place , note w is left unchanged
-
-        // multiply each component by scaling factor
         va->x *= k;
         va->y *= k;
         va->z *= k;
-        va->w = 1;
-
-    } // end VECTOR4D_Scale
-
-    /////////////////////////////////////////////////////////////
+        va->w = 1.0f;
+    }
 
     void VECTOR4D_Scale(float k, VECTOR4D_PTR va, VECTOR4D_PTR vscaled)
     {
 #if defined(_MSC_VER)
-        // Load the vector into an SSE register
-        __m128 vecA = _mm_loadu_ps(va->M);
-
-        // Load the scalar k into an SSE register, replicated across all elements
-        __m128 scale = _mm_set1_ps(k);
-
-        // Perform the scaling by multiplying the vector with the scalar
-        __m128 scaledVec = _mm_mul_ps(vecA, scale);
-
-        // Set the w component to 1.0f manually
-        scaledVec = _mm_move_ss(scaledVec, _mm_set_ss(1.0f));
-
-        // Store the result back to the output vector
-        _mm_storeu_ps(vscaled->M, scaledVec);
+        __m128 vecA = _mm_loadu_ps(va->M);// Load the vector into an SSE register
+        __m128 scale = _mm_set1_ps(k); // Load the scalar k into an SSE register, replicated across all elements
+        __m128 scaledVec = _mm_mul_ps(vecA, scale);// Perform the scaling by multiplying the vector with the scalar
+        scaledVec = _mm_move_ss(scaledVec, _mm_set_ss(1.0f));// Set the w component to 1.0f manually
+        _mm_storeu_ps(vscaled->M, scaledVec);  // Store the result back to the output vector
 #else
         // this function scales a vector by the constant k,
         // leaves the original unchanged, and returns the result
@@ -233,31 +215,41 @@ namespace KSR
 #endif
     } // end VECTOR4D_Scale
 
-    //////////////////////////////////////////////////////////////
-
     float VECTOR4D_Dot(VECTOR4D_PTR va, VECTOR4D_PTR vb)
     {
-        // computes the dot product between va and vb
-        return((va->x * vb->x) + (va->y * vb->y) + (va->z * vb->z));
-    } // end VECTOR4D_DOT
+#if defined(_MSC_VER)
+        __m128 a = _mm_load_ps(va->M);  // 用_mm_load_ps加载va和vb到128位SIMD寄存器中,要求va和vb都是16字节对齐。
+        __m128 b = _mm_load_ps(vb->M);
+        __m128 zero_w = _mm_set_ps(0.0f, 1.0f, 1.0f, 1.0f);
+        a = _mm_mul_ps(a, zero_w);  // Zero out w component of a
+        b = _mm_mul_ps(b, zero_w);  // Zero out w component of b
+        __m128 result = _mm_mul_ps(a, b); // _mm_mul_ps(a, b)对两个向量进行元素乘法，得到一个包含乘积的向量。
 
-    /////////////////////////////////////////////////////////////
+        // Perform horizontal addition to get the dot product
+        result = _mm_hadd_ps(result, result);  // _mm_hadd_ps()用于执行水平加法。它将向量中相邻的元素对相加。
+        result = _mm_hadd_ps(result, result);  // 第一次调用将相邻元素相加，第二次调用将这些和相加，得到一个点积值。
 
-    void VECTOR4D_Cross(VECTOR4D_PTR va,
-        VECTOR4D_PTR vb,
-        VECTOR4D_PTR vn)
+        
+        //__m128 result = _mm_mul_ps(a, b) : [a1 a2 a3 a4] [b1 b2 b3 b4] 各元素分量两两相乘，得到result = [a1b1 a2b2 a3b3 a4b4]
+        // result = _mm_hadd_ps(result, result)： [a1b1 a2b2 a3b3 a4b4] [a1b1 a2b2 a3b3 a4b4] 共四组八个元素依次两两相加：得到result = [a1b1+a2b2 a3b3+a4b4 a1b1+a2b2 a3b3+a4b4]
+        // 再来一次 result = _mm_hadd_ps(result, result)：得到：[a1b1+a2b2+a3b3+a4b4 a1b1+a2b2+a3b3+a4b4 a1b1+a2b2+a3b3+a4b4 a1b1+a2b2+a3b3+a4b4]
+        
+        // Extracts the lower 32-bit single-precision floating-point value from a 128-bit SSE register.
+        return _mm_cvtss_f32(result);
+#else
+        return va->x * vb->x + va->y * vb->y + va->z * vb->z;
+#endif
+    }
+
+    void VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vn)
     {
         // this function computes the cross product between va and vb
         // and returns the vector that is perpendicular to each in vn
-
         vn->x = ((va->y * vb->z) - (va->z * vb->y));
         vn->y = -((va->x * vb->z) - (va->z * vb->x));
         vn->z = ((va->x * vb->y) - (va->y * vb->x));
         vn->w = 1;
-
-    } // end VECTOR4D_Cross
-
-    /////////////////////////////////////////////////////////////
+    }
 
     VECTOR4D VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb)
     {
@@ -266,27 +258,20 @@ namespace KSR
 
         VECTOR4D vn;
 
-        vn.x = ((va->y * vb->z) - (va->z * vb->y));
-        vn.y = -((va->x * vb->z) - (va->z * vb->x));
-        vn.z = ((va->x * vb->y) - (va->y * vb->x));
-        vn.w = 1;
+        vn.x = va->y * vb->z - va->z * vb->y;
+        vn.y = -(va->x * vb->z) - va->z * vb->x;
+        vn.z = va->x * vb->y - va->y * vb->x;
+        vn.w = 1.0f;
 
-        // return result
         return(vn);
-
-    } // end VECTOR4D_Cross
-
-    //////////////////////////////////////////////////////////////
+    } 
 
     float VECTOR4D_Length(VECTOR4D_PTR va)
     {
-        // computes the magnitude of a vector, slow
+        return sqrtf(va->x * va->x + va->y * va->y + va->z * va->z);
+    }
 
-        return(sqrtf(va->x * va->x + va->y * va->y + va->z * va->z));
-
-    } // end VECTOR4D_Length
-
-    ///////////////////////////////////////////////////////////////
+    //
 
     float VECTOR4D_Length_Fast(VECTOR4D_PTR va)
     {
@@ -296,59 +281,27 @@ namespace KSR
 
     } // end VECTOR4D_Length_Fast
 
-    ///////////////////////////////////////////////////////////////
+    //
 
     void VECTOR4D_Normalize(VECTOR4D_PTR va)
     {
-#if defined(_MSC_VER)
-        __m128 vecA = _mm_loadu_ps(va->M); // Load the vector into an SSE register
-        __m128 dotProduct = _mm_mul_ps(vecA, vecA); // Calculate the dot product of the vector with itself
-        dotProduct = _mm_hadd_ps(dotProduct, dotProduct);
-        dotProduct = _mm_hadd_ps(dotProduct, dotProduct);
 
-        __m128 length = _mm_sqrt_ss(dotProduct); // Compute the square root of the dot product to get the length
-
-        float len = _mm_cvtss_f32(length); // Check if the length is less than EPSILON_E5
-        if (len < EPSILON_E5) {
-            return;  // Zero length vector, do nothing
-        }
-
-        // Calculate the inverse of the length
-        __m128 lengthInv = _mm_rcp_ss(length);
-
-        // Broadcast the inverse length across all elements
-        lengthInv = _mm_shuffle_ps(lengthInv, lengthInv, _MM_SHUFFLE(0, 0, 0, 0));
-
-        // Normalize the vector
-        __m128 normalizedVec = _mm_mul_ps(vecA, lengthInv);
-
-        // Set the w component to 1.0f
-        normalizedVec = _mm_move_ss(normalizedVec, _mm_set_ss(1.0f));
-
-        // Store the normalized vector back to va
-        _mm_storeu_ps(va->M, normalizedVec);
-#else
-        // normalizes the sent vector and returns the result
-
-        // compute length
         float length = sqrtf(va->x * va->x + va->y * va->y + va->z * va->z);
 
-        // test for zero length vector
-        // if found return zero vector
         if (length < EPSILON_E5)
             return;
 
         float length_inv = 1.0f / length;
 
-        // compute normalized version of vector
+
         va->x *= length_inv;
         va->y *= length_inv;
         va->z *= length_inv;
-        va->w = 1;
-#endif
+        va->w = 1.0f;
+
     } // end VECTOR4D_Normalize
 
-    ///////////////////////////////////////////////////////////////
+    //
 
     void VECTOR4D_Normalize(VECTOR4D_PTR va, VECTOR4D_PTR vn)
     {

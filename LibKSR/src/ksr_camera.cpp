@@ -214,90 +214,54 @@ namespace KSR
             break;
         }
 
-        // now mrot holds the concatenated product of inverse rotation matrices
-        // multiply the inverse translation matrix against it and store in the 
-        // camera objects' camera transform matrix we are done!
         // 用mrot（逆旋转矩阵），乘以逆平移矩阵
         Mat_Mul_4X4(&mt_inv, &mrot, &cam->mcam);
     }
 
     void Build_CAM4DV1_Matrix_UVN(CAM4DV1_PTR cam, int mode)
     {
-        // this creates a camera matrix based on a look at vector n,
-        // look up vector v, and a look right (or left) u
-        // and stores it in the sent camera object, all values are
-        // extracted out of the camera object itself
-        // mode selects how uvn is computed
-        // UVN_MODE_SIMPLE - low level simple model, use the target and view reference point
-        // UVN_MODE_SPHERICAL - spherical mode, the x,y components will be used as the
-        //     elevation and heading of the view vector respectively
-        //     along with the view reference point as the position
-        //     as usual
+        MATRIX4X4 mt_inv;  // 相机平移矩阵的逆矩阵
+        MATRIX4X4 mt_uvn;  // 最终的uvn矩阵
 
-        MATRIX4X4 mt_inv,  // inverse camera translation matrix
-            mt_uvn;  // the final uvn matrix
+        // 根据相机的位置创建平移矩阵的逆矩阵
+        Mat_Translation_4x4(&mt_inv, -cam->pos.x, -cam->pos.y, -cam->pos.z);
 
-
-        // step 1: create the inverse translation matrix for the camera
-        // position
-        Mat_Init_4X4(&mt_inv, 1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            -cam->pos.x, -cam->pos.y, -cam->pos.z, 1);
-
-
-        // step 2: determine how the target point will be computed
+        // 确定如何计算目标点
         if (mode == UVN_MODE_SPHERICAL)
         {
-            // use spherical construction
-            // target needs to be recomputed
-
-            // extract elevation and heading 
-            float phi = cam->dir.x; // elevation
-            float theta = cam->dir.y; // heading
-
-            // compute trig functions once
+            // 使用球面坐标模式，需要重新计算目标点
+            // 提取方位角和仰角
+            float phi = cam->dir.x; // 方位角elevation
+            float theta = cam->dir.y; // 仰角heading
             float sin_phi = sinf(phi);
             float cos_phi = cosf(phi);
 
             float sin_theta = sinf(theta);
             float cos_theta = cosf(theta);
 
-            // now compute the target point on a unit sphere x,y,z
-            cam->target.x = -1 * sin_phi * sin_theta;
-            cam->target.y = 1 * cos_phi;
-            cam->target.z = 1 * sin_phi * cos_theta;
-        } // end else
+            // 计算目标点在单位球面上的位置(x,y,z)
+            cam->target.x = -1.0f * sin_phi * sin_theta;
+            cam->target.y = 1.0f * cos_phi;
+            cam->target.z = 1.0f * sin_phi * cos_theta;
+        }
 
-     // at this point, we have the view reference point, the target and that's
-     // all we need to recompute u,v,n
-     // Step 1: n = <target position - view reference point>
-        VECTOR4D_Build(&cam->pos, &cam->target, &cam->n);
-
-        // Step 2: Let v = <0,1,0>
-        VECTOR4D_INITXYZ(&cam->v, 0, 1, 0);
-
-        // Step 3: u = (v x n)
-        VECTOR4D_Cross(&cam->v, &cam->n, &cam->u);
-
-        // Step 4: v = (n x u)
-        VECTOR4D_Cross(&cam->n, &cam->u, &cam->v);
-
-        // Step 5: normalize all vectors
-        VECTOR4D_Normalize(&cam->u);
+       
+        VECTOR4D_Build(&cam->pos, &cam->target, &cam->n);  // 第1步: n = <目标位置点target - 观察参考点pos>
+        VECTOR4D_INITXYZ(&cam->v, 0, 1, 0);  // 第2步: 将v设置为(0,1,0)即朝上向量
+        VECTOR4D_Cross(&cam->v, &cam->n, &cam->u); // 第3步: 将u设置为v与n的叉乘
+        VECTOR4D_Cross(&cam->n, &cam->u, &cam->v); // 第4步，将v也设置为n与u的叉乘，使得他们两两相互垂直，形成正交基
+        VECTOR4D_Normalize(&cam->u); // 第5步：单位化u v n三个向量
         VECTOR4D_Normalize(&cam->v);
         VECTOR4D_Normalize(&cam->n);
 
+        // 三个正交基便构成了UVN矩阵
+        Mat_Init_4X4(&mt_uvn,
+            cam->u.x, cam->v.x, cam->n.x, 0.0f,
+            cam->u.y, cam->v.y, cam->n.y, 0.0f,
+            cam->u.z, cam->v.z, cam->n.z, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
 
-        // build the UVN matrix by placing u,v,n as the columns of the matrix
-        Mat_Init_4X4(&mt_uvn, cam->u.x, cam->v.x, cam->n.x, 0,
-            cam->u.y, cam->v.y, cam->n.y, 0,
-            cam->u.z, cam->v.z, cam->n.z, 0,
-            0, 0, 0, 1);
-
-        // now multiply the translation matrix and the uvn matrix and store in the 
-        // final camera matrix mcam
+        // 将逆平移矩阵乘以uvn矩阵，得到正式的uvn相机的旋转矩阵 
         Mat_Mul_4X4(&mt_inv, &mt_uvn, &cam->mcam);
-
-    } // end Build_CAM4DV1_Matrix_UVN
+    }
 }

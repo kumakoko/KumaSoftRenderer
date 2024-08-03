@@ -57,17 +57,16 @@ namespace KSR
 
     enum UVNCameraType
     {
-        UVN_MODE_SIMPLE = 0,
-        UVN_MODE_SPHERICAL = 1
+        UVN_MODE_SIMPLE = 0,    // 低级简单模型，使用目标位置和观察参考点
+        UVN_MODE_SPHERICAL = 1  // 球面坐标模式，分量x和y被用作观察向量的方位角和仰角，观察参考点为相机位置
     };
 
     typedef struct CAM4DV1_TYP
     {
-        int state;      // state of camera
-        int attr;       // camera attributes
+        int state;              // state of camera
+        CameraModelType attr;   // camera attributes
 
-        POINT4D pos;    // world position of camera used by both camera models
-
+        POINT4D pos;    // 相机自身在世界空间中的坐标 world position of camera used by both camera models
         VECTOR4D dir;   // angles or look at direction of camera for simple 
         // euler camera models, elevation and heading for
         // uvn model
@@ -88,10 +87,10 @@ namespace KSR
         float near_clip_z;     // near z=constant clipping plane
         float far_clip_z;      // far z=constant clipping plane
 
-        PLANE3D rt_clip_plane;  // the right clipping plane
-        PLANE3D lt_clip_plane;  // the left clipping plane
-        PLANE3D tp_clip_plane;  // the top clipping plane
-        PLANE3D bt_clip_plane;  // the bottom clipping plane                        
+        PLANE3D rt_clip_plane;  // 视截体的右平截面
+        PLANE3D lt_clip_plane;  // 视截体的左平截面
+        PLANE3D tp_clip_plane;  // 视截体的上平截面
+        PLANE3D bt_clip_plane;  // 视截体的下平截面                        
 
         float viewplane_width;     // 视平面，物体将会投影到这视平面上，width and height of view plane to project onto
         float viewplane_height;    // usually 2x2 for normalized projection or 
@@ -111,9 +110,9 @@ namespace KSR
         // and or a concatenated perspective/screen, however, having these 
         // matrices give us more flexibility         
 
-        MATRIX4X4 mcam;   // 世界空间到观察空间的变换矩阵 storage for the world to camera transform matrix
-        MATRIX4X4 mper;   // 观察空间到透视投影空间的变换矩阵 storage for the camera to perspective transform matrix
-        MATRIX4X4 mscr;   // 透视投影空间到屏幕空间的变换矩阵 storage for the perspective to screen transform matrix
+        MATRIX4X4 mcam;   // 世界空间到观察空间的变换矩阵
+        MATRIX4X4 mper;   // 观察空间到透视投影空间的变换矩阵
+        MATRIX4X4 mscr;   // 透视投影空间到屏幕空间的变换矩阵
 
     } CAM4DV1, * CAM4DV1_PTR;
 
@@ -145,10 +144,13 @@ namespace KSR
     void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, CameraRotationSequences cam_rot_seq);
 
     /**************************************************************************************
-    
+    本函数根据相机的注视向量n，向上向量v，和右向量u。创建一个相机变换矩阵，并将其存储到传入的相机
+    对象中。
+    参数mode指定如何计算uvn：
+
     @name: KSR::Build_CAM4DV1_Matrix_UVN
     @return: void
-    @param: CAM4DV1_PTR cam
+    @param: CAM4DV1_PTR cam 指定如何计算uvn：参见UVN_MODE_SIMPLE和UVN_MODE_SPHERICAL的说明
     @param: UVNCameraType mode
     *************************************************************************************/
     void Build_CAM4DV1_Matrix_UVN(CAM4DV1_PTR cam, UVNCameraType mode);

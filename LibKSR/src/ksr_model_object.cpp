@@ -437,62 +437,48 @@ namespace KSR
 
     void Remove_Backfaces_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam)
     {
-        // NOTE: this is not a matrix based function
-        // this function removes the backfaces from an object's
-        // polygon mesh, the function does this based on the vertex
-        // data in vlist_trans along with the camera position (only)
-        // note that only the backface state is set in each polygon
-
-        // test if the object is culled
+        // 如果本model object已经被拣选则直接返回
         if (obj->state & OBJECT4DV1_STATE_CULLED)
             return;
 
-        // process each poly in mesh
+        // 单独处理每一个网格中的多边形
         for (int poly = 0; poly < obj->num_polys; poly++)
         {
-            // acquire polygon
             POLY4DV1_PTR curr_poly = &obj->plist[poly];
 
-            // is this polygon valid?
-            // test this polygon if and only if it's not clipped, not culled,
-            // active, and visible and not 2 sided. Note we test for backface in the event that
-            // a previous call might have already determined this, so why work
-            // harder!
+            // 如果本多边形处于不活跃状态，或者处于被裁剪状态，或者它是双面的，或者它是背面的
             if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
                 (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
                 (curr_poly->attr & POLY4DV1_ATTR_2SIDED) ||
                 (curr_poly->state & POLY4DV1_STATE_BACKFACE))
                 continue; // move onto next poly
 
-            // extract vertex indices into master list, rember the polygons are 
-            // NOT self contained, but based on the vertex list stored in the object
-            // itself
+            // 获取顶点列表中的顶点索引，因为多边形结构体里面并没有直接包含了构成该多边形的顶点
+            // 而是由多边形顶点索引组成。所以首先得取出顶点索引，然后在顶点列表中取得
             int vindex_0 = curr_poly->vert[0];
             int vindex_1 = curr_poly->vert[1];
             int vindex_2 = curr_poly->vert[2];
 
-            // we will use the transformed polygon vertex list since the backface removal
-            // only makes sense at the world coord stage further of the pipeline 
+            // 使用vlist_trans列表进行背面消除，因为背面消除操作只能在顶点被转换为世界坐标后才能进行
+            // 需要计算多边形的面法线，顶点是按顺时针方向排列的，u=p0->p1 v=p0->p2,n=uxv 即向量u叉乘v
 
-            // we need to compute the normal of this polygon face, and recall
-            // that the vertices are in cw order, u = p0->p1, v=p0->p2, n=uxv
             VECTOR4D u, v, n;
 
-            // build u, v
+            // 计算u和v向量
             VECTOR4D_Build(&obj->vlist_trans[vindex_0], &obj->vlist_trans[vindex_1], &u);
             VECTOR4D_Build(&obj->vlist_trans[vindex_0], &obj->vlist_trans[vindex_2], &v);
 
-            // compute cross product
+            // 计算叉积
             VECTOR4D_Cross(&u, &v, &n);
 
-            // now create eye vector to viewpoint
+            // 创建一个方向向量view，起始点被观察的那个顶点，终点是摄像机位置点
             VECTOR4D view;
             VECTOR4D_Build(&obj->vlist_trans[vindex_0], &cam->pos, &view);
 
-            // and finally, compute the dot product
+            // 计算面法线n和方向向量view的点积，小于0者表示多边形背向摄像机，
+            // 刚好等于0表示法线和view刚好垂直，大于0表示正面朝向摄像机，可见
             float dp = VECTOR4D_Dot(&n, &view);
 
-            // if the sign is > 0 then visible, 0 = scathing, < 0 invisible
             if (dp <= 0.0f)
                 SET_BIT(curr_poly->state, POLY4DV1_STATE_BACKFACE);
         }
@@ -509,6 +495,7 @@ namespace KSR
         }
     }
 
+    // 可参见Camera_To_Perspective_RENDERLIST4DV1函数
     void Camera_To_Perspective_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam)
     {
         for (int vertex = 0; vertex < obj->num_vertices; vertex++)
@@ -519,6 +506,7 @@ namespace KSR
         }
     }
 
+    // 可参见Camera_To_Perspective_Screen_RENDERLIST4DV1函数
     void Camera_To_Perspective_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam)
     {
         float alpha = 0.5f * cam->viewport_width - 0.5f;
@@ -534,6 +522,7 @@ namespace KSR
         }
     }
 
+    // 可参见Perspective_To_Screen_RENDERLIST4DV1函数
     void Perspective_To_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam)
     {
         float alpha = 0.5f * cam->viewport_width - 0.5f;
@@ -586,84 +575,52 @@ namespace KSR
         }
     }
 
-    int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags)
+    bool Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags)
     {
-        // NOTE: is matrix based
-        // this function culls an entire object from the viewing
-        // frustrum by using the sent camera information and object
-        // the cull_flags determine what axes culling should take place
-        // x, y, z or all which is controlled by ORing the flags
-        // together
-        // if the object is culled its state is modified thats all
-        // this function assumes that both the camera and the object
-        // are valid!
-
-        // step 1: transform the center of the object's bounding
-        // sphere into camera space
-
-        POINT4D sphere_pos; // hold result of transforming center of bounding sphere
-
-        // transform point
+        // 首先将物体的包围球球心变换到观察空间
+        POINT4D sphere_pos;
         Mat_Mul_VECTOR4D_4X4(&obj->world_pos, &cam->mcam, &sphere_pos);
 
-        // step 2:  based on culling flags remove the object
+        // 根据给定的剔除标志对物体执行剔除操作
         if (cull_flags & CULL_OBJECT_Z_PLANE)
         {
-            // cull only based on z clipping planes
-
-            // test far plane
-            if (((sphere_pos.z - obj->max_radius) > cam->far_clip_z) ||
-                ((sphere_pos.z + obj->max_radius) < cam->near_clip_z))
+            // 根据摄像机的远近裁剪面进行裁剪，如果该model object的球心坐标z分量，加上
+            // 最大包围半径，都还小于近裁剪面。或者球心坐标z分量减去最大包围半径都大于远
+            // 裁剪面。就表示肯定整个model都超出视截体。这两种条件一旦符合，立即剔除
+            if (sphere_pos.z - obj->max_radius > cam->far_clip_z ||
+                sphere_pos.z + obj->max_radius < cam->near_clip_z)
             {
-                SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
-                return(1);
-            } // end if
-
-        } // end if
+                SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED); // 设置本object为被剔除
+                return true;
+            }
+        }
 
         if (cull_flags & CULL_OBJECT_X_PLANE)
         {
-            // cull only based on x clipping planes
-            // we could use plane equations, but simple similar triangles
-            // is easier since this is really a 2D problem
-            // if the view volume is 90 degrees the the problem is trivial
-            // buts lets assume its not
-
-            // test the the right and left clipping planes against the leftmost and rightmost
-            // points of the bounding sphere
+            // 使用视截体右裁剪面和左裁剪面，检测object包围球上最左边和最右边的点
             float z_test = 0.5f * cam->viewplane_width * sphere_pos.z / cam->view_dist;
 
-            if (((sphere_pos.x - obj->max_radius) > z_test) || // right side
-                ((sphere_pos.x + obj->max_radius) < -z_test))  // left side, note sign change
+            if (sphere_pos.x - obj->max_radius > z_test) || // 最右边
+                sphere_pos.x + obj->max_radius < -z_test)   // 最左边
             {
                 SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
-                return(1);
-            } // end if
-        } // end if
+                return true;
+            }
+        }
 
         if (cull_flags & CULL_OBJECT_Y_PLANE)
         {
-            // cull only based on y clipping planes
-            // we could use plane equations, but simple similar triangles
-            // is easier since this is really a 2D problem
-            // if the view volume is 90 degrees the the problem is trivial
-            // buts lets assume its not
-
-            // test the the top and bottom clipping planes against the bottommost and topmost
-            // points of the bounding sphere
+            // 使用视截体上裁剪面和下裁剪面，检测object包围球上最下边和最上边的点
             float z_test = 0.5f * cam->viewplane_height * sphere_pos.z / cam->view_dist;
 
-            if (((sphere_pos.y - obj->max_radius) > z_test) || // top side
-                ((sphere_pos.y + obj->max_radius) < -z_test))  // bottom side, note sign change
+            if (sphere_pos.y - obj->max_radius > z_test) || // 包围球最下边的点，是不是都超过视截体上裁剪面
+                sphere_pos.y + obj->max_radius < -z_test)   // 包围球最上边的点，是不是都超过视截体下裁剪面
             {
                 SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
-                return(1);
-            } // end if
+                return true;
+            } 
+        } 
 
-        } // end if
-
-        // return failure to cull
-        return(0);
-
-    } // end Cull_OBJECT4DV1
+        return false;
+    }
 }

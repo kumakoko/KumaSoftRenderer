@@ -28,6 +28,7 @@
     <ClInclude Include="include\ksr_constants.h" />
     <ClInclude Include="include\ksr_error.h" />
     <ClInclude Include="include\ksr_light.h" />
+    <ClInclude Include="include\ksr_log.h" />
     <ClInclude Include="include\ksr_matrix.h" />
     <ClInclude Include="include\ksr_message_box.h" />
     <ClInclude Include="include\ksr_model_object.h" />
@@ -51,6 +52,7 @@
     <ClCompile Include="src\ksr_constants.cpp" />
     <ClCompile Include="src\ksr_error.cpp" />
     <ClCompile Include="src\ksr_light.cpp" />
+    <ClCompile Include="src\ksr_log.cpp" />
     <ClCompile Include="src\ksr_matrix.cpp" />
     <ClCompile Include="src\ksr_message_box.cpp" />
     <ClCompile Include="src\ksr_model_object.cpp" />

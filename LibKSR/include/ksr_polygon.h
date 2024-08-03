@@ -81,16 +81,13 @@ namespace KSR
     // a self contained polygon used for the render list
     typedef struct POLYF4DV1_TYP
     {
-        int state;    // state information
-        int attr;     // physical attributes of polygon
-        int color;    // color of polygon
-
-        POINT4D vlist[3];  // 三个元素的数组，每一个元素对应于一个三角形的一个顶点坐标
-        POINT4D tvlist[3]; // 三个元素的数组，每一个元素对应于一个三角形的一个经过变换坐标系的顶点坐标
-
-        POLYF4DV1_TYP* next; // 存储局部顶点坐标的数组 pointer to next polygon in list??
-        POLYF4DV1_TYP* prev; // pointer to previous polygon in list??
-
+        int state;              // state information
+        int attr;               // physical attributes of polygon
+        int color;              // 本多边形的颜色
+        POINT4D vlist[3];       // 三个元素的数组，每一个元素对应于一个三角形的一个顶点坐标
+        POINT4D tvlist[3];      // 三个元素的数组，每一个元素对应于一个三角形的一个经过变换坐标系的顶点坐标
+        POLYF4DV1_TYP* next;    // 存储局部顶点坐标的数组 pointer to next polygon in list??
+        POLYF4DV1_TYP* prev;    // pointer to previous polygon in list??
     } POLYF4DV1, *POLYF4DV1_PTR;
 
     // a self contained polygon used for the render list version 2 /////////////////////////

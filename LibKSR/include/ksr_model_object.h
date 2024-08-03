@@ -226,12 +226,12 @@ namespace KSR
     void Draw_OBJECT4DV1_Wire16(OBJECT4DV1_PTR obj, uint8_t* video_buffer, int pitch);
 
     /**************************************************************************************
-
+    对本model object进行剔除，使得其在不必要的情况下不走完整个流水线流程。本函数在观察空间中执行剔除
     @name: KSR::Cull_OBJECT4DV1
-    @return: int
+    @return: bool 被剔除返回true，否则返回false
     @param: OBJECT4DV1_PTR obj object to cull
     @param: CAM4DV1_PTR        cam camera to cull relative to
     @param: int cull_flags     clipping planes to consider
     *************************************************************************************/
-    int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags);
+    bool Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags);
 }

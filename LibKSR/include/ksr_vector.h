@@ -254,11 +254,11 @@ namespace KSR
      void VECTOR4D_Scale(float k, VECTOR4D_PTR va, VECTOR4D_PTR vscaled);
 
     /**************************************************************************************
-     
+     求出两个VECTOR4D的点积，本方法假设VECTOR4D的w值为0
      * @name: VECTOR4D_Dot
      * @return: float
      * @param: VECTOR4D_PTR va
-     * @param: VECTOR4D_PTR vb
+     * @param: VECTOR4D_PTR vb 
      *************************************************************************************/
      float VECTOR4D_Dot(VECTOR4D_PTR va, VECTOR4D_PTR vb);
 
