@@ -74,11 +74,7 @@ void Demo02App::OnKeyUp(SDL_Event& event)
 
 void Demo02App::RenderScene()
 {
-    // reset the object (this only matters for backface and object removal)
     KSR::Reset_OBJECT4DV1(&obj);
-
-    // reset angles
-    //x_ang = z_ang = 0;
 
     // 根据绕轴旋转的角度，构建出模型旋转的欧拉角
     KSR::Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);

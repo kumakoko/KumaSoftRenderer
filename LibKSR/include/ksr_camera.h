@@ -32,11 +32,11 @@ namespace KSR
 {
     enum CameraModelType
     {
-        CAM_MODEL_EULER = 0x0008,
-        CAM_MODEL_UVN = 0x0010
+        CAM_MODEL_EULER = 0x0008, // 由欧拉角指定的相机
+        CAM_MODEL_UVN = 0x0010    // 由UVN向量指定的相机
     };
 
-    // defines for camera rotation sequences
+    // 定义了摄像机绕轴旋转的先后顺序
     enum CameraRotationSequences
     {
         CAM_ROT_SEQ_XYZ = 0,
@@ -63,57 +63,32 @@ namespace KSR
 
     typedef struct CAM4DV1_TYP
     {
-        int state;              // state of camera
-        CameraModelType attr;   // camera attributes
-
-        POINT4D pos;    // 相机自身在世界空间中的坐标 world position of camera used by both camera models
-        VECTOR4D dir;   // angles or look at direction of camera for simple 
-        // euler camera models, elevation and heading for
-        // uvn model
-
-        VECTOR4D u;     // extra vectors to track the camera orientation
-        VECTOR4D v;     // for more complex UVN camera model
+        int state;              // 相机当前的状态
+        CameraModelType attr;   // 相机的属性，参见CameraModelType
+        POINT4D pos;            // 相机自身在世界空间中的坐标
+        VECTOR4D dir;           // 欧拉角相机模型或者UVN相机模型的注视方向。如果是欧拉角相机模型，xy分量分别表示仰角和俯视角 
+        VECTOR4D u;             // UVN相机模型的朝向向量
+        VECTOR4D v;
         VECTOR4D n;
-
-        VECTOR4D target; // look at target
-
-        float view_dist;  // focal length 
-
-        float fov;          // field of view for both horizontal and vertical axes
-
-        // 3d clipping planes
-        // if view volume is NOT 90 degree then general 3d clipping
-        // must be employed
-        float near_clip_z;     // near z=constant clipping plane
-        float far_clip_z;      // far z=constant clipping plane
-
-        PLANE3D rt_clip_plane;  // 视截体的右平截面
-        PLANE3D lt_clip_plane;  // 视截体的左平截面
-        PLANE3D tp_clip_plane;  // 视截体的上平截面
-        PLANE3D bt_clip_plane;  // 视截体的下平截面                        
-
-        float viewplane_width;     // 视平面，物体将会投影到这视平面上，width and height of view plane to project onto
-        float viewplane_height;    // usually 2x2 for normalized projection or 
-        // the exact same size as the viewport or screen window
-
-// remember screen and viewport are synonomous 
-        float viewport_width;     // size of screen/viewport
-        float viewport_height;
-        float viewport_center_x;  // center of view port (final image destination)
-        float viewport_center_y;
-
-        // aspect ratio
-        float aspect_ratio;
-
-        // these matrices are not necessarily needed based on the method of
-        // transformation, for example, a manual perspective or screen transform
-        // and or a concatenated perspective/screen, however, having these 
-        // matrices give us more flexibility         
-
-        MATRIX4X4 mcam;   // 世界空间到观察空间的变换矩阵
-        MATRIX4X4 mper;   // 观察空间到透视投影空间的变换矩阵
-        MATRIX4X4 mscr;   // 透视投影空间到屏幕空间的变换矩阵
-
+        POINT4D target;         // UVN模型的注视目标
+        float view_dist;        // focal length 
+        float fov;              // 水平视野和垂直视野角
+        float near_clip_z;      // 近裁剪面的z坐标值
+        float far_clip_z;       // 远裁剪面的z坐标值
+        PLANE3D rt_clip_plane;  // 视截体的右裁剪面
+        PLANE3D lt_clip_plane;  // 视截体的左裁剪面
+        PLANE3D tp_clip_plane;  // 视截体的上裁剪面
+        PLANE3D bt_clip_plane;  // 视截体的下裁剪面                        
+        float viewplane_width;  // 定义了视平面的高（宽）。物体将会投影到这视平面上，对于归一化投影（normalized projection），视平面
+        float viewplane_height; // 定义为2x2大小，如果将透视变换和屏幕变换合二为一的话，视平面的大小和视口（viewport，屏幕窗口）相同
+        float viewport_width;   // 视口（屏幕）的高（宽）
+        float viewport_height;  // 视口（屏幕）的高（宽）
+        float viewport_center_x;// 视口（屏幕）的中点坐标x分量
+        float viewport_center_y;// 视口（屏幕）的中点坐标y分量
+        float aspect_ratio;     // 视口（屏幕）的宽与高的比值
+        MATRIX4X4 mcam;         // 世界空间到观察空间的变换矩阵
+        MATRIX4X4 mper;         // 观察空间到透视投影空间的变换矩阵
+        MATRIX4X4 mscr;         // 透视投影空间到屏幕空间的变换矩阵
     } CAM4DV1, * CAM4DV1_PTR;
 
     /**************************************************************************************
@@ -127,7 +102,7 @@ namespace KSR
     @param: POINT4D_PTR cam_target              如果摄像机是UVN相机的话，摄像机的观察目标在世界坐标系下的位置值
     @param: float near_clip_z                   近截平面
     @param: float far_clip_z                    远截平面
-    @param: float fov                           Field of View
+    @param: float fov                           FOV
     @param: float viewport_width                视口宽度
     @param: float viewport_height               视口高度
     *************************************************************************************/

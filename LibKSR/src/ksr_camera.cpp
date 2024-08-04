@@ -30,7 +30,9 @@ SOFTWARE.
 
 namespace KSR
 {
-    void Init_CAM4DV1(CAM4DV1_PTR camera, CameraModelType camera_attribute, POINT4D_PTR camera_pos, VECTOR4D_PTR camera_direction, POINT4D_PTR camera_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height)
+    void Init_CAM4DV1(CAM4DV1_PTR camera, CameraModelType camera_attribute, POINT4D_PTR camera_pos, 
+        VECTOR4D_PTR camera_direction, POINT4D_PTR camera_target, float near_clip_z, 
+        float far_clip_z, float fov, float viewport_width, float viewport_height)
     {
         camera->attr = camera_attribute;
 

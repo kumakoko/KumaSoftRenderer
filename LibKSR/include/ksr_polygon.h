@@ -29,20 +29,15 @@ SOFTWARE.
 
 namespace KSR
 {
-    // states of polygons and faces
-   /* extern const std::uint16_t POLY4DV1_STATE_ACTIVE;
-    extern const std::uint16_t POLY4DV1_STATE_CLIPPED;
-    extern const std::uint16_t POLY4DV1_STATE_BACKFACE;*/
-
+    // 2D多边形
     typedef struct POLYGON2D_TYP
     {
-        int state;        // state of polygon
-        int num_verts;    // number of vertices
-        int x0, y0;        // position of center of polygon  
-        int xv, yv;        // initial velocity
-        std::uint32_t color;      // could be index or PALETTENTRY
-        VERTEX2DF* vlist; // pointer to vertex list
-
+        int state;          // 本多边形的状态
+        int num_verts;      // 本多边形有多少个顶点
+        int x0, y0;         // 本多边形中心点的位置
+        int xv, yv;         // 本多边形的初始速度
+        std::uint32_t color;// 本多边形的颜色
+        VERTEX2DF* vlist;   // 指向本多边形的顶点的列表的首指针
     } POLYGON2D, * POLYGON2D_PTR;
 
 
