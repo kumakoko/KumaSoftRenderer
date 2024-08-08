@@ -42,7 +42,6 @@ namespace KSR
             ptr = _aligned_malloc(size, align_size);
 #else
             void* ptr = std::aligned_alloc(align_size, size);
-
 #endif
             if (!ptr)
             {
@@ -58,7 +57,6 @@ namespace KSR
             _aligned_free(ptr);
 #else
             std::free(ptr);
-
 #endif
         }
     };

@@ -37,34 +37,25 @@ namespace KSR
     // an object based on a vertex list and list of polygons
     typedef struct OBJECT4DV1_TYP
     {
-        int  id;           // numeric id of this object
-        char name[64];     // ASCII name of object just for kicks
-        int  state;        // state of object
-        int  attr;         // attributes of object
-        float avg_radius;  // average radius of object used for collision detection
-        float max_radius;  // maximum radius of object
-
-        POINT4D world_pos;  // position of object in world
-
-        VECTOR4D dir;       // rotation angles of object in local
-        // cords or unit direction vector user defined???
-
+        int  id;            // 物体的数字ID
+        char name[64];      // 物体的字符名称
+        int  state;         // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
+        int  attr;          // 本多边形的物理属性，比如是否是双目的，是否反射光，是否透明的，等等，可参见POLY4DV1_ATTR_2SIDED等
+        float avg_radius;   // 物体的平均半径，用于碰撞检测
+        float max_radius;   // 物体的最大半径
+        POINT4D world_pos;  // 物体在世界坐标系中的位置
+        VECTOR4D dir;       // 物体在局部坐标系中的旋转角度，用户定义的坐标或单位方向向量
         VECTOR4D ux; 
         VECTOR4D uy;
-        VECTOR4D uz;  // 模型自身的基于局部坐标系的坐标轴，用来跟踪自身的朝向
-        
-        // this is updated automatically during
-        // rotation calls
-
-        int num_vertices;   // number of vertices of this object
-
-        POINT4D vlist_local[OBJECT4DV1_MAX_VERTICES]; // array of local vertices
-        POINT4D vlist_trans[OBJECT4DV1_MAX_VERTICES]; // array of transformed vertices
-
-        int num_polys;        // number of polygons in object mesh
-        POLY4DV1 plist[OBJECT4DV1_MAX_POLYS];  // array of polygons
+        VECTOR4D uz;        // 模型自身的基于局部坐标系的坐标轴，用来跟踪自身的朝向
+        int num_vertices;   // 物体的顶点数
+        int num_polys;      // 物体的多边形个数
+        POINT4D vlist_local[OBJECT4DV1_MAX_VERTICES]; // 用于存储顶点局部坐标的数组
+        POINT4D vlist_trans[OBJECT4DV1_MAX_VERTICES]; // 存储变换后的顶点坐标的数组
+        POLY4DV1 plist[OBJECT4DV1_MAX_POLYS];           // 物体的多边形数组
     } OBJECT4DV1, * OBJECT4DV1_PTR;
 
+    // P509
     // an object ver 2.0 based on a vertex list and list of polygons //////////////////////////
 // this new object has a lot more flexibility and it supports "framed" animation
 // that is this object can hold hundreds of frames of an animated mesh as long as

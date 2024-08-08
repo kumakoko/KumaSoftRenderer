@@ -28,49 +28,38 @@ SOFTWARE.
 
 namespace KSR
 {
-    // a 2D vertex
     typedef struct VERTEX2DI_TYP
     {
         int x, y; // the vertex
-    } VERTEX2DI, * VERTEX2DI_PTR;
+    } VERTEX2DI, *VERTEX2DI_PTR;
 
-    // a 2D vertex
     typedef struct VERTEX2DF_TYP
     {
         float x, y; // the vertex
-    } VERTEX2DF, * VERTEX2DF_PTR;
+    } VERTEX2DF, *VERTEX2DF_PTR;
 
-
-    // 4D homogeneous vertex with 2 texture coordinates, and vertex normal ////////////////
-// normal can be interpreted as vector or point
+    // 包含了两个纹理坐标顶点法线的4D齐次顶点
     typedef struct VERTEX4DTV1_TYP
     {
         union
         {
-            float M[12];            // array indexed storage
+            float M[12];    // 三种存储方式之一：数组
 
-            // explicit names
-            struct
+            struct          // 三种存储方式之二：结构体，且其数据成员为基本数据类型
             {
-                float x, y, z, w;     // point
-                float nx, ny, nz, nw; // normal (vector or point)
-                float u0, v0;       // texture coordinates 
-
-                float i;           // final vertex intensity after lighting
-                int   attr;        // attributes/ extra texture coordinates
-            };                 // end struct
-
-            // high level types
-            struct
-            {
-                POINT4D  v;       // the vertex
-                VECTOR4D n;       // the normal
-                POINT2D  t;       // texture coordinates
+                float x, y, z, w;     // 位置坐标
+                float nx, ny, nz, nw; // 法线
+                float u0, v0;         // 纹理坐标
+                float i;              // 经过光照计算后的顶点亮度
+                int attr;             // 顶点属性
             };
 
-        }; // end union
-
+            struct          // 三种存储方式之三：结构体，且其数据成员为高级数据类型
+            {
+                POINT4D  v;       // 位置坐标
+                VECTOR4D n;       // 法线
+                POINT2D  t;       // 纹理坐标
+            };
+        };
     } VERTEX4DTV1, * VERTEX4DTV1_PTR;
-
-
 }

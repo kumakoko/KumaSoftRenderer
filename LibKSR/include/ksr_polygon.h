@@ -32,7 +32,7 @@ namespace KSR
     // 2D多边形
     typedef struct POLYGON2D_TYP
     {
-        int state;          // 本多边形的状态
+        int state;          // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
         int num_verts;      // 本多边形有多少个顶点
         int x0, y0;         // 本多边形中心点的位置
         int xv, yv;         // 本多边形的初始速度
@@ -40,74 +40,60 @@ namespace KSR
         VERTEX2DF* vlist;   // 指向本多边形的顶点的列表的首指针
     } POLYGON2D, * POLYGON2D_PTR;
 
-
-    // a polygon based on an external vertex list
+    // 第1个版本的3D多边形结构体
     typedef struct POLY4DV1_TYP
     {
-        int state;    // state information
-        int attr;     // physical attributes of polygon
-        int color;    // color of polygon
-        POINT4D_PTR vlist; // the vertex list itself
-        int vert[3];       // the indices into the vertex list
-
+        int state;          // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
+        int attr;           // 本多边形的物理属性，比如是否是双目的，是否反射光，是否透明的，等等，可参见POLY4DV1_ATTR_2SIDED等
+        std::uint32_t color;// 本多边形的颜色
+        POINT4D_PTR vlist;  // 指向本多边形的顶点的列表的首指针
+        int vert[3];        // 存储着构成本多边形三个顶点的顶点索引值的数组
     }POLY4DV1, *POLY4DV1_PTR;
 
-    // a polygon ver 2.0 based on an external vertex list  //////////////////////////////////
+    // 第2个版本的3D多边形结构体
     typedef struct POLY4DV2_TYP
     {
-        int state;           // state information
-        int attr;            // physical attributes of polygon
-        int color;           // color of polygon
-        int lit_color[3];    // holds colors after lighting, 0 for flat shading
-        // 0,1,2 for vertex colors after vertex lighting
+        int state;                  // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
+        int attr;                   // 本多边形的物理属性，比如是否是双目的，是否反射光，是否透明的，等等，可参见POLY4DV1_ATTR_2SIDED等
+        std::uint32_t color;        // 本多边形的颜色
+        int lit_color[3];           // 用来存储经过光照处理后的颜色，用flat shading的话，颜色存在数组第一个元素中，用Gouraud着色的话，顶点颜色存在三个元素中
+        BITMAP_IMAGE_PTR texture;   // 指向纹理信息的指针，用于纹理映色
+        int mati;                   // 材质索引，-1表示没有材质
+        VERTEX4DTV1_PTR vlist;      // 顶点列表
+        POINT2D_PTR     tlist;      // 纹理坐标列表
+        int vert[3];                // 指向顶点列表的索引
+        int text[3];                // 指向纹理坐标列表的索引
+        float nlength;              // 法线长度
+    } POLY4DV2, *POLY4DV2_PTR;
 
-        BITMAP_IMAGE_PTR texture; // pointer to the texture information for simple texture mapping
-
-        int mati;              // material index (-1) no material (new)
-
-        VERTEX4DTV1_PTR vlist; // the vertex list itself 
-        POINT2D_PTR     tlist; // the texture list itself (new)
-        int vert[3];           // the indices into the vertex list
-        int text[3];           // the indices into the texture coordinate list (new)
-        float nlength;         // length of normal (new)
-
-    } POLY4DV2, * POLY4DV2_PTR;
-
-    // a self contained polygon used for the render list
+    // 自包含（顶点）的多边形结构体，可以用于render list
     typedef struct POLYF4DV1_TYP
     {
-        int state;              // state information
-        int attr;               // physical attributes of polygon
-        int color;              // 本多边形的颜色
+        int state;              // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
+        int attr;               // 本多边形的物理属性，比如是否是双目的，是否反射光，是否透明的，等等，可参见POLY4DV1_ATTR_2SIDED等
+        std::uint32_t color;    // 本多边形的颜色
         POINT4D vlist[3];       // 三个元素的数组，每一个元素对应于一个三角形的一个顶点坐标
         POINT4D tvlist[3];      // 三个元素的数组，每一个元素对应于一个三角形的一个经过变换坐标系的顶点坐标
-        POLYF4DV1_TYP* next;    // 存储局部顶点坐标的数组 pointer to next polygon in list??
-        POLYF4DV1_TYP* prev;    // pointer to previous polygon in list??
+        POLYF4DV1_TYP* next;    // 指向列表中下一个多边形的指针
+        POLYF4DV1_TYP* prev;    // 指向列表中前一个多边形的指针
     } POLYF4DV1, *POLYF4DV1_PTR;
 
-    // a self contained polygon used for the render list version 2 /////////////////////////
+    // 自包含（顶点）的第2版的多边形结构体，可以用于render list
     typedef struct POLYF4DV2_TYP
     {
-        int      state;           // state information
-        int      attr;            // physical attributes of polygon
-        int      color;           // color of polygon
-        int      lit_color[3];    // holds colors after lighting, 0 for flat shading
-        // 0,1,2 for vertex colors after vertex lighting
-        BITMAP_IMAGE_PTR texture; // pointer to the texture information for simple texture mapping
-
-        int      mati;    // material index (-1) for no material  (new)
-
-        float    nlength; // length of the polygon normal if not normalized (new)
-        VECTOR4D normal;  // the general polygon normal (new)
-
-        float    avg_z;   // average z of vertices, used for simple sorting (new)
-
-        VERTEX4DTV1 vlist[3];  // the vertices of this triangle 
-        VERTEX4DTV1 tvlist[3]; // the vertices after transformation if needed 
-
-        POLYF4DV2_TYP* next;   // pointer to next polygon in list??
-        POLYF4DV2_TYP* prev;   // pointer to previous polygon in list??
-
+        int state;                // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
+        int attr;                 // 本多边形的物理属性，比如是否是双目的，是否反射光，是否透明的，等等，可参见POLY4DV1_ATTR_2SIDED等
+        std::uint32_t color;      // 本多边形的颜色
+        int lit_color[3];         // 用来存储经过光照处理后的颜色，用flat shading的话，颜色存在数组第一个元素中，用Gouraud着色的话，顶点颜色存在三个元素中
+        BITMAP_IMAGE_PTR texture; // 指向纹理信息的指针，用于纹理映色
+        int mati;                 // 材质索引，-1表示没有材质
+        float    nlength;         // 法线长度
+        VECTOR4D normal;          // 多边形的法线
+        float    avg_z;           // 平均Z值，用来排序
+        VERTEX4DTV1 vlist[3];     // 三个元素的数组，每一个元素对应于一个三角形的一个顶点坐标
+        VERTEX4DTV1 tvlist[3];    // 三个元素的数组，每一个元素对应于一个三角形的一个经过变换坐标系的顶点坐标
+        POLYF4DV2_TYP* next;      // 指向列表中下一个多边形的指针
+        POLYF4DV2_TYP* prev;      // 指向列表中前一个多边形的指针
     } POLYF4DV2, *POLYF4DV2_PTR;
 
     /**************************************************************************************
