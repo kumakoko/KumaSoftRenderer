@@ -92,6 +92,80 @@ namespace KSR
 
     } // end Insert_POLYF4DV1_RENDERLIST4DV1
 
+    //P461
+    int Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local,int lighting_on)
+    {
+        // 将物体转换为一个多边形面列表
+        // 然后将可见的，活动，未被剔除的，未被裁剪掉的多边形插入到渲染列表中
+        // 参数insert_local 指定使用顶点列表vlist_local还是vlist_trans
+        // 如果insert_local为1，将把未变换的原始物体插入到渲染列表中
+        // 该参数的默认值为0，即只插入只是奥经过了局部坐标到世界坐标变换的物体
+        // 最后一个参数指出之前是否执行了光照计算，光照计算生成的颜色值被存储在前16位中
+        // 如果light_on = 1，则将多边形插入到渲染列表时，将使用这种颜色覆盖多边形原来的颜色
+
+        unsigned int base_color; // save base color of polygon
+
+        // 该物体不处于活动状态被删除掉或者不可见吗
+        if (!(obj->state & OBJECT4DV1_STATE_ACTIVE) || (obj->state & OBJECT4DV1_STATE_CULLED) || !(obj->state & OBJECT4DV1_STATE_VISIBLE))
+            return 0;
+
+        // 提取本object包含的多边形
+        for (int poly = 0; poly < obj->num_polys; poly++)
+        {
+            // acquire polygon
+            POLY4DV1_PTR curr_poly = &obj->plist[poly];
+
+            // first is this polygon even visible?
+            if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
+                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
+                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
+                continue; // move onto next poly
+
+            // override vertex list polygon refers to
+            // the case that you want the local coords used
+            // first save old pointer
+            POINT4D_PTR vlist_old = curr_poly->vlist;
+
+            if (insert_local)
+                curr_poly->vlist = obj->vlist_local;
+            else
+                curr_poly->vlist = obj->vlist_trans;
+
+            // test if we should overwrite color with upper 16-bits
+            if (lighting_on == 1)
+            {
+                // save color for a sec
+                base_color = (unsigned int)(curr_poly->color);
+                curr_poly->color = (int)(base_color >> 16);
+            } // end if
+
+         // now insert this polygon
+            if (!Insert_POLY4DV1_RENDERLIST4DV1(rend_list, curr_poly))
+            {
+                // fix vertex list pointer
+                curr_poly->vlist = vlist_old;
+
+                // the whole object didn't fit!
+                return(0);
+            } // end if
+
+         // test if we should overwrite color with upper 16-bits
+            if (lighting_on == 1)
+            {
+                // fix color upc
+                curr_poly->color = (int)(base_color & 0xffff);
+            } // end if
+
+         // fix vertex list pointer
+            curr_poly->vlist = vlist_old;
+
+        } // end for
+
+    // return success
+        return(1);
+
+    } // end Insert_OBJECT4DV1_RENDERLIST4DV12
+
     /**************************************************************************************
      判断给定的多边形polygon要不要被渲染
      * @name: _Polygon4DV1NeedToRender
@@ -345,7 +419,6 @@ namespace KSR
         } // end for poly
 
     } // end Draw_RENDERLIST4DV1_Wire
-
 
     int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,POLY4DV1_PTR poly)
     {

@@ -99,6 +99,18 @@ namespace KSR
     *************************************************************************************/
     int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,POLY4DV1_PTR poly);
 
+   
+    /**************************************************************************************
+    
+    @name: KSR::Insert_OBJECT4DV1_RENDERLIST4DV12
+    @return: int
+    @param: RENDERLIST4DV1_PTR rend_list
+    @param: OBJECT4DV1_PTR obj
+    @param: int insert_local
+    @param: int lighting_on
+    *************************************************************************************/
+    int Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local = 0,int lighting_on = 0);
+
     /**************************************************************************************
     利用传递进函数的参数：变换矩阵mt，对render list中的基于局部坐标系顶点，或者在其他坐标系下的顶点
     进行变换

@@ -45,7 +45,7 @@ namespace KSR
         LIGHTV1_STATE_OFF = 0   // 关
     };
 
-    enum LightType 
+    enum LightType
     {
         LIGHTV1_ATTR_AMBIENT = 0x0001,    // basic ambient light
         LIGHTV1_ATTR_INFINITE = 0x0002,    // infinite light source
@@ -55,34 +55,27 @@ namespace KSR
         LIGHTV1_ATTR_SPOTLIGHT2 = 0x0010    // spotlight type 2 (complex)
     };
 
-
-    // first light structure
     typedef struct LIGHTV1_TYP
     {
-        int state; // state of light
-        int id;    // id of light
-        int attr;  // type of light, and extra qualifiers
-
-        RGBAV1 c_ambient;   // ambient light intensity
-        RGBAV1 c_diffuse;   // diffuse light intensity
-        RGBAV1 c_specular;  // specular light intensity
-
-        POINT4D  pos;       // position of light
-        VECTOR4D dir;       // direction of light
-        float kc, kl, kq;   // attenuation factors
-        float spot_inner;   // inner angle for spot light
-        float spot_outer;   // outer angle for spot light
-        float pf;           // power factor/falloff for spot lights
-
+        int state;          // 光源的状态
+        int id;             // 光源ID
+        int attr;           // 光源的类型和其他的属性
+        RGBAV1 c_ambient;   // 环境光强度
+        RGBAV1 c_diffuse;   // 散射光强度
+        RGBAV1 c_specular;  // 镜面反射光强度
+        POINT4D  pos;       // 光源位置
+        VECTOR4D dir;       // 光源方向
+        float kc, kl, kq;   // 常数衰减因子 线性衰减因子  二次衰减因子
+        float spot_inner;   // 聚光灯内锥角
+        float spot_outer;   // 聚光灯外锥角
+        float pf;           // 聚光灯指数因子
         int   iaux1, iaux2; // auxiliary vars for future expansion
         float faux1, faux2;
         void* ptr;
-
     } LIGHTV1, * LIGHTV1_PTR;
 
-    LIGHTV1 lights[MAX_LIGHTS];  // lights in system
-
-    extern int num_lights;              // current number of lights
+    LIGHTV1 lights[MAX_LIGHTS];  // 全局的光源数组lights in system
+    extern int num_lights;       // 当前的光源数
 
     /**************************************************************************************
 
@@ -95,35 +88,24 @@ namespace KSR
 
     @name: KSR::Init_Light_LIGHTV1
     @return: int
-    @param: int index
-    @param: LightOnOffState _state
-    @param: int _attr
-    @param: RGBAV1 _c_ambient
-    @param: RGBAV1 _c_diffuse
-    @param: RGBAV1 _c_specular
-    @param: POINT4D_PTR _pos
-    @param: VECTOR4D_PTR _dir
-    @param: float _kc
-    @param: float _kl
-    @param: float _kq
-    @param: float _spot_inner
-    @param: float _spot_outer
-    @param: float _pf
+    @param: int index               要创建的光源的索引，从0到MAX_LIGHTS-1
+    @param: LightOnOffState state   光源的状态
+    @param: LightType light_type    光源的类型和其他的属性
+    @param: RGBAV1 ambient          环境光强度
+    @param: RGBAV1 diffuse          散射光强度
+    @param: RGBAV1 specular         镜面反射光强度
+    @param: POINT4D_PTR position    光源位置
+    @param: VECTOR4D_PTR direction  光源方向
+    @param: float kc                常数衰减因子
+    @param: float kl                线性衰减因子
+    @param: float kq                二次衰减因子
+    @param: float spot_inner        聚光灯内锥角
+    @param: float spot_outer        聚光灯外锥角
+    @param: float _pf               聚光灯指数因子
     *************************************************************************************/
-    int Init_Light_LIGHTV1(int           index,      // index of light to create (0..MAX_LIGHTS-1)
-        LightOnOffState          _state,      // state of light
-        LightType          _attr,       // type of light, and extra qualifiers
-        RGBAV1       _c_ambient,  // ambient light intensity
-        RGBAV1       _c_diffuse,  // diffuse light intensity
-        RGBAV1       _c_specular, // specular light intensity
-        POINT4D_PTR  _pos,        // position of light
-        VECTOR4D_PTR _dir,        // direction of light
-        float        _kc,         // attenuation factors
-        float        _kl,
-        float        _kq,
-        float        _spot_inner, // inner angle for spot light
-        float        _spot_outer, // outer angle for spot light
-        float        _pf);
+    int Init_Light_LIGHTV1(int index, LightOnOffState state, LightType light_type, RGBAV1 ambient,
+        RGBAV1 diffuse, RGBAV1 specular, POINT4D_PTR position, VECTOR4D_PTR direction,
+        float kc, float kl, float kq, float spot_inner, float spot_outer, float pf);
 
     /**************************************************************************************
 

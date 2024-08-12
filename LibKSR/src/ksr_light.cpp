@@ -30,70 +30,49 @@ namespace KSR
 {
     void Reset_Lights_LIGHTV1(void)
     {
-        // this function simply resets all lights in the system
+        // 重置所有的光源，将当前的光源数归零
         static int first_time = 1;
         memset(lights, 0, MAX_LIGHTS * sizeof(LIGHTV1));
-        // reset number of lights
         num_lights = 0;
-        // reset first time
         first_time = 0;
     }
 
-    int Init_Light_LIGHTV1(int           index,      // index of light to create (0..MAX_LIGHTS-1)
-        LightOnOffState          _state,      // state of light
-        LightType          _attr,       // type of light, and extra qualifiers
-        RGBAV1       _c_ambient,  // ambient light intensity
-        RGBAV1       _c_diffuse,  // diffuse light intensity
-        RGBAV1       _c_specular, // specular light intensity
-        POINT4D_PTR  _pos,        // position of light
-        VECTOR4D_PTR _dir,        // direction of light
-        float        _kc,         // attenuation factors
-        float        _kl,
-        float        _kq,
-        float        _spot_inner, // inner angle for spot light
-        float        _spot_outer, // outer angle for spot light
-        float        _pf)         // power factor/falloff for spot lights
+    int Init_Light_LIGHTV1(int index, LightOnOffState state, LightType light_type, RGBAV1 ambient,
+        RGBAV1 diffuse, RGBAV1 specular, POINT4D_PTR position, VECTOR4D_PTR direction,
+        float kc, float kl, float kq, float spot_inner, float spot_outer, float pf)
     {
-        // this function initializes a light based on the flags sent in _attr, values that
-        // aren't needed are set to 0 by caller
-
-        // make sure light is in range 
+        // 根据传入的参数初始化光源，调用该函数时，为确保创建的光源有效，将不需要的参数值设置为0
         if (index < 0 || index >= MAX_LIGHTS)
-            return(0);
+            return 0;
 
-        // all good, initialize the light (many fields may be dead)
-        lights[index].state = _state;      // state of light
-        lights[index].id = index;       // id of light
-        lights[index].attr = _attr;       // type of light, and extra qualifiers
+        // 初始化该光源
+        lights[index].state = state;
+        lights[index].id = index;
+        lights[index].attr = light_type;
+        lights[index].c_ambient = ambient; 
+        lights[index].c_diffuse = diffuse; 
+        lights[index].c_specular = specular;
+        lights[index].kc = kc;
+        lights[index].kl = kl;
+        lights[index].kq = kq;
 
-        lights[index].c_ambient = _c_ambient;  // ambient light intensity
-        lights[index].c_diffuse = _c_diffuse;  // diffuse light intensity
-        lights[index].c_specular = _c_specular; // specular light intensity
-
-        lights[index].kc = _kc;         // constant, linear, and quadratic attenuation factors
-        lights[index].kl = _kl;
-        lights[index].kq = _kq;
-
-        if (_pos)
-            VECTOR4D_COPY(&lights[index].pos, _pos);  // position of light
-
-        if (_dir)
+        if (nullptr != position)
         {
-            VECTOR4D_COPY(&lights[index].dir, _dir);  // direction of light
-            // normalize it
-            VECTOR4D_Normalize(&lights[index].dir);
+            VECTOR4D_COPY(&lights[index].pos, position);
+        }
 
-        } // end if
+        if (nullptr != direction)
+        {
+            VECTOR4D_COPY(&lights[index].dir, direction);
+            VECTOR4D_Normalize(&lights[index].dir); // 注意要单位化它
+        }
 
-        lights[index].spot_inner = _spot_inner; // inner angle for spot light
-        lights[index].spot_outer = _spot_outer; // outer angle for spot light
-        lights[index].pf = _pf;         // power factor/falloff for spot lights
+        lights[index].spot_inner = spot_inner;
+        lights[index].spot_outer = spot_outer;
+        lights[index].pf = pf;
 
-        // return light index as success
-        return(index);
-
-    } // end Create_Light_LIGHTV1
-
+        return index;
+    }
 
     int Light_OBJECT4DV1_World16(OBJECT4DV1_PTR obj,  // object to process
         CAM4DV1_PTR cam,     // camera position
@@ -465,88 +444,4 @@ namespace KSR
         return(1);
 
     } // end Light_OBJECT4DV1_World16
-
-
-    int Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,
-        OBJECT4DV1_PTR obj,
-        int insert_local,
-        int lighting_on)
-    {
-        // converts the entire object into a face list and then inserts
-        // the visible, active, non-clipped, non-culled polygons into
-        // the render list, also note the flag insert_local control 
-        // whether or not the vlist_local or vlist_trans vertex list
-        // is used, thus you can insert an object "raw" totally untranformed
-        // if you set insert_local to 1, default is 0, that is you would
-        // only insert an object after at least the local to world transform
-        // the last parameter is used to control if their has been
-        // a lighting step that has generated a light value stored
-        // in the upper 16-bits of color, if lighting_on = 1 then
-        // this value is used to overwrite the base color of the 
-        // polygon when its sent to the rendering list
-
-        unsigned int base_color; // save base color of polygon
-
-        // is this objective inactive or culled or invisible?
-        if (!(obj->state & OBJECT4DV1_STATE_ACTIVE) ||
-            (obj->state & OBJECT4DV1_STATE_CULLED) ||
-            !(obj->state & OBJECT4DV1_STATE_VISIBLE))
-            return(0);
-
-        // the object is valid, let's rip it apart polygon by polygon
-        for (int poly = 0; poly < obj->num_polys; poly++)
-        {
-            // acquire polygon
-            POLY4DV1_PTR curr_poly = &obj->plist[poly];
-
-            // first is this polygon even visible?
-            if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
-
-            // override vertex list polygon refers to
-            // the case that you want the local coords used
-            // first save old pointer
-            POINT4D_PTR vlist_old = curr_poly->vlist;
-
-            if (insert_local)
-                curr_poly->vlist = obj->vlist_local;
-            else
-                curr_poly->vlist = obj->vlist_trans;
-
-            // test if we should overwrite color with upper 16-bits
-            if (lighting_on == 1)
-            {
-                // save color for a sec
-                base_color = (unsigned int)(curr_poly->color);
-                curr_poly->color = (int)(base_color >> 16);
-            } // end if
-
-         // now insert this polygon
-            if (!Insert_POLY4DV1_RENDERLIST4DV1(rend_list, curr_poly))
-            {
-                // fix vertex list pointer
-                curr_poly->vlist = vlist_old;
-
-                // the whole object didn't fit!
-                return(0);
-            } // end if
-
-         // test if we should overwrite color with upper 16-bits
-            if (lighting_on == 1)
-            {
-                // fix color upc
-                curr_poly->color = (int)(base_color & 0xffff);
-            } // end if
-
-         // fix vertex list pointer
-            curr_poly->vlist = vlist_old;
-
-        } // end for
-
-    // return success
-        return(1);
-
-    } // end Insert_OBJECT4DV1_RENDERLIST4DV12
 }
