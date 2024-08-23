@@ -41,6 +41,7 @@ namespace KSR
     } POLYGON2D, * POLYGON2D_PTR;
 
     // 第1个版本的3D多边形结构体
+    // 表示一个多边形，但需要引用外部顶点列表
     typedef struct POLY4DV1_TYP
     {
         int state;          // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等
@@ -67,6 +68,7 @@ namespace KSR
     } POLY4DV2, *POLY4DV2_PTR;
 
     // 自包含（顶点）的多边形结构体，可以用于render list
+    // 表示一个多边形，内部存储了顶顶啊数据，是主多边形列表的主要组成部分
     typedef struct POLYF4DV1_TYP
     {
         int state;              // 本多边形的状态信息，比如多边形是否处于活动状态，是否被裁剪，等等，可参见POLY4DV1_STATE_ACTIVE等

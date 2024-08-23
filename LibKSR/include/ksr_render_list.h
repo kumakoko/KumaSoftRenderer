@@ -74,12 +74,12 @@ namespace KSR
 
 
     /**************************************************************************************
-
+    本函数重置render list，供渲染下一帧使用
     @name: KSR::Reset_RENDERLIST4DV1
     @return: void
     @param: RENDERLIST4DV1_PTR rend_list
     *************************************************************************************/
-    void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list);
+    void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list);
 
     /**************************************************************************************
 
@@ -103,13 +103,13 @@ namespace KSR
     /**************************************************************************************
     
     @name: KSR::Insert_OBJECT4DV1_RENDERLIST4DV12
-    @return: int
+    @return: bool
     @param: RENDERLIST4DV1_PTR rend_list
     @param: OBJECT4DV1_PTR obj
     @param: int insert_local
     @param: int lighting_on
     *************************************************************************************/
-    int Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local = 0,int lighting_on = 0);
+    bool Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local = 0,int lighting_on = 0);
 
     /**************************************************************************************
     利用传递进函数的参数：变换矩阵mt，对render list中的基于局部坐标系顶点，或者在其他坐标系下的顶点
@@ -171,13 +171,15 @@ namespace KSR
     void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera);
 
     /**************************************************************************************
-    
+    本函数并不是基于矩阵。它是根据传入的相机的视口宽度和视口高度，将render list中的相机坐标变换为屏幕坐标
+    本函数对render list中的tvlist[]中的顶点进行变换
+    最后会对y轴进行反转，确保生成的坐标是屏幕坐标，可用于渲染
     @name: KSR::Camera_To_Perspective_Screen_RENDERLIST4DV1
     @return: void
-    @param: RENDERLIST4DV1_PTR rend_list
-    @param: CAM4DV1_PTR cam
+    @param: RENDERLIST4DV1_PTR render_list
+    @param: CAM4DV1_PTR camera
     *************************************************************************************/
-    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam);
+    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera);
 
     /**************************************************************************************
     1 此函数不基于变换矩阵操作

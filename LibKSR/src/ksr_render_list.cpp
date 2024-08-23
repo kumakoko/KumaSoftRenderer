@@ -29,23 +29,13 @@ SOFTWARE.
 
 namespace KSR
 {
-    void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list)
+    // P358
+    void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list)
     {
-        // this function intializes and resets the sent render list and
-        // redies it for polygons/faces to be inserted into it
-        // note that the render list in this version is composed
-        // of an array FACE4DV1 pointer objects, you call this
-        // function each frame
-
-        // since we are tracking the number of polys in the
-        // list via num_polys we can set it to 0
-        // but later we will want a more robust scheme if
-        // we generalize the linked list more and disconnect
-        // it from the polygon pointer list
-        rend_list->num_polys = 0; // that was hard!
-
-    }  // Reset_RENDERLIST4DV1
-
+        // 这里用了render list的num_polys成员来跟踪渲染列表包含的多边形数目，因此将其直接硬编码为0
+        // 这个方案比较粗暴，如果需要使得render list更加通用则需要采用更健壮的方案，并将其与多边形指针列表的关联切断
+        render_list->num_polys = 0;
+    }
 
     int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly)
     {
@@ -93,7 +83,7 @@ namespace KSR
     } // end Insert_POLYF4DV1_RENDERLIST4DV1
 
     //P461
-    int Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local,int lighting_on)
+    bool Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local,int lighting_on)
     {
         // 将物体转换为一个多边形面列表
         // 然后将可见的，活动，未被剔除的，未被裁剪掉的多边形插入到渲染列表中
@@ -112,18 +102,15 @@ namespace KSR
         // 提取本object包含的多边形
         for (int poly = 0; poly < obj->num_polys; poly++)
         {
-            // acquire polygon
             POLY4DV1_PTR curr_poly = &obj->plist[poly];
 
-            // first is this polygon even visible?
-            if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            // 多边形不可见，多边形不活跃，多边形背向摄像机的话，不渲染，处理下一个
+            if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) || 
+                curr_poly->state & POLY4DV1_STATE_CLIPPED ||
+                curr_poly->state & POLY4DV1_STATE_BACKFACE)
+                continue;
 
-            // override vertex list polygon refers to
-            // the case that you want the local coords used
-            // first save old pointer
+            // 如果要使用局部坐标，改变多边形指向的顶点列表，首先要保存原来的指针
             POINT4D_PTR vlist_old = curr_poly->vlist;
 
             if (insert_local)
@@ -131,40 +118,32 @@ namespace KSR
             else
                 curr_poly->vlist = obj->vlist_trans;
 
-            // test if we should overwrite color with upper 16-bits
+            // 判断是否需要使用前16位中的颜色覆盖原来的颜色
             if (lighting_on == 1)
             {
-                // save color for a sec
-                base_color = (unsigned int)(curr_poly->color);
-                curr_poly->color = (int)(base_color >> 16);
-            } // end if
+                base_color = static_cast<uint32_t>(curr_poly->color);
+                curr_poly->color = static_cast<int32_t>(base_color >> 16);
+            }
 
-         // now insert this polygon
+            // 插入多边形，如果插入失败的话恢复顶点指针并返回false
             if (!Insert_POLY4DV1_RENDERLIST4DV1(rend_list, curr_poly))
             {
-                // fix vertex list pointer
                 curr_poly->vlist = vlist_old;
+                return false;
+            }
 
-                // the whole object didn't fit!
-                return(0);
-            } // end if
-
-         // test if we should overwrite color with upper 16-bits
+            // 判断是否需要使用前16位中的颜色覆盖原来的颜色
             if (lighting_on == 1)
             {
-                // fix color upc
-                curr_poly->color = (int)(base_color & 0xffff);
-            } // end if
+                curr_poly->color = static_cast<uint32_t>(base_color & 0xffff);
+            }
 
-         // fix vertex list pointer
+            // 恢复顶点列表指针
             curr_poly->vlist = vlist_old;
+        }
 
-        } // end for
-
-    // return success
-        return(1);
-
-    } // end Insert_OBJECT4DV1_RENDERLIST4DV12
+        return true;
+    }
 
     /**************************************************************************************
      判断给定的多边形polygon要不要被渲染
@@ -304,63 +283,44 @@ namespace KSR
         }
     }
 
-    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
+    //p404
+    void Camera_To_Perspective_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera)
     {
-        // NOTE: this is not a matrix based function
-        // this function transforms the camera coordinates of an object
-        // into Screen scaled perspective coordinates, based on the 
-        // sent camera object, that is, view_dist_h and view_dist_v 
-        // should be set to cause the desired (viewport_width X viewport_height)
-        // it only works on the vertices in the tvlist[] list
-        // finally, the function also inverts the y axis, so the coordinates
-        // generated from this function ARE screen coordinates and ready for
-        // rendering
-
-        // transform each polygon in the render list to perspective screen 
-        // coordinates assumes the render list has already been transformed 
-        // to camera coordinates and the result is in tvlist[]
-        for (int poly = 0; poly < rend_list->num_polys; poly++)
+        // 将render list中的每个多边形，从透视坐标变换为屏幕坐标。
+        // 这里假设已经对render list中的多边形执行过归一化变换了，结果存储在tvlist[]成员中。
+        for (int poly = 0; poly < render_list->num_polys; poly++)
         {
-            // acquire current polygon
-            POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+            // “当前多边形” 拿到当前多边形
+            POLYF4DV1_PTR current_polygon = render_list->poly_ptrs[poly];
 
-            // is this polygon valid?
-            // transform this polygon if and only if it's not clipped, not culled,
-            // active, and visible, note however the concept of "backface" is 
-            // irrelevant in a wire frame engine though
-            if ((curr_poly == nullptr) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            // 当且仅当“当前多边形”没被裁剪掉，没被剔除掉，处于活动状态，且没有背向摄像机，才执行
+            // 渲染，否则跳过到下一个
+            if (!_Polygon4DV1NeedToRender(current_polygon))
+                continue;
 
-            float alpha = (0.5f * cam->viewport_width - 0.5f);
-            float beta = (0.5f * cam->viewport_height - 0.5f);
+            float alpha = 0.5f * camera->viewport_width - 0.5f;
+            float beta = 0.5f * camera->viewport_height - 0.5f;
 
-            // all good, let's transform 
+            // 需要渲染当前多边形，则对其进行变换
             for (int vertex = 0; vertex < 3; vertex++)
             {
-                float z = curr_poly->tvlist[vertex].z;
+                // 顶点的透视坐标已经是归一化的了，取值范围是-1到1，对坐标进行缩放，并反转y轴
+                float z = current_polygon->tvlist[vertex].z;
 
-                // transform the vertex by the view parameters in the camera
-                curr_poly->tvlist[vertex].x = cam->view_dist * curr_poly->tvlist[vertex].x / z;
-                curr_poly->tvlist[vertex].y = cam->view_dist * curr_poly->tvlist[vertex].y / z;
-                // z = z, so no change
+                // 根据相机的视口高宽对顶点进行变换。在此变换中z保持不变
+                current_polygon->tvlist[vertex].x = camera->view_dist * current_polygon->tvlist[vertex].x / z;
+                current_polygon->tvlist[vertex].y = camera->view_dist * current_polygon->tvlist[vertex].y / z;
 
-                // not that we are NOT dividing by the homogenous w coordinate since
-                // we are not using a matrix operation for this version of the function 
-
-                // now the coordinates are in the range x:(-viewport_width/2 to viewport_width/2)
-                // and y:(-viewport_height/2 to viewport_height/2), thus we need a translation and
-                // since the y-axis is inverted, we need to invert y to complete the screen 
-                // transform:
-                curr_poly->tvlist[vertex].x = curr_poly->tvlist[vertex].x + alpha;
-                curr_poly->tvlist[vertex].y = -curr_poly->tvlist[vertex].y + beta;
-
-            } // end for vertex
-
-        } // end for poly
-
-    } // end Camera_To_Perspective_Screen_RENDERLIST4DV1
+                // 因为本函数没使用矩阵，所以不需要对xy进行除以w的操作
+                // x,y的取值范围如下：
+                // x:(-viewport_width/2 -> viewport_width/2)
+                // y:(-viewport_height/2 -> viewport_height/2)
+                // 接下来需要对坐标进行平移并翻转y轴，这是因为屏幕坐标的原点和轴朝向和投影空间的有所不同
+                current_polygon->tvlist[vertex].x = current_polygon->tvlist[vertex].x + alpha;
+                current_polygon->tvlist[vertex].y = -current_polygon->tvlist[vertex].y + beta;
+            }
+        }
+    }
 
     void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, CAM4DV1_PTR camera)
     {
