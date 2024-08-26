@@ -130,7 +130,7 @@ void Demo03App::UpdateLights()
 
 void Demo03App::OnKeyUp(SDL_Event& event)
 {
-    if (SDLK_UP == event.key.keysym.sym )
+    if (SDLK_UP == event.key.keysym.sym)
     {
         x_ang = 0.01f;
     }
@@ -165,8 +165,8 @@ void Demo03App::RenderScene()
     Build_CAM4DV1_Matrix_Euler(&cam, KSR::CAM_ROT_SEQ_ZYX);
 
     if (lighting_mode == 1)
-        Light_OBJECT4DV1_World16(&obj_player, &cam, KSR::lights, 4);
+        Light_OBJECT4DV1_World16(&obj, &cam, KSR::lights, 4);
 
     // insert the object into render list
-    Insert_OBJECT4DV1_RENDERLIST4DV12(&rend_list, &obj_player, 0, lighting_mode);
+    Insert_OBJECT4DV1_RENDERLIST4DV12(&rend_list, &obj, 0, lighting_mode);
 }

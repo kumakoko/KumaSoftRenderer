@@ -101,23 +101,14 @@ namespace KSR
 #endif
     }
 
-
-    /**************************************************************************************
-    根据传递进来的平移向量的三个分量构建一个平移矩阵
-    @name: KSR::Mat_Translation_4x4
-    @return: void
-    @param: MATRIX4X4 ma
-    @param: float translation_x
-    @param: float translation_y
-    @param: float translation_z
-    *************************************************************************************/
-    void Mat_Translation_4x4(MATRIX4X4 ma, float translation_x, float translation_y, float translation_z)
+    void Mat_Translation_4x4(MATRIX4X4_PTR ma, float translation_x, float translation_y, float translation_z)
     {
         ma->M00 = 1.0f; ma->M01 = 0.0f; ma->M02 = 0.0f; ma->M03 = 0.0f;
         ma->M10 = 0.0f; ma->M11 = 1.0f; ma->M12 = 0.0f; ma->M13 = 0.0f;
         ma->M20 = 0.0f; ma->M21 = 0.0f; ma->M22 = 1.0f; ma->M23 = 0.0f;
         ma->M30 = translation_x; ma->M31 = translation_y; ma->M32 = translation_z; ma->M33 = 1.0f;
     }
+
     /*
     经过扩展后的ma: [x,y,1]
 

@@ -163,6 +163,17 @@ namespace KSR
     } MATRIX4X4, * MATRIX4X4_PTR;
 
     /**************************************************************************************
+      根据传递进来的平移向量的三个分量构建一个平移矩阵
+     * @name: Mat_Translation_4x4
+     * @return: void
+     * @param: MATRIX4X4_PTR ma
+     * @param: float translation_x
+     * @param: float translation_y
+     * @param: float translation_z
+     *************************************************************************************/
+     void Mat_Translation_4x4(MATRIX4X4_PTR ma, float translation_x, float translation_y, float translation_z);
+
+    /**************************************************************************************
     P237:
     将1x2矩阵，实质上是一个2D点，与一个3x2矩阵相乘，因为1x2的列数与3x2矩阵的行数不同，实质上是
     不能直接计算，因此，会将1x2矩阵扩展为1x3矩阵，且新增的那个列的值为1，这样子可以进行计算

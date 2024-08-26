@@ -34,6 +34,11 @@ namespace KSR
     constexpr int OBJECT4DV1_MAX_VERTICES = 1024;  // 64
     constexpr int OBJECT4DV1_MAX_POLYS = 1024; // 128
 
+    // new
+    constexpr int OBJECT4DV2_ATTR_SINGLE_FRAME = 0x0001; // single frame object (emulates ver 1.0)
+    constexpr int OBJECT4DV2_ATTR_MULTI_FRAME = 0x0002; // multi frame object for .md2 support etc.
+    constexpr int OBJECT4DV2_ATTR_TEXTURES = 0x0004; // flags if object contains textured polys?
+
     // an object based on a vertex list and list of polygons
     typedef struct OBJECT4DV1_TYP
     {
@@ -45,7 +50,7 @@ namespace KSR
         float max_radius;   // 物体的最大半径
         POINT4D world_pos;  // 物体在世界坐标系中的位置
         VECTOR4D dir;       // 物体在局部坐标系中的旋转角度，用户定义的坐标或单位方向向量
-        VECTOR4D ux; 
+        VECTOR4D ux;
         VECTOR4D uy;
         VECTOR4D uz;        // 模型自身的基于局部坐标系的坐标轴，用来跟踪自身的朝向
         int num_vertices;   // 物体的顶点数
@@ -55,60 +60,43 @@ namespace KSR
         POLY4DV1 plist[OBJECT4DV1_MAX_POLYS];           // 物体的多边形数组
     } OBJECT4DV1, * OBJECT4DV1_PTR;
 
-    // P509
-    // an object ver 2.0 based on a vertex list and list of polygons //////////////////////////
-// this new object has a lot more flexibility and it supports "framed" animation
-// that is this object can hold hundreds of frames of an animated mesh as long as
-// the mesh has the same polygons and geometry, but with changing vertex positions
-// similar to the Quake II .md2 format
+
+    // 本model object结构，基于一个顶点列表和一个多边形列表
+    // 该结构有更大的灵活性，支持分帧动画，即是说可以存储类似于quake .md2这一类的动画模型格式
     typedef struct OBJECT4DV2_TYP
     {
-        int   id;           // numeric id of this object
-        char  name[64];     // ASCII name of object just for kicks
-        int   state;        // state of object
-        int   attr;         // attributes of object
-        int   mati;         // material index overide (-1) - no material (new)
-        float* avg_radius;  // [OBJECT4DV2_MAX_FRAMES];   // average radius of object used for collision detection
-        float* max_radius;  // [OBJECT4DV2_MAX_FRAMES];   // maximum radius of object
+        int   id;               // 数字ID
+        char  name[64];         // 物体名称，仅支持ASCII编码，64字节
+        int   state;            // 物体状态
+        int   attr;             // 物体属性
+        int   mati;             // 材质编码，-1表示没有材质
+        float* avg_radius;      // 物体的平均半径数组，可以用来执行碰撞检测，包含了[OBJECT4DV2_MAX_FRAMES]个元素;
+        float* max_radius;      // 物体的最大半径数组，包含了[OBJECT4DV2_MAX_FRAMES]个元素[OBJECT4DV2_MAX_FRAMES];
+        POINT4D world_pos;      // 物体在世界坐标系中的位置
+        VECTOR4D dir;           // 物体在局部坐标系下的旋转角度，或者是方向向量
+        VECTOR4D ux, uy, uz;    // 记录朝向的局部坐标轴，物体被旋转时他们将自动更新
+        int num_vertices;                   // 每一个动画帧中包含的顶点数
+        int num_frames;                     // 动画帧的帧数
+        int total_vertices;                 // 全部的顶点数
+        int curr_frame;                     // 当前帧，如果只有一帧，则为0
+        VERTEX4DTV1_PTR vlist_local;        // 基于局部坐标系下的顶点的数组 [OBJECT4DV1_MAX_VERTICES];
+        VERTEX4DTV1_PTR vlist_trans;        // 经过变换后的顶点数组[OBJECT4DV1_MAX_VERTICES]
+        VERTEX4DTV1_PTR head_vlist_local;   // vlist_local链表的首指针
+        VERTEX4DTV1_PTR head_vlist_trans;   // vlist_trans链表的首指针
+        POINT2D_PTR tlist;                  // 纹理坐标列表， 3*最大的多边形数
+        BITMAP_IMAGE_PTR texture;           // 新增的指向纹理信息的指针，可用于纹理映射
+        int num_polys;                      // 物体网格中的多边形数
+        POLY4DV2_PTR plist;                 // 新增的指向多边形的指针
+        int ivar1, ivar2;                   // auxiliary vars
+        float fvar1, fvar2;                 // auxiliary vars
 
-        POINT4D world_pos;  // position of object in world
-
-        VECTOR4D dir;       // rotation angles of object in local
-        // cords or unit direction vector user defined???
-
-        VECTOR4D ux, uy, uz;  // local axes to track full orientation
-        // this is updated automatically during
-        // rotation calls
-
-        int num_vertices;   // number of vertices per frame of this object
-        int num_frames;     // number of frames
-        int total_vertices; // total vertices, redudant, but it saves a multiply in a lot of places
-        int curr_frame;     // current animation frame (0) if single frame
-
-        VERTEX4DTV1_PTR vlist_local; // [OBJECT4DV1_MAX_VERTICES]; // array of local vertices
-        VERTEX4DTV1_PTR vlist_trans; // [OBJECT4DV1_MAX_VERTICES]; // array of transformed vertices
-
-        // these are needed to track the "head" of the vertex list for mult-frame objects
-        VERTEX4DTV1_PTR head_vlist_local;
-        VERTEX4DTV1_PTR head_vlist_trans;
-
-        // texture coordinates list (new)
-        POINT2D_PTR tlist;       // 3*num polys at max
-
-        BITMAP_IMAGE_PTR texture; // pointer to the texture information for simple texture mapping (new)
-
-        int num_polys;           // number of polygons in object mesh
-        POLY4DV2_PTR plist;      // ptr to polygons (new)
-
-        int   ivar1, ivar2;      // auxiliary vars
-        float fvar1, fvar2;      // auxiliary vars
-
-        // METHODS //////////////////////////////////////////////////
-
-        // setting the frame is so important that it should be a member function
-        // calling functions without doing this can wreak havok!
-        int Set_Frame(int frame);
-
+        /**************************************************************************************
+         指定当前帧
+         * @name: Set_Frame
+         * @return: bool
+         * @param: int frame
+         *************************************************************************************/
+        bool Set_Frame(int frame);
     } OBJECT4DV2, * OBJECT4DV2_PTR;
 
     /**************************************************************************************

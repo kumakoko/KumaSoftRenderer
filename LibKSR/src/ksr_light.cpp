@@ -28,6 +28,9 @@ SOFTWARE.
 
 namespace KSR
 {
+    LIGHTV1 lights[MAX_LIGHTS];  // 全局的光源数组lights in system
+    int num_lights = 0;       // 当前的光源数
+
     void Reset_Lights_LIGHTV1(void)
     {
         // 重置所有的光源，将当前的光源数归零

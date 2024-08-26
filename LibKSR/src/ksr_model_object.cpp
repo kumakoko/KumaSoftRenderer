@@ -600,7 +600,7 @@ namespace KSR
             // 使用视截体右裁剪面和左裁剪面，检测object包围球上最左边和最右边的点
             float z_test = 0.5f * cam->viewplane_width * sphere_pos.z / cam->view_dist;
 
-            if (sphere_pos.x - obj->max_radius > z_test) || // 最右边
+            if (sphere_pos.x - obj->max_radius > z_test || // 最右边
                 sphere_pos.x + obj->max_radius < -z_test)   // 最左边
             {
                 SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
@@ -613,14 +613,44 @@ namespace KSR
             // 使用视截体上裁剪面和下裁剪面，检测object包围球上最下边和最上边的点
             float z_test = 0.5f * cam->viewplane_height * sphere_pos.z / cam->view_dist;
 
-            if (sphere_pos.y - obj->max_radius > z_test) || // 包围球最下边的点，是不是都超过视截体上裁剪面
+            if (sphere_pos.y - obj->max_radius > z_test || // 包围球最下边的点，是不是都超过视截体上裁剪面
                 sphere_pos.y + obj->max_radius < -z_test)   // 包围球最上边的点，是不是都超过视截体下裁剪面
             {
                 SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
                 return true;
-            } 
-        } 
+            }
+        }
 
         return false;
     }
+
+    bool OBJECT4DV2_TYP::Set_Frame(int frame)
+    {
+        if (nullptr == this)
+            return false;
+
+        // 检查本model objec是不是多帧的，不是的话就不用设置
+        if (!(this->attr & OBJECT4DV2_ATTR_MULTI_FRAME))
+            return false;
+
+        // 将指针指向当前帧数据，检查参数frame是否越界
+        if (frame < 0)
+        {
+            frame = 0;
+        }
+        else
+        {
+            if (frame >= this->num_frames)
+                frame = this->num_frames - 1;
+        }
+
+        // 设置当前帧
+        this->curr_frame = frame;
+
+        // 让指针指向顶点列表中相对应的帧
+        this->vlist_local = &(this->head_vlist_local[frame * this->num_vertices]);
+        this->vlist_trans = &(this->head_vlist_trans[frame * this->num_vertices]);
+        return true;
+
+    } // end Set_Frame
 }

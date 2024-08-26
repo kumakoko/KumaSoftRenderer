@@ -74,8 +74,8 @@ namespace KSR
         void* ptr;
     } LIGHTV1, * LIGHTV1_PTR;
 
-    LIGHTV1 lights[MAX_LIGHTS];  // 全局的光源数组lights in system
-    extern int num_lights;       // 当前的光源数
+    extern LIGHTV1 lights[MAX_LIGHTS];  // 全局的光源数组lights in system
+    extern int num_lights;              // 当前的光源数
 
     /**************************************************************************************
 
@@ -120,9 +120,4 @@ namespace KSR
         CAM4DV1_PTR cam,     // 
         LIGHTV1_PTR lights,  // 
         int max_lights);      // 
-
-    int Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,
-        OBJECT4DV1_PTR obj,
-        int insert_local,
-        int lighting_on);
 }

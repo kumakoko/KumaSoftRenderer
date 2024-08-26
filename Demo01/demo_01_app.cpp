@@ -23,6 +23,7 @@ SOFTWARE.
 *********************************************************************************************/
 
 #include "demo_01_app.h"
+#include "ksr_constants.h"
 
 void Demo01App::InitScene()
 {

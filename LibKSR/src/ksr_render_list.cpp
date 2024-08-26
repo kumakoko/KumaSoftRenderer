@@ -26,6 +26,7 @@ SOFTWARE.
 #include "ksr_transform.h"
 #include "ksr_shape_drawing.h"
 #include "ksr_constants.h"
+#include "ksr_model_object.h"
 
 namespace KSR
 {
@@ -37,53 +38,40 @@ namespace KSR
         render_list->num_polys = 0;
     }
 
-    int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly)
+    bool Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly)
     {
-        // inserts the sent polyface POLYF4DV1 into the render list
-
-        // step 0: are we full?
+        // step 0: render list中能容纳的多边形已经满了，返回false
         if (render_list->num_polys >= RENDERLIST4DV1_MAX_POLYS)
-            return(0);
+            return false;
 
-        // step 1: copy polygon into next opening in polygon render list
-
-        // point pointer to polygon structure
+        // step 1: 最后一个多边形的指针记录到poly_ptrs数组对应项中去：
         render_list->poly_ptrs[render_list->num_polys] = &render_list->poly_data[render_list->num_polys];
 
-        // copy face right into array, thats it
-        memcpy((void*)&render_list->poly_data[render_list->num_polys], (void*)poly, sizeof(POLYF4DV1));
+        // 然后把传递进来的poly数据复制到render list的最后一个poly中
+        memcpy(&render_list->poly_data[render_list->num_polys], poly, sizeof(POLYF4DV1));
 
-        // now the polygon is loaded into the next free array position, but
-        // we need to fix up the links
-        // test if this is the first entry
         if (render_list->num_polys == 0)
         {
-            // set pointers to null, could loop them around though to self
+            // 如果插入的多边形是第一个，那该多变形的后向指针和前向指针，均为空
             render_list->poly_data[0].next = nullptr;
             render_list->poly_data[0].prev = nullptr;
-        } // end if
+        }
         else
         {
-            // first set this node to point to previous node and next node (null)
+            // 如果render list已经不止插入一个多边形了，那就把新插入的多边形，和旧多边形
+            // 串接起来，这是一个典型的双向链表结构
             render_list->poly_data[render_list->num_polys].next = nullptr;
-            render_list->poly_data[render_list->num_polys].prev =
-                &render_list->poly_data[render_list->num_polys - 1];
+            render_list->poly_data[render_list->num_polys].prev = &render_list->poly_data[render_list->num_polys - 1];
+            render_list->poly_data[render_list->num_polys - 1].next = &render_list->poly_data[render_list->num_polys];
+        }
 
-            // now set previous node to point to this node
-            render_list->poly_data[render_list->num_polys - 1].next =
-                &render_list->poly_data[render_list->num_polys];
-        } // end else
-
-     // increment number of polys in list
+        // 列表中的多边形个数递增1
         render_list->num_polys++;
-
-        // return successful insertion
-        return(1);
-
-    } // end Insert_POLYF4DV1_RENDERLIST4DV1
+        return true;
+    }
 
     //P461
-    bool Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local,int lighting_on)
+    bool Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list, OBJECT4DV1_PTR obj, int insert_local, int lighting_on)
     {
         // 将物体转换为一个多边形面列表
         // 然后将可见的，活动，未被剔除的，未被裁剪掉的多边形插入到渲染列表中
@@ -105,7 +93,7 @@ namespace KSR
             POLY4DV1_PTR curr_poly = &obj->plist[poly];
 
             // 多边形不可见，多边形不活跃，多边形背向摄像机的话，不渲染，处理下一个
-            if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) || 
+            if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
                 curr_poly->state & POLY4DV1_STATE_CLIPPED ||
                 curr_poly->state & POLY4DV1_STATE_BACKFACE)
                 continue;
@@ -331,8 +319,8 @@ namespace KSR
             if (!_Polygon4DV1NeedToRender(current_polygon))
                 continue; //当前这个多边形不满足渲染条件，跳过，检查下一个多边形
 
-            float alpha = (0.5f * camera->viewport_width - 0.5f);
-            float beta = (0.5f * camera->viewport_height - 0.5f);
+            float alpha = 0.5f * camera->viewport_width - 0.5f;
+            float beta = 0.5f * camera->viewport_height - 0.5f;
 
             for (int vertex = 0; vertex < 3; vertex++)
             {
@@ -358,29 +346,28 @@ namespace KSR
                 static_cast<int>(current_polygon->tvlist[0].y),
                 static_cast<int>(current_polygon->tvlist[1].x),
                 static_cast<int>(current_polygon->tvlist[1].y),
-                current_polygon->color,video_buffer, pitch);
+                current_polygon->color, video_buffer, pitch);
 
             Draw_Clip_Line16(
                 static_cast<int>(current_polygon->tvlist[1].x),
                 static_cast<int>(current_polygon->tvlist[1].y),
                 static_cast<int>(current_polygon->tvlist[2].x),
                 static_cast<int>(current_polygon->tvlist[2].y),
-                current_polygon->color,video_buffer, pitch);
+                current_polygon->color, video_buffer, pitch);
 
             Draw_Clip_Line16(
                 static_cast<int>(current_polygon->tvlist[2].x),
                 static_cast<int>(current_polygon->tvlist[2].y),
                 static_cast<int>(current_polygon->tvlist[0].x),
                 static_cast<int>(current_polygon->tvlist[0].y),
-                current_polygon->color,video_buffer, pitch);
+                current_polygon->color, video_buffer, pitch);
 #ifdef DEBUG_ON
             debug_polys_rendered_per_frame++;
 #endif
-        } // end for poly
+        }
+    }
 
-    } // end Draw_RENDERLIST4DV1_Wire
-
-    int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,POLY4DV1_PTR poly)
+    int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLY4DV1_PTR poly)
     {
         // converts the sent POLY4DV1 into a FACE4DV1 and inserts it
         // into the render list

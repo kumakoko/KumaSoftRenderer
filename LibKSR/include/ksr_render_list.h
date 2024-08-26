@@ -27,6 +27,7 @@ SOFTWARE.
 #include "ksr_polygon.h"
 #include "ksr_camera.h"
 #include "ksr_transform.h"
+#include "ksr_model_object.h"
 
 namespace KSR
 {
@@ -35,21 +36,12 @@ namespace KSR
 
     typedef struct RENDERLIST4DV1_TYP
     {
-        int state; // state of renderlist ???
-        int attr;  // attributes of renderlist ???
-
-        // the render list is an array of pointers each pointing to 
-        // a self contained "renderable" polygon face POLYF4DV1
-        POLYF4DV1_PTR poly_ptrs[RENDERLIST4DV1_MAX_POLYS];
-
-        // additionally to cut down on allocatation, de-allocation
-        // of polygons each frame, here's where the actual polygon
-        // faces will be stored
-        POLYF4DV1 poly_data[RENDERLIST4DV1_MAX_POLYS];
-
-        int num_polys; // number of polys in render list
-
-    } RENDERLIST4DV1, * RENDERLIST4DV1_PTR;
+        int state;                                          // render list的状态    
+        int attr;                                           // render list的属性
+        POLYF4DV1_PTR poly_ptrs[RENDERLIST4DV1_MAX_POLYS];  // render list是一个指针数组，其中每个指针指向一个自包含的，可渲染的多边形面结构体POLYF4DV1
+        POLYF4DV1 poly_data[RENDERLIST4DV1_MAX_POLYS];      // 为了避免每帧都为多边形分配和释放存储空间，多边形存储在下面的这个数组中
+        int num_polys;                                      // 本render list中包含的多边形数目
+    }RENDERLIST4DV1, * RENDERLIST4DV1_PTR;
 
 
     // object to hold the render list version 2.0, this way we can have more
@@ -72,7 +64,6 @@ namespace KSR
 
     } RENDERLIST4DV2, * RENDERLIST4DV2_PTR;
 
-
     /**************************************************************************************
     本函数重置render list，供渲染下一帧使用
     @name: KSR::Reset_RENDERLIST4DV1
@@ -84,24 +75,23 @@ namespace KSR
     /**************************************************************************************
 
     @name: KSR::Insert_POLYF4DV1_RENDERLIST4DV1
-    @return: int
+    @return: bool
     @param: RENDERLIST4DV1_PTR rend_list
     @param: POLYF4DV1_PTR poly
     *************************************************************************************/
-    int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly);
+    bool Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR render_list, POLYF4DV1_PTR poly);
 
     /**************************************************************************************
-    
+
     @name: KSR::Insert_POLY4DV1_RENDERLIST4DV1
     @return: int
     @param: RENDERLIST4DV1_PTR rend_list
     @param: POLY4DV1_PTR poly
     *************************************************************************************/
-    int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,POLY4DV1_PTR poly);
+    int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLY4DV1_PTR poly);
 
-   
     /**************************************************************************************
-    
+
     @name: KSR::Insert_OBJECT4DV1_RENDERLIST4DV12
     @return: bool
     @param: RENDERLIST4DV1_PTR rend_list
@@ -109,7 +99,7 @@ namespace KSR
     @param: int insert_local
     @param: int lighting_on
     *************************************************************************************/
-    bool Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list,OBJECT4DV1_PTR obj,int insert_local = 0,int lighting_on = 0);
+    bool Insert_OBJECT4DV1_RENDERLIST4DV12(RENDERLIST4DV1_PTR rend_list, OBJECT4DV1_PTR obj, int insert_local = 0, int lighting_on = 0);
 
     /**************************************************************************************
     利用传递进函数的参数：变换矩阵mt，对render list中的基于局部坐标系顶点，或者在其他坐标系下的顶点
