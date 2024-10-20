@@ -20,10 +20,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny3d.h" />
+    <ClInclude Include="tiny3d_device.h" />
     <ClInclude Include="tiny3d_math.h" />
+    <ClInclude Include="tiny3d_matrix.h" />
+    <ClInclude Include="tiny3d_transform.h" />
+    <ClInclude Include="tiny3d_vector.h" />
+    <ClInclude Include="tiny3d_geometry.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tiny3d.cpp" />
+    <ClCompile Include="tiny3d_device.cpp" />
+    <ClCompile Include="tiny3d_matrix.cpp" />
+    <ClCompile Include="tiny3d_transform.cpp" />
+    <ClCompile Include="tiny3d_vector.cpp" />
+    <ClCompile Include="tiny3d_geometry.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

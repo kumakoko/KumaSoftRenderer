@@ -21,9 +21,39 @@
     <ClInclude Include="tiny3d_math.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="tiny3d_device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_matrix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_vector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_transform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_geometry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tiny3d.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_matrix.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_vector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_transform.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_geometry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_device.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
