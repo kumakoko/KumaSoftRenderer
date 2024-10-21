@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include "tiny3d_math.h"
 #include "tiny3d.h"
+#include "tiny3d_device.h"
 
 uint8_t* g_BackBuffer = nullptr;    // 后台页面的首指针
 int g_BackSurfacePitch = 0;
@@ -47,6 +48,41 @@ bool g_IsRunning = true;
 bool g_IsMouseDragging = false;
 int g_MouseWndOffsetX = 0;
 int g_MouseWndOffsetY = 0;
+device_t* g_Device = nullptr;
+
+vertex_t mesh[8] = {
+    { {  1, -1,  1, 1 }, { 0, 0 }, { 1.0f, 0.2f, 0.2f }, 1 },
+    { { -1, -1,  1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 0.2f }, 1 },
+    { { -1,  1,  1, 1 }, { 1, 1 }, { 0.2f, 0.2f, 1.0f }, 1 },
+    { {  1,  1,  1, 1 }, { 1, 0 }, { 1.0f, 0.2f, 1.0f }, 1 },
+    { {  1, -1, -1, 1 }, { 0, 0 }, { 1.0f, 1.0f, 0.2f }, 1 },
+    { { -1, -1, -1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 1.0f }, 1 },
+    { { -1,  1, -1, 1 }, { 1, 1 }, { 1.0f, 0.3f, 0.3f }, 1 },
+    { {  1,  1, -1, 1 }, { 1, 0 }, { 0.2f, 1.0f, 0.3f }, 1 },
+};
+
+void draw_plane(device_t* device, int a, int b, int c, int d)
+{
+    vertex_t p1 = mesh[a], p2 = mesh[b], p3 = mesh[c], p4 = mesh[d];
+    p1.tc.u = 0, p1.tc.v = 0, p2.tc.u = 0, p2.tc.v = 1;
+    p3.tc.u = 1, p3.tc.v = 1, p4.tc.u = 1, p4.tc.v = 0;
+    device->device_draw_primitive(&p1, &p2, &p3);
+    device->device_draw_primitive(&p3, &p4, &p1);
+}
+
+void draw_box(device_t* device, float theta) 
+{
+    matrix_t m;
+    matrix_set_rotate(&m, -1, -0.5, 1, theta);
+    device->transform.world = m;
+    transform_update(&device->transform);
+    draw_plane(device, 0, 1, 2, 3);
+    draw_plane(device, 4, 5, 6, 7);
+    draw_plane(device, 0, 4, 5, 1);
+    draw_plane(device, 1, 5, 6, 2);
+    draw_plane(device, 2, 6, 7, 3);
+    draw_plane(device, 3, 7, 4, 0);
+}
 
 void InitializeGraphicSystem()
 {
@@ -164,13 +200,22 @@ void RenderScene()
 {
     LockBackSurface();
 
+    g_Device->SetFrameBufer(g_BackBuffer, g_BackSurfacePitch);
+
+    draw_box(g_Device, 0.0f);
+
     UnlockBackSurface();
 }
 
 int main(int argc, char* argv[])
 {
+    
     try
     {
+        g_Device = new device_t();
+        g_Device->device_init(g_WindowRenderAreaWidth, g_WindowRenderAreaHeight);
+        g_Device->camera_at_zero(3, 0, 0);
+
         InitializeGraphicSystem();
 
         while (g_IsRunning)
@@ -183,11 +228,14 @@ int main(int argc, char* argv[])
                 OnMouseDragging(g_Window, event);
             }
 
+            g_Device->camera_at_zero(3.5, 0, 0);
+
             //KSR::Start_Clock();
-            SDL_FillRect(g_BackSurface, nullptr, 0);
+            SDL_FillRect(g_BackSurface, nullptr, 0xFFc0c0c0); //ARGB
             SDL_FillRect(g_ScreenSurface, nullptr, 0);
 
             RenderScene();
+
             SDL_BlitSurface(g_BackSurface, nullptr, g_ScreenSurface, nullptr);
             SDL_UpdateWindowSurface(g_Window);
 
