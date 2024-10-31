@@ -4,6 +4,7 @@
 
 #include "tiny3d_transform.h"
 #include "tiny3d_geometry.h"
+#include "tiny3d_trapezoid.h"
 
 //=====================================================================
 // 渲染设备
@@ -16,31 +17,26 @@
 
 struct device_t 
 {
-    transform_t transform;      // 坐标变换器
-    uint32_t width;                  // 窗口宽度
-    uint32_t height;                 // 窗口高度
-    uint32_t* framebuffer;      // 像素缓存：framebuffer[y] 代表第 y行
-    uint32_t framebuffer_pitch;
-    float* zbuffer;            // 深度缓存：zbuffer[y] 为第 y行指针
-    uint32_t* texture;          // 纹理：同样是每行索引
-    int tex_width;              // 纹理宽度
-    int tex_height;             // 纹理高度
-    float max_u;                // 纹理最大宽度：tex_width - 1
-    float max_v;                // 纹理最大高度：tex_height - 1
-    int render_state;           // 渲染状态
-    uint32_t background;         // 背景颜色
-    uint32_t foreground;         // 线框颜色
+public:
+    transform_t transform_;     // 坐标变换器
+    uint32_t window_width_;     // 窗口宽度
+    uint32_t window_height_;    // 窗口高度
+    uint32_t* frame_buffer_;    // 像素缓存：framebuffer[y] 代表第 y行
+    float* z_buffer_;           // 深度缓存：zbuffer[y] 为第 y行指针
+    uint32_t* texture_;         // 纹理：同样是每行索引
+    uint32_t texture_width_;    // 纹理宽度
+    uint32_t texture_height_;   // 纹理高度
+    float max_u_;               // 纹理最大宽度：tex_width - 1
+    float max_v_;               // 纹理最大高度：tex_height - 1
+    int render_state_;          // 渲染状态
+    uint32_t background_color_; // 背景颜色
+    uint32_t foreground_color_; // 线框颜色
 
 public:
-    inline void SetFrameBufer(uint8_t* buffer,uint32_t pitch)
+    inline void SetFrameBufer(uint8_t* buffer)
     {
-        framebuffer = reinterpret_cast<uint32_t*>(buffer);
-        framebuffer_pitch = pitch;
+        frame_buffer_ = reinterpret_cast<uint32_t*>(buffer);
     }
-
-
-public:
-
 
     // 设备初始化，fb为外部帧缓存，非 NULL 将引用外部帧缓存（每行 4字节对齐）
     void device_init(int width, int height);
@@ -48,30 +44,89 @@ public:
     // 删除设备
     void device_destroy();
 
-    // 设置当前纹理
-    void device_set_texture(void* bits, long pitch, int w, int h);
-
     // 清空 framebuffer 和 zbuffer
     void device_clear(int mode);
 
     // 画点
-    void device_pixel(uint32_t x, uint32_t y, uint32_t color);
+    /**************************************************************************************
+    
+    @name: device_t::WritePixel
+    @return: void
+    @param: uint32_t x
+    @param: uint32_t y
+    @param: uint32_t color
+    *************************************************************************************/
+    void WritePixel(uint32_t x, uint32_t y, uint32_t color);
 
     // 绘制线段
-    void device_draw_line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t c);
+    /**************************************************************************************
+    
+    @name: device_t::DrawLine
+    @return: void
+    @param: uint32_t x1
+    @param: uint32_t y1
+    @param: uint32_t x2
+    @param: uint32_t y2
+    @param: uint32_t c
+    *************************************************************************************/
+    void DrawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t c);
 
     // 根据坐标读取纹理
-    uint32_t device_texture_read(float u, float v);
+    /**************************************************************************************
+    
+    @name: device_t::GetTexel
+    @return: uint32_t
+    @param: float u
+    @param: float v
+    *************************************************************************************/
+    uint32_t GetTexel(float u, float v);
 
     // 绘制扫描线
-    void device_draw_scanline(scanline_t* scanline);
+    /**************************************************************************************
+    
+    @name: device_t::DrawScanline
+    @return: void
+    @param: scanline_t * scanline
+    *************************************************************************************/
+    void DrawScanline(scanline_t* scanline);
 
-    // 主渲染函数
-    void device_render_trap(trapezoid_t* trap);
+    /**************************************************************************************
+    渲染梯形
+    @name: device_t::RenderTrapezoid
+    @return: void
+    @param: trapezoid_t * trap
+    *************************************************************************************/
+    void RenderTrapezoid(trapezoid_t* trap);
 
-    // 根据 render_state 绘制原始三角形
-    void device_draw_primitive(const vertex_t* v1, const vertex_t* v2, const vertex_t* v3);
+    /**************************************************************************************
+    根据 render_state 绘制原始三角形
+    @name: device_t::DrawPrimitive
+    @return: void
+    @param: const vertex_t * v1
+    @param: const vertex_t * v2
+    @param: const vertex_t * v3
+    *************************************************************************************/
+    void DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_t* v3);
 
-    void camera_at_zero(float x, float y, float z);
+    /**************************************************************************************
+    
+    @name: device_t::ResetCamera
+    @return: void
+    @param: float x
+    @param: float y
+    @param: float z
+    *************************************************************************************/
+    void ResetCamera(float x, float y, float z);
+
+    /**************************************************************************************
+    
+    @name: device_t::InitTexture
+    @return: void
+    *************************************************************************************/
+    void InitTexture();
+
+    void DrawPlane(const vertex_t* p1, const vertex_t* p2, const vertex_t* p3, const vertex_t* p4);
+
+    void DrawBox(float theta, const vertex_t* box_vertices);
 };
 

@@ -14,6 +14,11 @@ extern bool g_IsMouseDragging;
 extern int g_MouseWndOffsetX;
 extern int g_MouseWndOffsetY;
 
+/**************************************************************************************
+初始化SDL库
+@name: InitializeGraphicSystem
+@return: void
+*************************************************************************************/
 void InitializeGraphicSystem();
 
 void ShutdownGraphicSystem();

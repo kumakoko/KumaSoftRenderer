@@ -24,6 +24,7 @@
     <ClInclude Include="tiny3d_math.h" />
     <ClInclude Include="tiny3d_matrix.h" />
     <ClInclude Include="tiny3d_transform.h" />
+    <ClInclude Include="tiny3d_trapezoid.h" />
     <ClInclude Include="tiny3d_vector.h" />
     <ClInclude Include="tiny3d_geometry.h" />
   </ItemGroup>
@@ -32,6 +33,7 @@
     <ClCompile Include="tiny3d_device.cpp" />
     <ClCompile Include="tiny3d_matrix.cpp" />
     <ClCompile Include="tiny3d_transform.cpp" />
+    <ClCompile Include="tiny3d_trapezoid.cpp" />
     <ClCompile Include="tiny3d_vector.cpp" />
     <ClCompile Include="tiny3d_geometry.cpp" />
   </ItemGroup>

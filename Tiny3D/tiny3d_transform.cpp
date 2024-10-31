@@ -2,52 +2,59 @@
 
 #include "tiny3d_transform.h"
 
-// 矩阵更新，计算 transform = world * view * projection
-void transform_update(transform_t* ts)
+void transform_t::Update()
 {
     matrix_t m;
-    matrix_mul(&m, &ts->world, &ts->view);
-    matrix_mul(&ts->transform, &m, &ts->projection);
+    matrix_mul(&m, &world_matrix_, &view_matrix_);
+    matrix_mul(&wvp_matrix_, &m, &projection_matrix_);
 }
 
 // 初始化，设置屏幕长宽
-void transform_init(transform_t* ts, int width, int height)
+void transform_t::Init(int width, int height, float near_clip, float far_clip)
 {
-    float aspect = (float)width / ((float)height);
-    matrix_set_identity(&ts->world);
-    matrix_set_identity(&ts->view);
-    matrix_set_perspective(&ts->projection, 3.1415926f * 0.5f, aspect, 1.0f, 500.0f);
-    ts->w = (float)width;
-    ts->h = (float)height;
-    transform_update(ts);
+    float aspect = static_cast<float>(width) / static_cast<float>(height);
+    matrix_set_identity(&this->world_matrix_);
+    matrix_set_identity(&this->view_matrix_);
+    matrix_set_perspective(&this->projection_matrix_, 3.1415926f * 0.5f, aspect, near_clip, far_clip);
+    this->screen_width_ = static_cast<float>(width);
+    this->screen_height_ = static_cast<float>(height);
+    Update();
 }
 
 // 将矢量 x 进行 project 
-void transform_apply(const transform_t* ts, vector_t* y, const vector_t* x)
+void transform_t::Apply(vector_t* y, const vector_t* x) const
 {
-    matrix_apply(y, x, &ts->transform);
+    matrix_apply(y, x, &wvp_matrix_);
 }
 
 // 检查齐次坐标同 cvv 的边界用于视锥裁剪
-int transform_check_cvv(const vector_t* v)
+uint32_t transform_t::CheckCVV(const vector_t* v) const
 {
     float w = v->w;
-    int check = 0;
-    if (v->z < 0.0f) check |= 1;
-    if (v->z > w) check |= 2;
-    if (v->x < -w) check |= 4;
-    if (v->x > w) check |= 8;
-    if (v->y < -w) check |= 16;
-    if (v->y > w) check |= 32;
+    uint32_t check = 0;
+
+    if (v->z < 0.0f)
+        check |= 0x00000001; // 00000000 00000000 00000000 00000001;
+    if (v->z > w)
+        check |= 0x00000002; // 00000000 00000000 00000000 00000010;
+    if (v->x < -w)
+        check |= 0x00000004; // 00000000 00000000 00000000 00000100;
+    if (v->x > w)
+        check |= 0x00000008; // 00000000 00000000 00000000 00001000;
+    if (v->y < -w)
+        check |= 0x00000010; // 00000000 00000000 00000000 00010000;
+    if (v->y > w)
+        check |= 0x00000020; // 00000000 00000000 00000000 00100000;
+
     return check;
 }
 
 // 归一化，得到屏幕坐标
-void transform_homogenize(const transform_t* ts, vector_t* y, const vector_t* x)
+void transform_t::Homogenize(vector_t* homogenized_vertex, const vector_t* vertex) const
 {
-    float rhw = 1.0f / x->w;
-    y->x = (x->x * rhw + 1.0f) * ts->w * 0.5f;
-    y->y = (1.0f - x->y * rhw) * ts->h * 0.5f;
-    y->z = x->z * rhw;
-    y->w = 1.0f;
+    float rhw = 1.0f / vertex->w;
+    homogenized_vertex->x = (vertex->x * rhw + 1.0f) * this->screen_width_ * 0.5f;
+    homogenized_vertex->y = (1.0f - vertex->y * rhw) * this->screen_height_ * 0.5f;
+    homogenized_vertex->z = vertex->z * rhw;
+    homogenized_vertex->w = 1.0f;
 }
