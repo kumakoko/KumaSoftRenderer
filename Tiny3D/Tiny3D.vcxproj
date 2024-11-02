@@ -23,6 +23,7 @@
     <ClInclude Include="tiny3d_device.h" />
     <ClInclude Include="tiny3d_math.h" />
     <ClInclude Include="tiny3d_matrix.h" />
+    <ClInclude Include="tiny3d_scanline.h" />
     <ClInclude Include="tiny3d_transform.h" />
     <ClInclude Include="tiny3d_trapezoid.h" />
     <ClInclude Include="tiny3d_vector.h" />

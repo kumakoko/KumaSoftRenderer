@@ -4,7 +4,21 @@
 
 struct matrix_t
 {
-    float m[4][4];
+    union
+    {
+#if defined(_MSC_VER)
+        __declspec(align(16)) float m[4][4];
+#else
+        float M[4][4];
+#endif
+        struct
+        {
+            float M00, M01, M02, M03;
+            float M10, M11, M12, M13;
+            float M20, M21, M22, M23;
+            float M30, M31, M32, M33;
+        };
+    };
 };
 
 // c = a + b
@@ -20,7 +34,7 @@ void matrix_mul(matrix_t* c, const matrix_t* a, const matrix_t* b);
 void matrix_scale(matrix_t* c, const matrix_t* a, float f);
 
 // y = x * m
-void matrix_apply(vector_t* y, const vector_t* x, const matrix_t* m);
+void matrix_apply(T3DVector4* y, const T3DVector4* x, const matrix_t* m);
 
 void matrix_set_identity(matrix_t* m);
 
@@ -36,7 +50,7 @@ void matrix_set_scale(matrix_t* m, float x, float y, float z);
 void matrix_set_rotate(matrix_t* m, float x, float y, float z, float theta);
 
 // 设置摄像机
-void matrix_set_lookat(matrix_t* m, const vector_t* eye, const vector_t* at, const vector_t* up);
+void matrix_set_lookat(matrix_t* m, const T3DVector4* eye, const T3DVector4* at, const T3DVector4* up);
 
 // D3DXMatrixPerspectiveFovLH
 void matrix_set_perspective(matrix_t* m, float fovy, float aspect, float zn, float zf);

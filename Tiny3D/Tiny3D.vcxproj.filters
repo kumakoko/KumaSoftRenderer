@@ -39,6 +39,9 @@
     <ClInclude Include="tiny3d_trapezoid.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="tiny3d_scanline.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tiny3d.cpp">

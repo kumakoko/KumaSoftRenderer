@@ -3,7 +3,7 @@
 #include <cstdint>
 #include "tiny3d_matrix.h"
 
-struct transform_t
+class Transform
 {
 private:
     matrix_t world_matrix_;         // 世界坐标变换
@@ -22,7 +22,7 @@ public:
 
     /**************************************************************************************
     初始化，设置屏幕长宽
-    @name: transform_t::Init
+    @name: Transform::Init
     @return: void
     @param: int width
     @param: int height
@@ -31,31 +31,31 @@ public:
 
     /**************************************************************************************
     将矢量 x 进行 project
-    @name: transform_t::Apply
+    @name: Transform::Apply
     @return: void
-    @param: vector_t * y
-    @param: const vector_t * x
+    @param: T3DVector4 * y
+    @param: const T3DVector4 * x
     *************************************************************************************/
-    void Apply(vector_t* y, const vector_t* x) const;
+    void Apply(T3DVector4* y, const T3DVector4* x) const;
 
     /**************************************************************************************
     检查齐次坐标同 cvv 的边界用于视锥裁剪
-    @name: transform_t::CheckCVV
+    @name: Transform::CheckCVV
     @return: uint32_t
-    @param: const vector_t * v
+    @param: const T3DVector4 * v
     *************************************************************************************/
-    uint32_t CheckCVV(const vector_t* v) const;
+    uint32_t CheckCVV(const T3DVector4* v) const;
 
     /**************************************************************************************
     归一化，得到屏幕坐标
-    @name: transform_t::Homogenize
+    @name: Transform::Homogenize
     @return: void
-    @param: vector_t * homogenized_vertex
-    @param: const vector_t * vertex
+    @param: T3DVector4 * homogenized_vertex
+    @param: const T3DVector4 * vertex
     *************************************************************************************/
-    void Homogenize(vector_t* homogenized_vertex, const vector_t* vertex) const;
+    void Homogenize(T3DVector4* homogenized_vertex, const T3DVector4* vertex) const;
 
-    inline void SetViewMatrix(const vector_t* eye, const vector_t* at, const vector_t* up)
+    inline void SetViewMatrix(const T3DVector4* eye, const T3DVector4* at, const T3DVector4* up)
     {
         matrix_set_lookat(&view_matrix_, eye, at, up);
     }

@@ -15,10 +15,10 @@
 #define RENDER_STATE_COLOR          4		// 渲染颜色
 
 
-struct device_t 
+struct Device 
 {
 public:
-    transform_t transform_;     // 坐标变换器
+    Transform transform_;     // 坐标变换器
     uint32_t window_width_;     // 窗口宽度
     uint32_t window_height_;    // 窗口高度
     uint32_t* frame_buffer_;    // 像素缓存：framebuffer[y] 代表第 y行
@@ -38,19 +38,33 @@ public:
         frame_buffer_ = reinterpret_cast<uint32_t*>(buffer);
     }
 
-    // 设备初始化，fb为外部帧缓存，非 NULL 将引用外部帧缓存（每行 4字节对齐）
-    void device_init(int width, int height);
-
-    // 删除设备
-    void device_destroy();
-
-    // 清空 framebuffer 和 zbuffer
-    void device_clear(int mode);
-
-    // 画点
     /**************************************************************************************
-    
-    @name: device_t::WritePixel
+    设备初始化，fb为外部帧缓存，非 NULL 将引用外部帧缓存（每行 4字节对齐）
+    @name: Device::Initialize
+    @return: void
+    @param: int width
+    @param: int height
+    *************************************************************************************/
+    void Initialize(int width, int height);
+
+    /**************************************************************************************
+    删除设备
+    @name: Device::Destroy
+    @return: void
+    *************************************************************************************/
+    void Destroy();
+
+    /**************************************************************************************
+    清空 Frame Buffer 和 Z Buffer
+    @name: Device::Clear
+    @return: void
+    @param: int mode
+    *************************************************************************************/
+    void Clear(int mode);
+
+    /**************************************************************************************
+    画点
+    @name: Device::WritePixel
     @return: void
     @param: uint32_t x
     @param: uint32_t y
@@ -58,10 +72,9 @@ public:
     *************************************************************************************/
     void WritePixel(uint32_t x, uint32_t y, uint32_t color);
 
-    // 绘制线段
     /**************************************************************************************
-    
-    @name: device_t::DrawLine
+    采用Bresenham算法绘制线段
+    @name: Device::DrawLine
     @return: void
     @param: uint32_t x1
     @param: uint32_t y1
@@ -71,20 +84,18 @@ public:
     *************************************************************************************/
     void DrawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t c);
 
-    // 根据坐标读取纹理
     /**************************************************************************************
-    
-    @name: device_t::GetTexel
+    根据坐标读取纹理
+    @name: Device::GetTexel
     @return: uint32_t
     @param: float u
     @param: float v
     *************************************************************************************/
     uint32_t GetTexel(float u, float v);
 
-    // 绘制扫描线
     /**************************************************************************************
-    
-    @name: device_t::DrawScanline
+    绘制扫描线
+    @name: Device::DrawScanline
     @return: void
     @param: scanline_t * scanline
     *************************************************************************************/
@@ -92,15 +103,15 @@ public:
 
     /**************************************************************************************
     渲染梯形
-    @name: device_t::RenderTrapezoid
+    @name: Device::RenderTrapezoid
     @return: void
-    @param: trapezoid_t * trap
+    @param: Trapezoid * trap
     *************************************************************************************/
-    void RenderTrapezoid(trapezoid_t* trap);
+    void RenderTrapezoid(Trapezoid* trap);
 
     /**************************************************************************************
     根据 render_state 绘制原始三角形
-    @name: device_t::DrawPrimitive
+    @name: Device::DrawPrimitive
     @return: void
     @param: const vertex_t * v1
     @param: const vertex_t * v2
@@ -110,7 +121,7 @@ public:
 
     /**************************************************************************************
     
-    @name: device_t::ResetCamera
+    @name: Device::ResetCamera
     @return: void
     @param: float x
     @param: float y
@@ -120,13 +131,29 @@ public:
 
     /**************************************************************************************
     
-    @name: device_t::InitTexture
+    @name: Device::InitTexture
     @return: void
     *************************************************************************************/
     void InitTexture();
 
+    /**************************************************************************************
+    
+    @name: Device::DrawPlane
+    @return: void
+    @param: const vertex_t * p1
+    @param: const vertex_t * p2
+    @param: const vertex_t * p3
+    @param: const vertex_t * p4
+    *************************************************************************************/
     void DrawPlane(const vertex_t* p1, const vertex_t* p2, const vertex_t* p3, const vertex_t* p4);
 
+    /**************************************************************************************
+    
+    @name: Device::DrawBox
+    @return: void
+    @param: float theta
+    @param: const vertex_t * box_vertices
+    *************************************************************************************/
     void DrawBox(float theta, const vertex_t* box_vertices);
 };
 

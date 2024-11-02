@@ -48,7 +48,7 @@ bool g_IsRunning = true;
 bool g_IsMouseDragging = false;
 int g_MouseWndOffsetX = 0;
 int g_MouseWndOffsetY = 0;
-device_t* g_Device = nullptr;
+Device* g_Device = nullptr;
 
 vertex_t g_BoxMesh[8] = 
 {
@@ -62,7 +62,7 @@ vertex_t g_BoxMesh[8] =
     { {  1,  1, -1, 1 }, { 1, 0 }, { 0.2f, 1.0f, 0.3f }, 1 },
 };
 
-//void draw_plane(device_t* device, int a, int b, int c, int d)
+//void draw_plane(Device* device, int a, int b, int c, int d)
 //{
 //    vertex_t p1 = mesh[a], p2 = mesh[b], p3 = mesh[c], p4 = mesh[d];
 //    p1.tc.u = 0, p1.tc.v = 0, p2.tc.u = 0, p2.tc.v = 1;
@@ -71,7 +71,7 @@ vertex_t g_BoxMesh[8] =
 //    device->DrawPrimitive(&p3, &p4, &p1);
 //}
 //
-//void DrawBox(device_t* device, float theta) 
+//void DrawBox(Device* device, float theta) 
 //{
 //    matrix_t m;
 //    matrix_set_rotate(&m, -1, -0.5, 1, theta);
@@ -213,8 +213,8 @@ int main(int argc, char* argv[])
     
     try
     {
-        g_Device = new device_t();
-        g_Device->device_init(g_WindowRenderAreaWidth, g_WindowRenderAreaHeight);
+        g_Device = new Device();
+        g_Device->Initialize(g_WindowRenderAreaWidth, g_WindowRenderAreaHeight);
         g_Device->ResetCamera(3, 0, 0);
         g_Device->InitTexture();
 

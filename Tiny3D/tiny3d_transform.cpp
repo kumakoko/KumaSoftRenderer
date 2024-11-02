@@ -2,7 +2,7 @@
 
 #include "tiny3d_transform.h"
 
-void transform_t::Update()
+void Transform::Update()
 {
     matrix_t m;
     matrix_mul(&m, &world_matrix_, &view_matrix_);
@@ -10,7 +10,7 @@ void transform_t::Update()
 }
 
 // 初始化，设置屏幕长宽
-void transform_t::Init(int width, int height, float near_clip, float far_clip)
+void Transform::Init(int width, int height, float near_clip, float far_clip)
 {
     float aspect = static_cast<float>(width) / static_cast<float>(height);
     matrix_set_identity(&this->world_matrix_);
@@ -22,13 +22,13 @@ void transform_t::Init(int width, int height, float near_clip, float far_clip)
 }
 
 // 将矢量 x 进行 project 
-void transform_t::Apply(vector_t* y, const vector_t* x) const
+void Transform::Apply(T3DVector4* y, const T3DVector4* x) const
 {
     matrix_apply(y, x, &wvp_matrix_);
 }
 
 // 检查齐次坐标同 cvv 的边界用于视锥裁剪
-uint32_t transform_t::CheckCVV(const vector_t* v) const
+uint32_t Transform::CheckCVV(const T3DVector4* v) const
 {
     float w = v->w;
     uint32_t check = 0;
@@ -50,7 +50,7 @@ uint32_t transform_t::CheckCVV(const vector_t* v) const
 }
 
 // 归一化，得到屏幕坐标
-void transform_t::Homogenize(vector_t* homogenized_vertex, const vector_t* vertex) const
+void Transform::Homogenize(T3DVector4* homogenized_vertex, const T3DVector4* vertex) const
 {
     float rhw = 1.0f / vertex->w;
     homogenized_vertex->x = (vertex->x * rhw + 1.0f) * this->screen_width_ * 0.5f;

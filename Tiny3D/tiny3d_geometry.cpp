@@ -14,13 +14,13 @@ void vertex_rhw_init(vertex_t* v)
 
 void vertex_interp(vertex_t* y, const vertex_t* x1, const vertex_t* x2, float t)
 {
-    vector_interp(&y->pos, &x1->pos, &x2->pos, t);
-    y->tc.u = interp(x1->tc.u, x2->tc.u, t);
-    y->tc.v = interp(x1->tc.v, x2->tc.v, t);
-    y->color.r = interp(x1->color.r, x2->color.r, t);
-    y->color.g = interp(x1->color.g, x2->color.g, t);
-    y->color.b = interp(x1->color.b, x2->color.b, t);
-    y->rhw = interp(x1->rhw, x2->rhw, t);
+    T3DVector4Interpolate(&y->pos, &x1->pos, &x2->pos, t);
+    y->tc.u = LinearInterpolate(x1->tc.u, x2->tc.u, t);
+    y->tc.v = LinearInterpolate(x1->tc.v, x2->tc.v, t);
+    y->color.r = LinearInterpolate(x1->color.r, x2->color.r, t);
+    y->color.g = LinearInterpolate(x1->color.g, x2->color.g, t);
+    y->color.b = LinearInterpolate(x1->color.b, x2->color.b, t);
+    y->rhw = LinearInterpolate(x1->rhw, x2->rhw, t);
 }
 
 
