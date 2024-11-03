@@ -25,10 +25,8 @@ SOFTWARE.
 
 #include <cmath>
 
-
-
-
-inline int Clamp(int x, int min, int max)
+template<typename T>
+inline T Clamp(T x, T min, T max)
 { 
     return (x < min) ? min : ((x > max) ? max : x); 
 }

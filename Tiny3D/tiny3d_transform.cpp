@@ -4,18 +4,18 @@
 
 void Transform::Update()
 {
-    matrix_t m;
-    matrix_mul(&m, &world_matrix_, &view_matrix_);
-    matrix_mul(&wvp_matrix_, &m, &projection_matrix_);
+    T3DMatrix4X4 m;
+    T3DMatrixMultiply(&m, &world_matrix_, &view_matrix_);
+    T3DMatrixMultiply(&wvp_matrix_, &m, &projection_matrix_);
 }
 
 // 初始化，设置屏幕长宽
 void Transform::Init(int width, int height, float near_clip, float far_clip)
 {
     float aspect = static_cast<float>(width) / static_cast<float>(height);
-    matrix_set_identity(&this->world_matrix_);
-    matrix_set_identity(&this->view_matrix_);
-    matrix_set_perspective(&this->projection_matrix_, 3.1415926f * 0.5f, aspect, near_clip, far_clip);
+    T3DMatrixIdentity(&this->world_matrix_);
+    T3DMatrixIdentity(&this->view_matrix_);
+    T3DMatrixPerspective(&this->projection_matrix_, 3.1415926f * 0.5f, aspect, near_clip, far_clip);
     this->screen_width_ = static_cast<float>(width);
     this->screen_height_ = static_cast<float>(height);
     Update();
@@ -24,7 +24,7 @@ void Transform::Init(int width, int height, float near_clip, float far_clip)
 // 将矢量 x 进行 project 
 void Transform::Apply(T3DVector4* y, const T3DVector4* x) const
 {
-    matrix_apply(y, x, &wvp_matrix_);
+    T3DMatrixApply(y, x, &wvp_matrix_);
 }
 
 // 检查齐次坐标同 cvv 的边界用于视锥裁剪

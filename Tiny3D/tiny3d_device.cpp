@@ -1,6 +1,8 @@
 ﻿#include <cstdlib>
 #include <cassert>
 #include <cstring>
+#include "SDL.h"
+#include "SDL_image.h"
 
 #include "tiny3d_device.h"
 #include "tiny3d_math.h"
@@ -8,9 +10,9 @@
 
 void Device::Initialize(int width, int height)
 {
-    this->texture_width_ = 256;
-    this->texture_height_ = 256;
-    this->texture_ = new uint32_t[this->texture_width_ * this->texture_height_];
+    this->texture_width_ = 0;
+    this->texture_height_ = 0;
+    this->texture_ = nullptr;// new uint32_t[this->texture_width_ * this->texture_height_];
     this->z_buffer_ = new float[width * height];
     this->max_u_ = 1.0f;
     this->max_v_ = 1.0f;
@@ -35,7 +37,7 @@ void Device::Destroy()
 }
 
 // 清空 framebuffer 和 zbuffer
-void Device::Clear(int mode)
+void Device::ResetZBuffer()
 {
     // 清空zbuffer
     for (uint32_t y = 0; y < this->window_height_ * this->window_width_; y++)
@@ -161,13 +163,12 @@ void Device::DrawLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32
 // 根据坐标读取纹理
 uint32_t Device::GetTexel(float u, float v)
 {
-    int x, y;
     u = u * this->max_u_;
     v = v * this->max_v_;
-    x = static_cast<int>(u + 0.5f);
-    y = static_cast<int>(v + 0.5f);
-    x = Clamp(x, 0, this->texture_width_ - 1);
-    y = Clamp(y, 0, this->texture_height_ - 1);
+    int32_t x = static_cast<int32_t>(u + 0.5f);
+    int32_t y = static_cast<int32_t>(v + 0.5f);
+    x = Clamp<int32_t>(x, 0, this->texture_width_ - 1);
+    y = Clamp<int32_t>(y, 0, this->texture_height_ - 1);
     return this->texture_[y * texture_width_ + x];
 }
 
@@ -200,9 +201,9 @@ void Device::DrawScanline(scanline_t* scanline)
                     uint32_t R = static_cast<uint32_t>(scanline->interpolated_point.color.r * w * 255.0f);
                     uint32_t G = static_cast<uint32_t>(scanline->interpolated_point.color.g * w * 255.0f);
                     uint32_t B = static_cast<uint32_t>(scanline->interpolated_point.color.b * w * 255.0f);
-                    R = Clamp(R, 0, 255);
-                    G = Clamp(G, 0, 255);
-                    B = Clamp(B, 0, 255);
+                    R = Clamp<uint32_t>(R, 0, 255);
+                    G = Clamp<uint32_t>(G, 0, 255);
+                    B = Clamp<uint32_t>(B, 0, 255);
                     fb[x] = 0xFF000000 | (R << 16) | (G << 8) | (B);
                 }
 
@@ -217,7 +218,7 @@ void Device::DrawScanline(scanline_t* scanline)
         }
 
         // 从左腰边的插值点开始，每循环一次递加一次【插值步】，然后进行渲染写入操作
-        vertex_add(&scanline->interpolated_point, &scanline->interpolated_step);
+        T3DVertexAdd(&scanline->interpolated_point, &scanline->interpolated_step);
 
         if (x >= width)
             break;
@@ -253,7 +254,7 @@ void Device::RenderTrapezoid(Trapezoid* trap)
 }
 
 // 根据 render_state 绘制原始三角形
-void Device::DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_t* v3)
+void Device::DrawPrimitive(const T3DVertex* v1, const T3DVertex* v2, const T3DVertex* v3)
 {
     T3DVector4 p1, p2, p3, c1, c2, c3;
     int render_state = this->render_state_;
@@ -263,6 +264,7 @@ void Device::DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_
     this->transform_.Apply(&c2, &v2->pos);
     this->transform_.Apply(&c3, &v3->pos);
 
+    /*
     // 裁剪，注意此处可以完善为具体判断几个点在 cvv内以及同cvv相交平面的坐标比例
     // 进行进一步精细裁剪，将一个分解为几个完全处在 cvv内的三角形
     if (this->transform_.CheckCVV(&c1) != 0)
@@ -271,6 +273,7 @@ void Device::DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_
         return;
     if (this->transform_.CheckCVV(&c3) != 0)
         return;
+    */
 
     // 把裁剪空间归一化到齐次的NDC空间
     this->transform_.Homogenize(&p1, &c1);
@@ -280,7 +283,7 @@ void Device::DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_
     // 纹理或者色彩绘制
     if (render_state & (RENDER_STATE_TEXTURE | RENDER_STATE_COLOR))
     {
-        vertex_t t1 = *v1, t2 = *v2, t3 = *v3;
+        T3DVertex t1 = *v1, t2 = *v2, t3 = *v3;
         std::array<Trapezoid, 2> traps;
         int n;
 
@@ -291,9 +294,9 @@ void Device::DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_
         t2.pos.w = c2.w;
         t3.pos.w = c3.w;
 
-        vertex_rhw_init(&t1); // 初始化 w
-        vertex_rhw_init(&t2); // 初始化 w
-        vertex_rhw_init(&t3); // 初始化 w
+        T3DVertexRHWInit(&t1); // 初始化 w
+        T3DVertexRHWInit(&t2); // 初始化 w
+        T3DVertexRHWInit(&t3); // 初始化 w
 
         // 拆分三角形为0-2个梯形，并且返回可用梯形数量
         n = Trapezoid::SplitTriangleIntoTrapezoids(traps, &t1, &t2, &t3);
@@ -335,7 +338,7 @@ void Device::InitTexture()
         {
             uint32_t x = i / 32;
             uint32_t y = j / 32;
-            this->texture_[j * 256 + i] = ((x + y) & 1) ? 0xFFFFFFFF : 0xFF3FBCEF;
+            this->texture_[j * texture_width_ + i] = ((x + y) & 1) ? 0xFFFFFFFF : 0xFF3FBCEF;
         }
     }
 
@@ -343,9 +346,71 @@ void Device::InitTexture()
     this->max_v_ = static_cast<float>(this->texture_height_ - 1);
 }
 
-void Device::DrawPlane(const vertex_t* p1, const vertex_t* p2, const vertex_t* p3, const vertex_t* p4)
+void Device::CreateTextureFromFile(const char* file_path)
 {
-    vertex_t _p1 = *p1, _p2 = *p2, _p3 = *p3, _p4 = *p4;
+    // 使用 SDL_image 库加载 PNG 或 JPG 图片
+    SDL_Surface* imageSurface = IMG_Load(file_path);  // 替换为你的图片路径
+    if (!imageSurface) {
+        //std::cerr << "Unable to load image! IMG_Error: " << IMG_GetError() << std::endl;
+        //SDL_DestroyRenderer(renderer);
+        //SDL_DestroyWindow(window);
+        IMG_Quit();
+        //SDL_Quit();
+        return;
+    }
+
+    // 对 surface 进行读写操作
+    SDL_LockSurface(imageSurface);  // 锁定 surface 以进行直接像素访问
+    texture_width_ = static_cast<uint32_t>(imageSurface->w);
+    texture_height_ = static_cast<uint32_t>(imageSurface->h);
+    this->texture_ = new uint32_t[texture_width_ * texture_height_];
+    uint8_t* pixels = reinterpret_cast<uint8_t*>(imageSurface->pixels);
+    //   memcpy(this->texture_, imageSurface->pixels, sizeof(uint32_t) * texture_width_ * texture_height_);
+
+
+    for (uint32_t y = 0; y < texture_height_; ++y)
+    {
+        for (uint32_t x = 0; x < texture_width_; ++x)
+        {
+            uint32_t idx = y * texture_width_ * 3 + x * 3;
+            //uint32_t pixel = pixels[idx];  // 获取像素值
+            uint8_t r = pixels[idx + 0];
+            uint8_t g = pixels[idx + 1];
+            uint8_t b = pixels[idx + 2];
+            //SDL_GetRGB(pixel, imageSurface->format, &r, &g, &b);
+
+            uint32_t r32 = static_cast<uint32_t>(r) << 16;
+            uint32_t g32 = static_cast<uint32_t>(g) << 8;
+            uint32_t b32 = static_cast<uint32_t>(b);
+            uint32_t a32 = static_cast<uint32_t>(255) << 24;
+            // 修改像素值（例如，反转颜色）
+           // r32 = 0;
+          //  g32 = 0xFF;
+          //  b32 = 0;
+            this->texture_[y * texture_width_ + x] =  a32 | r32 | g32 | b32;
+
+            // 将修改后的颜色写回像素
+            //pixels[y * width + x] = SDL_MapRGB(imageSurface->format, r, g, b);
+        }
+    }
+
+    SDL_UnlockSurface(imageSurface);  // 解锁 surface
+
+    // 将 surface 转换成纹理并在窗口中显示
+    //SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, imageSurface);
+    SDL_FreeSurface(imageSurface);  // 不再需要 surface 时释放
+
+    this->max_u_ = static_cast<float>(this->texture_width_ - 1);
+    this->max_v_ = static_cast<float>(this->texture_height_ - 1);
+}
+
+
+
+
+
+void Device::DrawPlane(const T3DVertex* p1, const T3DVertex* p2, const T3DVertex* p3, const T3DVertex* p4)
+{
+    T3DVertex _p1 = *p1, _p2 = *p2, _p3 = *p3, _p4 = *p4;
     _p1.tc.u = 0.0f, _p1.tc.v = 0.0f;
     _p2.tc.u = 0.0f, _p2.tc.v = 1.0f;
     _p3.tc.u = 1.0f, _p3.tc.v = 1.0f;
@@ -354,10 +419,10 @@ void Device::DrawPlane(const vertex_t* p1, const vertex_t* p2, const vertex_t* p
     DrawPrimitive(&_p3, &_p4, &_p1);
 }
 
-void Device::DrawBox(float theta, const vertex_t* box_vertices)
+void Device::DrawBox(float theta, const T3DVertex* box_vertices)
 {
-    matrix_t m;
-    matrix_set_rotate(&m, -1, -0.5, 1, theta);
+    T3DMatrix4X4 m;
+    T3DMatrixMakeRotation(&m, -1, -0.5, 1, theta);
     transform_.SetWorldMatrix(m);
     transform_.Update();
     DrawPlane(&box_vertices[0], &box_vertices[1], &box_vertices[2], &box_vertices[3]);

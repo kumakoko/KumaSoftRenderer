@@ -6,10 +6,10 @@
 class Transform
 {
 private:
-    matrix_t world_matrix_;         // 世界坐标变换
-    matrix_t view_matrix_;          // 摄影机坐标变换
-    matrix_t projection_matrix_;    // 投影变换
-    matrix_t wvp_matrix_;           // WVP矩阵，即 world * view * projection
+    T3DMatrix4X4 world_matrix_;         // 世界坐标变换
+    T3DMatrix4X4 view_matrix_;          // 摄影机坐标变换
+    T3DMatrix4X4 projection_matrix_;    // 投影变换
+    T3DMatrix4X4 wvp_matrix_;           // WVP矩阵，即 world * view * projection
     float screen_width_;            // 屏幕宽
     float screen_height_;           // 屏幕高
 public:
@@ -57,10 +57,10 @@ public:
 
     inline void SetViewMatrix(const T3DVector4* eye, const T3DVector4* at, const T3DVector4* up)
     {
-        matrix_set_lookat(&view_matrix_, eye, at, up);
+        T3DMatrixMakeLookat(&view_matrix_, eye, at, up);
     }
 
-    inline void SetWorldMatrix(const matrix_t& m)
+    inline void SetWorldMatrix(const T3DMatrix4X4& m)
     {
         world_matrix_ = m;
     }

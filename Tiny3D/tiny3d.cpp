@@ -49,8 +49,9 @@ bool g_IsMouseDragging = false;
 int g_MouseWndOffsetX = 0;
 int g_MouseWndOffsetY = 0;
 Device* g_Device = nullptr;
+static float g_Alpha = 0.0f;
 
-vertex_t g_BoxMesh[8] = 
+T3DVertex g_BoxMesh[8] = 
 {
     { {  1, -1,  1, 1 }, { 0, 0 }, { 1.0f, 0.2f, 0.2f }, 1 },
     { { -1, -1,  1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 0.2f }, 1 },
@@ -62,33 +63,18 @@ vertex_t g_BoxMesh[8] =
     { {  1,  1, -1, 1 }, { 1, 0 }, { 0.2f, 1.0f, 0.3f }, 1 },
 };
 
-//void draw_plane(Device* device, int a, int b, int c, int d)
-//{
-//    vertex_t p1 = mesh[a], p2 = mesh[b], p3 = mesh[c], p4 = mesh[d];
-//    p1.tc.u = 0, p1.tc.v = 0, p2.tc.u = 0, p2.tc.v = 1;
-//    p3.tc.u = 1, p3.tc.v = 1, p4.tc.u = 1, p4.tc.v = 0;
-//    device->DrawPrimitive(&p1, &p2, &p3);
-//    device->DrawPrimitive(&p3, &p4, &p1);
-//}
-//
-//void DrawBox(Device* device, float theta) 
-//{
-//    matrix_t m;
-//    matrix_set_rotate(&m, -1, -0.5, 1, theta);
-//    device->transform.SetWorldMatrix(m);
-//    device->transform.Update();
-//    draw_plane(device, 0, 1, 2, 3);
-//    draw_plane(device, 4, 5, 6, 7);
-//    draw_plane(device, 0, 4, 5, 1);
-//    draw_plane(device, 1, 5, 6, 2);
-//    draw_plane(device, 2, 6, 7, 3);
-//    draw_plane(device, 3, 7, 4, 0);
-//}
-
 void InitializeGraphicSystem()
 {
     g_Window = SDL_CreateWindow(g_WindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         g_WindowRenderAreaWidth, g_WindowRenderAreaHeight, SDL_WINDOW_SHOWN);
+
+    // 初始化 SDL_image 并设置支持的图片格式
+    if (!(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG ))) 
+    {
+        //std::cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError() << std::endl;
+        SDL_Quit();
+        return;
+    }
 
     g_ScreenSurface = SDL_GetWindowSurface(g_Window);
 
@@ -159,17 +145,28 @@ void ProcessInput(SDL_Event& event)
     }
 }
 
-void OnKeyDown(SDL_Event& event)
+void OnKeyDown(SDL_Event& e)
 {
-    if (event.key.keysym.sym == SDLK_ESCAPE)
+    if (e.key.keysym.sym == SDLK_ESCAPE)
     {
         g_IsRunning = false;
     }
+
+    SDL_Keycode sym = e.key.keysym.sym;
+
+    if (SDLK_LEFT == sym)
+    {
+        g_Alpha += 0.01f;
+    }
+    else if (SDLK_RIGHT == sym)
+    {
+        g_Alpha -= 0.01f;
+    }
 }
 
-void OnKeyUp(SDL_Event& event)
+void OnKeyUp(SDL_Event& e)
 {
-
+    
 }
 
 // 处理鼠标拖动事件
@@ -201,9 +198,10 @@ void RenderScene()
 {
     LockBackSurface();
 
+    g_Device->ResetZBuffer();
     g_Device->SetFrameBufer(g_BackBuffer);
 
-    g_Device->DrawBox(0.0f,g_BoxMesh);
+    g_Device->DrawBox(g_Alpha,g_BoxMesh);
 
     UnlockBackSurface();
 }
@@ -216,7 +214,8 @@ int main(int argc, char* argv[])
         g_Device = new Device();
         g_Device->Initialize(g_WindowRenderAreaWidth, g_WindowRenderAreaHeight);
         g_Device->ResetCamera(3, 0, 0);
-        g_Device->InitTexture();
+        //g_Device->InitTexture();
+        g_Device->CreateTextureFromFile("F:/MyProjects/KumaSoftRenderer/publish/wood_box.jpg");
 
         InitializeGraphicSystem();
 

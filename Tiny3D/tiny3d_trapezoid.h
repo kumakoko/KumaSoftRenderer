@@ -4,12 +4,28 @@
 #include "tiny3d_geometry.h"
 #include "tiny3d_scanline.h"
 
-struct Trapezoid
+class Trapezoid
 {
-    float top() const { return top_; }
-    void set_top(float val) { top_ = val; }
-    float bottom() const { return bottom_; }
-    void set_bottom(float val) { bottom_ = val; }
+public:
+    inline float top() const
+    {
+        return top_;
+    }
+    
+    inline void set_top(float val) 
+    {
+        top_ = val; 
+    }
+    
+    inline float bottom() const
+    {
+        return bottom_;
+    }
+    
+    inline void set_bottom(float val) 
+    {
+        bottom_ = val; 
+    }
     
     inline const edge_t& left() const
     {
@@ -61,7 +77,7 @@ struct Trapezoid
     @param: const vertex_t * p2
     @param: const vertex_t * p3
     *************************************************************************************/
-    static int SplitTriangleIntoTrapezoids(std::array<Trapezoid, 2>& trap, const vertex_t* p1, const vertex_t* p2, const vertex_t* p3);
+    static int SplitTriangleIntoTrapezoids(std::array<Trapezoid, 2>& trap, const T3DVertex* p1, const T3DVertex* p2, const T3DVertex* p3);
 
     // 按照 Y 坐标计算出左右两条边纵坐标等于 Y 的顶点
     /**************************************************************************************

@@ -6,36 +6,36 @@
 // 几何计算：顶点、扫描线、边缘、矩形、步长计算
 //=====================================================================
 
-struct color_t
+struct T3DColor
 {
     float r, g, b;
 };
 
-struct texcoord_t
+struct T3DTextureCoord
 {
     float u, v;
 };
 
-struct vertex_t
+struct T3DVertex
 {
     T3DVector4 pos;
-    texcoord_t tc;
-    color_t color;
+    T3DTextureCoord tc;
+    T3DColor color;
     float rhw;
 };
 
 struct edge_t
 {
-    vertex_t interpolated_point;  // 给了插值比例值后，根据端点12和插值比例值所算出来的插值位置点
-    vertex_t v1; // 边的端点1
-    vertex_t v2; // 边的端点2
+    T3DVertex interpolated_point;  // 给了插值比例值后，根据端点12和插值比例值所算出来的插值位置点
+    T3DVertex v1; // 边的端点1
+    T3DVertex v2; // 边的端点2
 };
 
 
-void vertex_rhw_init(vertex_t* v);
+void T3DVertexRHWInit(T3DVertex* v);
 
-void vertex_interp(vertex_t* y, const vertex_t* x1, const vertex_t* x2, float t);
+void T3DVertexInterpolate(T3DVertex* y, const T3DVertex* x1, const T3DVertex* x2, float t);
 
-void vertex_division(vertex_t* step, const vertex_t* x1, const vertex_t* x2, float w);
+void T3DVertexDivision(T3DVertex* step, const T3DVertex* x1, const T3DVertex* x2, float w);
 
-void vertex_add(vertex_t* y, const vertex_t* x);
+void T3DVertexAdd(T3DVertex* y, const T3DVertex* x);

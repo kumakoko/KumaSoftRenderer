@@ -1,7 +1,7 @@
 ﻿#include "tiny3d_geometry.h"
 #include "tiny3d_math.h"
 
-void vertex_rhw_init(vertex_t* v)
+void T3DVertexRHWInit(T3DVertex* v)
 {
     float rhw = 1.0f / v->pos.w;
     v->rhw = rhw;
@@ -12,7 +12,7 @@ void vertex_rhw_init(vertex_t* v)
     v->color.b *= rhw;
 }
 
-void vertex_interp(vertex_t* y, const vertex_t* x1, const vertex_t* x2, float t)
+void T3DVertexInterpolate(T3DVertex* y, const T3DVertex* x1, const T3DVertex* x2, float t)
 {
     T3DVector4Interpolate(&y->pos, &x1->pos, &x2->pos, t);
     y->tc.u = LinearInterpolate(x1->tc.u, x2->tc.u, t);
@@ -26,7 +26,7 @@ void vertex_interp(vertex_t* y, const vertex_t* x1, const vertex_t* x2, float t)
 
 // x1 梯形左腰边的插值点
 // x2 梯形右腰边的插值点
-void vertex_division(vertex_t* step, const vertex_t* x1, const vertex_t* x2, float w)
+void T3DVertexDivision(T3DVertex* step, const T3DVertex* x1, const T3DVertex* x2, float w)
 {
     float inv = 1.0f / w;
     step->pos.x = (x2->pos.x - x1->pos.x) * inv;
@@ -41,7 +41,7 @@ void vertex_division(vertex_t* step, const vertex_t* x1, const vertex_t* x2, flo
     step->rhw = (x2->rhw - x1->rhw) * inv;
 }
 
-void vertex_add(vertex_t* y, const vertex_t* x)
+void T3DVertexAdd(T3DVertex* y, const T3DVertex* x)
 {
     y->pos.x += x->pos.x;
     y->pos.y += x->pos.y;

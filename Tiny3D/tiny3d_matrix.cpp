@@ -9,7 +9,7 @@
 #include "tiny3d_matrix.h"
 
 // c = a + b
-void matrix_add(matrix_t* c, const matrix_t* a, const matrix_t* b)
+void T3dMatrixAdd(T3DMatrix4X4* c, const T3DMatrix4X4* a, const T3DMatrix4X4* b)
 {
 #if defined(_MSC_VER)
     __m128* c_rows = (__m128*)c->m;
@@ -33,7 +33,7 @@ void matrix_add(matrix_t* c, const matrix_t* a, const matrix_t* b)
 }
 
 // c = a - b
-void matrix_sub(matrix_t* c, const matrix_t* a, const matrix_t* b)
+void T3DMatrixSubtract(T3DMatrix4X4* c, const T3DMatrix4X4* a, const T3DMatrix4X4* b)
 {
 #if defined(_MSC_VER)
     __m128* c_rows = (__m128*)c->m;
@@ -54,10 +54,10 @@ void matrix_sub(matrix_t* c, const matrix_t* a, const matrix_t* b)
 }
 
 // c = a * b
-void matrix_mul(matrix_t* c, const matrix_t* a, const matrix_t* b)
+void T3DMatrixMultiply(T3DMatrix4X4* c, const T3DMatrix4X4* a, const T3DMatrix4X4* b)
 {
 #if defined(_MSC_VER)
-    matrix_t z;
+    T3DMatrix4X4 z;
 
     for (int i = 0; i < 4; i++)
     {
@@ -84,7 +84,7 @@ void matrix_mul(matrix_t* c, const matrix_t* a, const matrix_t* b)
 
     *c = z;
 #else
-    matrix_t z;
+    T3DMatrix4X4 z;
     int i, j;
 
     for (i = 0; i < 4; i++)
@@ -103,7 +103,7 @@ void matrix_mul(matrix_t* c, const matrix_t* a, const matrix_t* b)
 }
 
 // c = a * f
-void matrix_scale(matrix_t* c, const matrix_t* a, float f)
+void T3DMatrixScale(T3DMatrix4X4* c, const T3DMatrix4X4* a, float f)
 {
 #if defined(_MSC_VER)
     __m128 scale = _mm_set1_ps(f);
@@ -126,10 +126,10 @@ void matrix_scale(matrix_t* c, const matrix_t* a, float f)
 }
 
 // y = x * m
-void matrix_apply(T3DVector4* y, const T3DVector4* x, const matrix_t* m)
+void T3DMatrixApply(T3DVector4* rv, const T3DVector4* v, const T3DMatrix4X4* m)
 {
 #if defined(_MSC_VER)
-    __m128 vec = _mm_set_ps(x->w, x->z, x->y, x->x);
+    __m128 vec = _mm_set_ps(v->w, v->z, v->y, v->x);
 
     __m128 row0 = _mm_load_ps(m->m[0]);
     __m128 row1 = _mm_load_ps(m->m[1]);
@@ -142,17 +142,17 @@ void matrix_apply(T3DVector4* y, const T3DVector4* x, const matrix_t* m)
     result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(vec, vec, _MM_SHUFFLE(2, 2, 2, 2)), row2));
     result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(vec, vec, _MM_SHUFFLE(3, 3, 3, 3)), row3));
 
-    _mm_store_ps(&y->x, result);
+    _mm_store_ps(&rv->x, result);
 #else
-    float X = x->x, Y = x->y, Z = x->z, W = x->w;
-    y->x = X * m->m[0][0] + Y * m->m[1][0] + Z * m->m[2][0] + W * m->m[3][0];
-    y->y = X * m->m[0][1] + Y * m->m[1][1] + Z * m->m[2][1] + W * m->m[3][1];
-    y->z = X * m->m[0][2] + Y * m->m[1][2] + Z * m->m[2][2] + W * m->m[3][2];
-    y->w = X * m->m[0][3] + Y * m->m[1][3] + Z * m->m[2][3] + W * m->m[3][3];
+    float X = v->x, Y = v->y, Z = v->z, W = v->w;
+    rv->x = X * m->m[0][0] + Y * m->m[1][0] + Z * m->m[2][0] + W * m->m[3][0];
+    rv->y = X * m->m[0][1] + Y * m->m[1][1] + Z * m->m[2][1] + W * m->m[3][1];
+    rv->z = X * m->m[0][2] + Y * m->m[1][2] + Z * m->m[2][2] + W * m->m[3][2];
+    rv->w = X * m->m[0][3] + Y * m->m[1][3] + Z * m->m[2][3] + W * m->m[3][3];
 #endif
 }
 
-void matrix_set_identity(matrix_t* m)
+void T3DMatrixIdentity(T3DMatrix4X4* m)
 {
 #if defined(_MSC_VER)
     __m128 zero = _mm_setzero_ps();
@@ -171,7 +171,7 @@ void matrix_set_identity(matrix_t* m)
 #endif
 }
 
-void matrix_set_zero(matrix_t* m)
+void T3DMatrixSetZero(T3DMatrix4X4* m)
 {
 #if defined(_MSC_VER)
     __m128 zero = _mm_setzero_ps();
@@ -188,9 +188,9 @@ void matrix_set_zero(matrix_t* m)
 }
 
 // 平移变换
-void matrix_set_translate(matrix_t* m, float x, float y, float z)
+void T3DMatrixMakeTranslation(T3DMatrix4X4* m, float x, float y, float z)
 {
-    matrix_set_identity(m);
+    T3DMatrixIdentity(m);
 #if defined(_MSC_VER)
     __m128 trans = _mm_set_ps(1.0f, z, y, x);
     _mm_store_ps(m->m[3], trans);
@@ -202,16 +202,16 @@ void matrix_set_translate(matrix_t* m, float x, float y, float z)
 }
 
 // 缩放变换
-void matrix_set_scale(matrix_t* m, float x, float y, float z)
+void T3DMatrixMakeScaling(T3DMatrix4X4* m, float x, float y, float z)
 {
 #if defined(_MSC_VER)
-    matrix_set_zero(m);
+    T3DMatrixSetZero(m);
     m->m[0][0] = x;
     m->m[1][1] = y;
     m->m[2][2] = z;
     m->m[3][3] = 1.0f;
 #else
-    matrix_set_identity(m);
+    T3DMatrixIdentity(m);
     m->m[0][0] = x;
     m->m[1][1] = y;
     m->m[2][2] = z;
@@ -219,7 +219,7 @@ void matrix_set_scale(matrix_t* m, float x, float y, float z)
 }
 
 // 旋转矩阵
-void matrix_set_rotate(matrix_t* m, float x, float y, float z, float theta)
+void T3DMatrixMakeRotation(T3DMatrix4X4* m, float x, float y, float z, float theta)
 {
     float qsin = sinf(theta * 0.5f);
     float qcos = cosf(theta * 0.5f);
@@ -257,7 +257,7 @@ void matrix_set_rotate(matrix_t* m, float x, float y, float z, float theta)
 }
 
 // 设置摄像机
-void matrix_set_lookat(matrix_t* m, const T3DVector4* eye, const T3DVector4* at, const T3DVector4* up)
+void T3DMatrixMakeLookat(T3DMatrix4X4* m, const T3DVector4* eye, const T3DVector4* at, const T3DVector4* up)
 {
     T3DVector4 xaxis, yaxis, zaxis;
 
@@ -287,10 +287,10 @@ void matrix_set_lookat(matrix_t* m, const T3DVector4* eye, const T3DVector4* at,
 }
 
 // D3DXMatrixPerspectiveFovLH
-void matrix_set_perspective(matrix_t* m, float fovy, float aspect, float zn, float zf)
+void T3DMatrixPerspective(T3DMatrix4X4* m, float fovy, float aspect, float zn, float zf)
 {
     float fax = 1.0f / (float)tanf(fovy * 0.5f);
-    matrix_set_zero(m);
+    T3DMatrixSetZero(m);
 #if defined(_MSC_VER)
     __m128 row0 = _mm_set_ps(0.0f, 0.0f, 0.0f, fax / aspect);
     __m128 row1 = _mm_set_ps(0.0f, 0.0f, fax, 0.0f);

@@ -31,7 +31,7 @@ float T3DVector4Length(const T3DVector4* v)
 {
 #if defined(_MSC_VER)
     // Load vector into SSE register
-    __m128 vec = _mm_load_ps(v->M);
+    __m128 vec = _mm_load_ps(v->m);
 
     // Multiply vector by itself (square components)
     __m128 sq = _mm_mul_ps(vec, vec);
@@ -58,12 +58,12 @@ float T3DVector4Length(const T3DVector4* v)
 void T3DVector4Add(T3DVector4* r, const T3DVector4* lhs, const T3DVector4* rhs)
 {
 #if defined(_MSC_VER)
-    __m128 v1 = _mm_load_ps(lhs->M);
-    __m128 v2 = _mm_load_ps(rhs->M);
+    __m128 v1 = _mm_load_ps(lhs->m);
+    __m128 v2 = _mm_load_ps(rhs->m);
     __m128 result = _mm_sub_ps(v1, v2);
     // Set w component to 1.0f
     //result = _mm_blend_ps(result, _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f), 0x8);
-    _mm_store_ps(r->M, result);
+    _mm_store_ps(r->m, result);
     r->w = 1.0f;
 #else
     r->x = lhs->x + rhs->x;
@@ -76,12 +76,12 @@ void T3DVector4Add(T3DVector4* r, const T3DVector4* lhs, const T3DVector4* rhs)
 void T3DVector4Subtract(T3DVector4* r, const T3DVector4* lhs, const T3DVector4* rhs)
 {
 #if defined(_MSC_VER)
-    __m128 v1 = _mm_load_ps(lhs->M);
-    __m128 v2 = _mm_load_ps(rhs->M);
+    __m128 v1 = _mm_load_ps(lhs->m);
+    __m128 v2 = _mm_load_ps(rhs->m);
     __m128 result = _mm_sub_ps(v1, v2);
     // Set w component to 1.0f
     //result = _mm_blend_ps(result, _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f), 0x8);
-    _mm_store_ps(r->M, result);
+    _mm_store_ps(r->m, result);
     r->w = 1.0f;
 #else
     r->x = lhs->x - rhs->x;
@@ -94,8 +94,8 @@ void T3DVector4Subtract(T3DVector4* r, const T3DVector4* lhs, const T3DVector4* 
 float T3DVector4Dot(const T3DVector4* x, const T3DVector4* y)
 {
 #if defined(_MSC_VER)
-    __m128 a = _mm_load_ps(x->M);  // 用_mm_load_ps加载va和vb到128位SIMD寄存器中,要求va和vb都是16字节对齐。
-    __m128 b = _mm_load_ps(y->M);
+    __m128 a = _mm_load_ps(x->m);  // 用_mm_load_ps加载va和vb到128位SIMD寄存器中,要求va和vb都是16字节对齐。
+    __m128 b = _mm_load_ps(y->m);
     __m128 zero_w = _mm_set_ps(0.0f, 1.0f, 1.0f, 1.0f);
     a = _mm_mul_ps(a, zero_w);  // Zero out w component of a
     b = _mm_mul_ps(b, zero_w);  // Zero out w component of b
@@ -121,8 +121,8 @@ float T3DVector4Dot(const T3DVector4* x, const T3DVector4* y)
 void T3DVector4Cross(T3DVector4* r, const T3DVector4* lhs, const T3DVector4* rhs)
 {
 #if defined(_MSC_VER)
-    __m128 a = _mm_load_ps(lhs->M);
-    __m128 b = _mm_load_ps(rhs->M);
+    __m128 a = _mm_load_ps(lhs->m);
+    __m128 b = _mm_load_ps(rhs->m);
 
     __m128 a_yzx = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 0, 2, 1));
     __m128 b_yzx = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 0, 2, 1));
@@ -136,27 +136,26 @@ void T3DVector4Cross(T3DVector4* r, const T3DVector4* lhs, const T3DVector4* rhs
     // Set w to 1.0f
    // result = _mm_blend_ps(result, _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f), 0x8);
 
-    _mm_store_ps(r->M, result);
+    _mm_store_ps(r->m, result);
     r->w = 1.0f;
 #else
     float m1, m2, m3;
-    m1 = a->y * b->z - a->z * b->y;
-    m2 = a->z * b->x - a->x * b->z;
-    m3 = a->x * b->y - a->y * b->x;
+    m1 = lhs->y * rhs->z - lhs->z * rhs->y;
+    m2 = lhs->z * rhs->x - lhs->x * rhs->z;
+    m3 = lhs->x * rhs->y - lhs->y * rhs->x;
     r->x = m1;
     r->y = m2;
     r->z = m3;
     r->w = 1.0f;
 #endif
-    return;
 }
 
 void T3DVector4Interpolate(T3DVector4* z, const T3DVector4* x1, const T3DVector4* x2, float t)
 {
 #if defined(_MSC_VER)
     // Load vectors into SSE registers
-    __m128 v1 = _mm_load_ps(x1->M);
-    __m128 v2 = _mm_load_ps(x2->M);
+    __m128 v1 = _mm_load_ps(x1->m);
+    __m128 v2 = _mm_load_ps(x2->m);
 
     // Calculate (x2 - x1)
     __m128 diff = _mm_sub_ps(v2, v1);
@@ -174,7 +173,7 @@ void T3DVector4Interpolate(T3DVector4* z, const T3DVector4* x1, const T3DVector4
   //  result = _mm_move_ss(result, _mm_set_ss(1.0f));
 
     // Store result
-    _mm_store_ps(z->M, result);
+    _mm_store_ps(z->m, result);
     z->w = 1.0f;
 #else
 
@@ -187,9 +186,9 @@ void T3DVector4Interpolate(T3DVector4* z, const T3DVector4* x1, const T3DVector4
 
 void T3DVector4Normalize(T3DVector4* v)
 {
-#if _MSC_VER
+#if defined(_MSC_VER)
     // Load vector
-    __m128 vec = _mm_load_ps(v->M);
+    __m128 vec = _mm_load_ps(v->m);
 
     // Calculate length
     __m128 sq = _mm_mul_ps(vec, vec);
@@ -214,7 +213,7 @@ void T3DVector4Normalize(T3DVector4* v)
     normalized = _mm_or_ps(normalized, vec);
 
     // Store result
-    _mm_store_ps(v->M, normalized);
+    _mm_store_ps(v->m, normalized);
 #else
     float length = T3DVector4Length(v);
 

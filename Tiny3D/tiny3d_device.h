@@ -60,7 +60,7 @@ public:
     @return: void
     @param: int mode
     *************************************************************************************/
-    void Clear(int mode);
+    void ResetZBuffer();
 
     /**************************************************************************************
     画点
@@ -117,7 +117,7 @@ public:
     @param: const vertex_t * v2
     @param: const vertex_t * v3
     *************************************************************************************/
-    void DrawPrimitive(const vertex_t* v1, const vertex_t* v2, const vertex_t* v3);
+    void DrawPrimitive(const T3DVertex* v1, const T3DVertex* v2, const T3DVertex* v3);
 
     /**************************************************************************************
     
@@ -136,6 +136,8 @@ public:
     *************************************************************************************/
     void InitTexture();
 
+    void CreateTextureFromFile(const char* file_path);
+
     /**************************************************************************************
     
     @name: Device::DrawPlane
@@ -145,7 +147,7 @@ public:
     @param: const vertex_t * p3
     @param: const vertex_t * p4
     *************************************************************************************/
-    void DrawPlane(const vertex_t* p1, const vertex_t* p2, const vertex_t* p3, const vertex_t* p4);
+    void DrawPlane(const T3DVertex* p1, const T3DVertex* p2, const T3DVertex* p3, const T3DVertex* p4);
 
     /**************************************************************************************
     
@@ -154,6 +156,6 @@ public:
     @param: float theta
     @param: const vertex_t * box_vertices
     *************************************************************************************/
-    void DrawBox(float theta, const vertex_t* box_vertices);
+    void DrawBox(float theta, const T3DVertex* box_vertices);
 };
 

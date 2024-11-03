@@ -23,6 +23,7 @@
     <ClInclude Include="tiny3d_device.h" />
     <ClInclude Include="tiny3d_math.h" />
     <ClInclude Include="tiny3d_matrix.h" />
+    <ClInclude Include="tiny3d_obj_loader.h" />
     <ClInclude Include="tiny3d_scanline.h" />
     <ClInclude Include="tiny3d_transform.h" />
     <ClInclude Include="tiny3d_trapezoid.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="tiny3d.cpp" />
     <ClCompile Include="tiny3d_device.cpp" />
     <ClCompile Include="tiny3d_matrix.cpp" />
+    <ClCompile Include="tiny3d_obj_loader.cpp" />
     <ClCompile Include="tiny3d_transform.cpp" />
     <ClCompile Include="tiny3d_trapezoid.cpp" />
     <ClCompile Include="tiny3d_vector.cpp" />
@@ -105,15 +107,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;FMT_HEADER_ONLY;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;SDL_MAIN_HANDLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../libraries/iconv/include;../libraries/SDL2-2.30.5/include;../libraries/fmt-11.0.2/include;../LibKSR/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../libraries/iconv/include;../libraries/SDL2-2.30.5/include;../libraries/SDL2_image-2.8.2/include;../libraries/fmt-11.0.2/include;../LibKSR/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../libraries/iconv/prebuilt;../libraries/SDL2-2.30.5/lib/x86;../LibKSR/bin</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libiconv.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;LibKSR_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../libraries/iconv/prebuilt;../libraries/SDL2-2.30.5/lib/x86;../LibKSR/bin;../libraries/SDL2_image-2.8.2/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libiconv.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;SDL2_image.lib;LibKSR_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
@@ -125,7 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;FMT_HEADER_ONLY;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;SDL_MAIN_HANDLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../libraries/iconv/include;../libraries/SDL2-2.30.5/include;../libraries/fmt-11.0.2/include;../LibKSR/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../libraries/iconv/include;../libraries/SDL2-2.30.5/include;../libraries/SDL2_image-2.8.2/include;../libraries/fmt-11.0.2/include;../LibKSR/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -134,8 +136,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../libraries/iconv/prebuilt;../libraries/SDL2-2.30.5/lib/x86;../LibKSR/bin</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libiconv.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;LibKSR.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../libraries/iconv/prebuilt;../libraries/SDL2-2.30.5/lib/x86;../LibKSR/bin;../libraries/SDL2_image-2.8.2/lib/x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libiconv.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;SDL2_image.lib;LibKSR.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>

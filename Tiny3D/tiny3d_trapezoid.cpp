@@ -3,7 +3,7 @@
 
 
 // 根据三角形生成 0-2 个梯形，并且返回合法梯形的数量
-int Trapezoid::SplitTriangleIntoTrapezoids(std::array<Trapezoid, 2>& trap, const vertex_t* p1, const vertex_t* p2, const vertex_t* p3)
+int Trapezoid::SplitTriangleIntoTrapezoids(std::array<Trapezoid, 2>& trap, const T3DVertex* p1, const T3DVertex* p2, const T3DVertex* p3)
 {
     float k, x;
 
@@ -139,8 +139,8 @@ void Trapezoid::CalculateEdgeInterpolatedPoint(float y)
     float t2 = (y - this->right().v1.pos.y) / s2;
     
     // 算出，根据左右腰边两个端点的值，算出左右腰边的插值点的纹理坐标，颜色值
-    vertex_interp(&this->left().interpolated_point, &this->left().v1, &this->left().v2, t1);
-    vertex_interp(&this->right().interpolated_point, &this->right().v1, &this->right().v2, t2);
+    T3DVertexInterpolate(&this->left().interpolated_point, &this->left().v1, &this->left().v2, t1);
+    T3DVertexInterpolate(&this->right().interpolated_point, &this->right().v1, &this->right().v2, t2);
 }
 
 // 根据左右两边的端点，初始化计算出扫描线的起点和步长
@@ -160,5 +160,5 @@ void Trapezoid::InitializeScanline(scanline_t* scanline, int y)
         scanline->width = 0;
 
     // 根据左腰右腰插值点和扫描线宽度，算出每一个“插值步”的position，color，uv的值
-    vertex_division(&scanline->interpolated_step, &this->left().interpolated_point, &this->right().interpolated_point, width);
+    T3DVertexDivision(&scanline->interpolated_step, &this->left().interpolated_point, &this->right().interpolated_point, width);
 }

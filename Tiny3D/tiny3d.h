@@ -1,5 +1,6 @@
 ﻿#include <cstdint>
 #include "SDL.h"
+#include "SDL_image.h"
 
 extern uint8_t* g_BackBuffer;    // 后台页面的首指针
 extern int g_BackSurfacePitch;
