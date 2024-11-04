@@ -21,183 +21,127 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
-
-#include "tiny3d_app.h"
-
-//void Demo01App::InitScene()
-//{
-//}
-//
-//void Demo01App::RenderScene()
-//{
-//   // 画线完毕，unlock back buffer
-//    KSR::DDraw_Unlock_Back_Surface();
-//}
-
-/**************************************************************************************************************************
-Copyright(C) 2014-2017 www.xionggf.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
-modify, merge, publish, distribute,sublicense, and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
-Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-**************************************************************************************************************************/
 #include <chrono>
 
-Tiny3DApp* Tiny3DApp::s_instance_ = nullptr;
+#include "SDL_image.h"
+#include "fmt/format.h"
+
+#include "tiny3d_app.h"
+#include "tiny3d_error.h"
 
 Tiny3DApp::Tiny3DApp()
 {
-    s_instance_ = this;
+    g_BoxMesh[0] = { {  1, -1,  1, 1 }, { 0, 0 }, { 1.0f, 0.2f, 0.2f }, 1 };
+    g_BoxMesh[1] = { { -1, -1,  1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 0.2f }, 1 };
+    g_BoxMesh[2] = { { -1,  1,  1, 1 }, { 1, 1 }, { 0.2f, 0.2f, 1.0f }, 1 };
+    g_BoxMesh[3] = { {  1,  1,  1, 1 }, { 1, 0 }, { 1.0f, 0.2f, 1.0f }, 1 };
+    g_BoxMesh[4] = { {  1, -1, -1, 1 }, { 0, 0 }, { 1.0f, 1.0f, 0.2f }, 1 };
+    g_BoxMesh[5] = { { -1, -1, -1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 1.0f }, 1 };
+    g_BoxMesh[6] = { { -1,  1, -1, 1 }, { 1, 1 }, { 1.0f, 0.3f, 0.3f }, 1 };
+    g_BoxMesh[7] = { {  1,  1, -1, 1 }, { 1, 0 }, { 0.2f, 1.0f, 0.3f }, 1 };
+
+    g_BackBuffer = nullptr;    // 后台页面的首指针
+    g_BackSurfacePitch = 0;
+
+    g_BackSurface = nullptr;
+    g_ScreenSurface = nullptr;
+    g_Window = nullptr;
+    g_WindowRenderAreaWidth = 1024;
+    g_WindowRenderAreaHeight = 768;
+    g_WindowTitle = "Tiny3D";
+    g_IsRunning = true;
+    g_IsMouseDragging = false;
+    g_MouseWndOffsetX = 0;
+    g_MouseWndOffsetY = 0;
+    g_Device = nullptr;
+    g_Alpha = 0.0f;
 }
 
 Tiny3DApp::~Tiny3DApp()
 {
-    s_instance_ = nullptr;
-    SDL_FreeSurface(lpddsprimary);
-    SDL_FreeSurface(lpddsback);
-    SDL_DestroyWindow(gWindow);
-    lpddsprimary = nullptr;
-    lpddsback = nullptr;
-    gWindow = nullptr;
-    SDL_Quit();
 }
 
-
-//uint32_t WINDOW_RENDER_AREA_WIDTH = 640;
-//uint32_t WINDOW_RENDER_AREA_HEIGHT = 480;
-
-void Tiny3DApp::InitRenderer(uint32_t wnd_render_area_width, uint32_t wnd_render_area_height, const char* wnd_title)
+void Tiny3DApp::InitializeGraphicSystem()
 {
-    window_render_area_height_ = wnd_render_area_height;
-    window_render_area_width_ = wnd_render_area_width;
+    g_Window = SDL_CreateWindow(g_WindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        g_WindowRenderAreaWidth, g_WindowRenderAreaHeight, SDL_WINDOW_SHOWN);
 
-   // WINDOW_RENDER_AREA_WIDTH = sw;
-  //  WINDOW_RENDER_AREA_HEIGHT = sh;
-    max_clip_x = window_render_area_width_ - 1;
-    max_clip_y = window_render_area_height_ - 1;
-
-    gWindow = SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_RENDER_AREA_WIDTH, WINDOW_RENDER_AREA_HEIGHT, SDL_WINDOW_SHOWN);
-
-    gScreenSurface = SDL_GetWindowSurface(gWindow);
-    if (gScreenSurface == nullptr) {
-        // throw 异常
-         // printf("Window surface could not be retrieved! SDL_Error: %s\n", SDL_GetError());
-        // return false;
-    }
-
-    //lpddsprimary = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-    uint32_t rmask, gmask, bmask, amask;
-    Get16BitSufaceRGBMask(rmask, gmask, bmask, amask);
-    lpddsprimary = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, WINDOW_RENDER_AREA_HEIGHT, 16, rmask, gmask, bmask, amask);
-
-    if (lpddsprimary == nullptr) {
-        //printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
-       // return false;
-    }
-
-    lpddsback = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, WINDOW_RENDER_AREA_HEIGHT, 16, rmask, gmask, bmask, amask);
-    //lpddsback = SDL_CreateRGBSurface(0, WINDOW_RENDER_AREA_WIDTH, SCREEN_HEIGHT, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-
-    if (lpddsback == nullptr) {
-        //  printf("Surfaces could not be created! SDL_Error: %s\n", SDL_GetError());
-        //  return false;
-    }
-}
-
-void Tiny3DApp::Get16BitSufaceRGBMask(uint32_t& rmask, uint32_t& gmask, uint32_t& bmask, uint32_t& amask)
-{
-    // 定义像素格式掩码
-    // 判断系统字节序以设置掩码
-    if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+    // 初始化 SDL_image 并设置支持的图片格式
+    if (!(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG )))
     {
-        rmask = 0xF800;
-        gmask = 0x07E0;
-        bmask = 0x001F;
-        amask = 0x0000;
+        //std::cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError() << std::endl;
+        SDL_Quit();
+        return;
     }
-    else
+
+    g_ScreenSurface = SDL_GetWindowSurface(g_Window);
+
+    if (g_ScreenSurface == nullptr)
     {
-        rmask = 0x1F << 11;
-        gmask = 0x3F << 5;
-        bmask = 0x1F;
-        amask = 0x0000;
+        throw Error(fmt::format("Window surface could not be retrieved! SDL_Error: {0}\n", SDL_GetError()));
     }
-}
 
-void Tiny3DApp::InitScene()
-{
-}
+    g_BackSurface = SDL_CreateRGBSurface(0, g_WindowRenderAreaWidth, g_WindowRenderAreaHeight, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 
-void Tiny3DApp::Run()
-{
-    while (is_running_)
+    if (g_BackSurface == nullptr)
     {
-        SDL_Event event;
-
-        while (SDL_PollEvent(&event))
-        {
-            ProcessInput(event);
-            OnMouseDragging(KSR::gWindow, event);
-        }
-
-        //   KSR::Start_Clock();
-
-
-           //void DDraw_Fill_Surface(SDL_Surface * lpdds, uint32_t color, SDL_Rect * client/* = nullptr*/)
-           //{
-           //    SDL_FillRect(lpdds, client, color);
-           //}
-        SDL_FillRect(lpddsback, nullptr, 0);
-        SDL_FillRect(gScreenSurface, nullptr, 0);
-
-
-        //   KSR::DDraw_Fill_Surface(KSR::lpddsback, 0);
-        //   KSR::DDraw_Fill_Surface(KSR::gScreenSurface, 0);
-
-        RenderScene();
-
-        SDL_BlitSurface(lpddsback, nullptr, gScreenSurface, nullptr);
-        // Update the window surface
-        SDL_UpdateWindowSurface(gWindow);
-
-
-
-        //     KSR::Wait_Clock(std::chrono::milliseconds(33));
+        throw Error(fmt::format("Surfaces could not be created! SDL_Error: {0}\n", SDL_GetError()));
     }
-
-    ShutdownGraphicSystem();
 }
 
-void Tiny3DApp::RenderScene()
-{
 
+void Tiny3DApp::InitRenderDevice()
+{
+    g_Device = new Device();
+    g_Device->Initialize(g_WindowRenderAreaWidth, g_WindowRenderAreaHeight);
+    g_Device->ResetCamera(3, 0, 0);
+    //g_Device->InitTexture();
+    g_Device->CreateTextureFromFile("assets/images/wood_box.jpg");
 }
 
 void Tiny3DApp::ShutdownGraphicSystem()
 {
-    SDL_FreeSurface(lpddsprimary);
-    SDL_FreeSurface(lpddsback);
-    SDL_DestroyWindow(gWindow);
-    lpddsprimary = nullptr;
-    lpddsback = nullptr;
-    gWindow = nullptr;
+    SDL_FreeSurface(g_BackSurface);
+    SDL_DestroyWindow(g_Window);
+    g_BackSurface = nullptr;
+    g_Window = nullptr;
     SDL_Quit();
 }
 
-void App::ProcessInput(SDL_Event& event)
+void Tiny3DApp::LockBackSurface()
+{
+    if (g_BackBuffer)
+    {
+        return;
+    }
+
+    //锁定surface
+    int ret = SDL_LockSurface(g_BackSurface);
+
+    if (0 != ret)
+    {
+        // 在这里抛出异常
+    }
+
+    g_BackBuffer = reinterpret_cast<uint8_t*>(g_BackSurface->pixels);
+    g_BackSurfacePitch = g_BackSurface->pitch;
+}
+
+void Tiny3DApp::UnlockBackSurface()
+{
+    if (nullptr == g_BackBuffer)
+        return;
+
+    SDL_UnlockSurface(g_BackSurface);
+    g_BackBuffer = nullptr;
+    g_BackSurfacePitch = 0;
+}
+
+void Tiny3DApp::ProcessInput(SDL_Event& event)
 {
     if (event.type == SDL_QUIT)
     {
-        is_running_ = false;
+        g_IsRunning = false;
     }
     else if (event.type == SDL_KEYDOWN)
     {
@@ -209,40 +153,92 @@ void App::ProcessInput(SDL_Event& event)
     }
 }
 
-void App::OnKeyDown(SDL_Event& event)
+void Tiny3DApp::OnKeyDown(SDL_Event& e)
 {
-    if (event.key.keysym.sym == SDLK_ESCAPE)
+    if (e.key.keysym.sym == SDLK_ESCAPE)
     {
-        is_running_ = false;
+        g_IsRunning = false;
+    }
+
+    SDL_Keycode sym = e.key.keysym.sym;
+
+    if (SDLK_LEFT == sym)
+    {
+        g_Alpha += 0.01f;
+    }
+    else if (SDLK_RIGHT == sym)
+    {
+        g_Alpha -= 0.01f;
     }
 }
 
-void App::OnKeyUp(SDL_Event& event)
+void Tiny3DApp::OnKeyUp(SDL_Event& e)
 {
 
 }
 
 // 处理鼠标拖动事件
-void App::OnMouseDragging(SDL_Window* window, SDL_Event& event)
+void Tiny3DApp::OnMouseDragging(SDL_Window* window, SDL_Event& e)
 {
-    if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
+    if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
     {
-        is_mouse_dragging_ = true;
+        g_IsMouseDragging = true;
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
         int windowX, windowY;
         SDL_GetWindowPosition(window, &windowX, &windowY);
-        mouse_wnd_offset_x_ = mouseX - windowX;
-        mouse_wnd_offset_y_ = mouseY - windowY;
+        g_MouseWndOffsetX = mouseX - windowX;
+        g_MouseWndOffsetY = mouseY - windowY;
     }
-    else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT)
+    else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
     {
-        is_mouse_dragging_ = false;
+        g_IsMouseDragging = false;
     }
-    else if (event.type == SDL_MOUSEMOTION && is_mouse_dragging_)
+    else if (e.type == SDL_MOUSEMOTION && g_IsMouseDragging)
     {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
-        SDL_SetWindowPosition(window, mouseX - mouse_wnd_offset_x_, mouseY - mouse_wnd_offset_y_);
+        SDL_SetWindowPosition(window, mouseX - g_MouseWndOffsetX, mouseY - g_MouseWndOffsetY);
+    }
+}
+
+void Tiny3DApp::RenderScene()
+{
+    LockBackSurface();
+
+    g_Device->ResetZBuffer();
+    g_Device->SetFrameBufer(g_BackBuffer);
+
+    g_Device->DrawBox(g_Alpha, g_BoxMesh.data());
+
+    UnlockBackSurface();
+}
+
+void Tiny3DApp::Run()
+{
+    while (g_IsRunning)
+    {
+        SDL_Event event;
+
+        while (SDL_PollEvent(&event))
+        {
+            ProcessInput(event);
+            OnMouseDragging(g_Window, event);
+        }
+
+        g_Device->ResetCamera(3.5, 0, 0);
+
+        //Start_Clock();
+        SDL_FillRect(g_BackSurface, nullptr, 0xFFc0c0c0); //ARGB
+        SDL_FillRect(g_ScreenSurface, nullptr, 0);
+
+        RenderScene();
+
+        SDL_BlitSurface(g_BackSurface, nullptr, g_ScreenSurface, nullptr);
+        SDL_UpdateWindowSurface(g_Window);
+
+        g_BackBuffer = nullptr;
+        g_BackSurfacePitch = 0; // 因为交换过，所以这些都需要置空
+        //  Wait_Clock(std::chrono::milliseconds(33));
     }
 }

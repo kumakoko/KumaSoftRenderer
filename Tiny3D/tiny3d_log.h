@@ -21,41 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
-#include <string>
-#include <cstdint>
-#include <exception>
 
-#include "fmt/format.h"
+#pragma once
 
-#include "tiny3d_app.h"
-#include "tiny3d_string_convertor.h"
-#include "tiny3d_message_box.h"
-#include "tiny3d_error.h"
-
-int main(int argc, char* argv[])
+class Log
 {
-    Tiny3DApp* app = nullptr;
-
-    try
-    {
-        app = new Tiny3DApp();
-        app->InitializeGraphicSystem();
-        app->InitRenderDevice();
-        app->Run();
-        app->ShutdownGraphicSystem();
-    }
-    catch (Error e)
-    {
-        e.Notify();
-    }
-    catch (std::exception e)
-    {
-        std::wstring exception_desc;
-        StringConvertor::ANSItoUTF16LE(e.what(), exception_desc);
-        ErrorMessageBox(std::wstring(L" : Unhandled Exception, aborting"), exception_desc);
-    }
-
-    app->ShutdownGraphicSystem();
-    delete[] app;
-    return 0;
-}
+public:
+    static void Info(const char* string, ...);
+    static void Warn(const char* string, ...);
+    static void Error(const char* string, ...);
+};

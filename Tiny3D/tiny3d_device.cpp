@@ -379,15 +379,15 @@ void Device::CreateTextureFromFile(const char* file_path)
             uint8_t b = pixels[idx + 2];
             //SDL_GetRGB(pixel, imageSurface->format, &r, &g, &b);
 
-            uint32_t r32 = static_cast<uint32_t>(r) << 16;
+            uint32_t r32 = static_cast<uint32_t>(r) << 0;
             uint32_t g32 = static_cast<uint32_t>(g) << 8;
-            uint32_t b32 = static_cast<uint32_t>(b);
+            uint32_t b32 = static_cast<uint32_t>(b) << 16;
             uint32_t a32 = static_cast<uint32_t>(255) << 24;
             // 修改像素值（例如，反转颜色）
            // r32 = 0;
           //  g32 = 0xFF;
           //  b32 = 0;
-            this->texture_[y * texture_width_ + x] =  a32 | r32 | g32 | b32;
+            this->texture_[y * texture_width_ + x] = a32 | b32 | g32 | r32;
 
             // 将修改后的颜色写回像素
             //pixels[y * width + x] = SDL_MapRGB(imageSurface->format, r, g, b);
@@ -403,10 +403,6 @@ void Device::CreateTextureFromFile(const char* file_path)
     this->max_u_ = static_cast<float>(this->texture_width_ - 1);
     this->max_v_ = static_cast<float>(this->texture_height_ - 1);
 }
-
-
-
-
 
 void Device::DrawPlane(const T3DVertex* p1, const T3DVertex* p2, const T3DVertex* p3, const T3DVertex* p4)
 {

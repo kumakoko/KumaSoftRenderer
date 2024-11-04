@@ -21,16 +21,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 *********************************************************************************************/
-
+// 提供align new接口的模板基类，本基类提供了operator new 和operator delete两个接口，
+// 此两个接口都基于align allocate操作进行字节对齐分配
 #pragma once
 
-#include "tiny3d_geometry.h"
+#include <cstdlib>
+#include <new>
 
-struct scanline_t
+
+template<typename T>
+class AlignedClass
 {
-    T3DVertex interpolated_point;   // 扫描线对应的梯形左腰边的插值点
-    T3DVertex interpolated_step;    // 扫描线每执行一步扫描的【插值步】值
-    int32_t left_end_point_x;          // 扫描线的左端点X值，即对应于第几列像素
-    int32_t y;                         // 扫描线的垂直方向Y值，即对应于第几行像素
-    int32_t width;                     // 扫描线的长度
+public:
+    void* operator new(std::size_t size)
+    {
+        void* ptr = nullptr;
+        std::size_t align_size = alignof(T);
+#if defined(WIN32) || defined(_WIN32)
+        ptr = _aligned_malloc(size, align_size);
+#else
+        void* ptr = std::aligned_alloc(align_size, size);
+#endif
+        if (!ptr)
+        {
+            throw std::bad_alloc();
+        }
+
+        return ptr;
+    }
+
+    void operator delete(void* ptr) noexcept
+    {
+#if defined(WIN32) || defined(_WIN32)
+        _aligned_free(ptr);
+#else
+        std::free(ptr);
+#endif
+    }
 };

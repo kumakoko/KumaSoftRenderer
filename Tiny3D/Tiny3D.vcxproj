@@ -19,12 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tiny3d.h" />
+    <ClInclude Include="tiny3d_aligned_class.h" />
+    <ClInclude Include="tiny3d_app.h" />
     <ClInclude Include="tiny3d_device.h" />
+    <ClInclude Include="tiny3d_error.h" />
+    <ClInclude Include="tiny3d_log.h" />
     <ClInclude Include="tiny3d_math.h" />
     <ClInclude Include="tiny3d_matrix.h" />
-    <ClInclude Include="tiny3d_obj_loader.h" />
+    <ClInclude Include="tiny3d_message_box.h" />
     <ClInclude Include="tiny3d_scanline.h" />
+    <ClInclude Include="tiny3d_string_convertor.h" />
     <ClInclude Include="tiny3d_transform.h" />
     <ClInclude Include="tiny3d_trapezoid.h" />
     <ClInclude Include="tiny3d_vector.h" />
@@ -32,9 +36,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tiny3d.cpp" />
+    <ClCompile Include="tiny3d_app.cpp" />
     <ClCompile Include="tiny3d_device.cpp" />
+    <ClCompile Include="tiny3d_error.cpp" />
+    <ClCompile Include="tiny3d_log.cpp" />
     <ClCompile Include="tiny3d_matrix.cpp" />
-    <ClCompile Include="tiny3d_obj_loader.cpp" />
+    <ClCompile Include="tiny3d_message_box.cpp" />
+    <ClCompile Include="tiny3d_string_convertor.cpp" />
     <ClCompile Include="tiny3d_transform.cpp" />
     <ClCompile Include="tiny3d_trapezoid.cpp" />
     <ClCompile Include="tiny3d_vector.cpp" />

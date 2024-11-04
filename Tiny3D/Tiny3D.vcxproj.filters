@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tiny3d.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="tiny3d_math.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -42,7 +39,22 @@
     <ClInclude Include="tiny3d_scanline.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="tiny3d_obj_loader.h">
+    <ClInclude Include="tiny3d_aligned_class.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_app.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_error.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_log.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_string_convertor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny3d_message_box.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,7 +80,19 @@
     <ClCompile Include="tiny3d_trapezoid.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="tiny3d_obj_loader.cpp">
+    <ClCompile Include="tiny3d_app.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_error.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_log.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_string_convertor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny3d_message_box.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
