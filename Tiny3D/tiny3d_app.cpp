@@ -31,30 +31,29 @@ SOFTWARE.
 
 Tiny3DApp::Tiny3DApp()
 {
-    g_BoxMesh[0] = { {  1, -1,  1, 1 }, { 0, 0 }, { 1.0f, 0.2f, 0.2f }, 1 };
-    g_BoxMesh[1] = { { -1, -1,  1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 0.2f }, 1 };
-    g_BoxMesh[2] = { { -1,  1,  1, 1 }, { 1, 1 }, { 0.2f, 0.2f, 1.0f }, 1 };
-    g_BoxMesh[3] = { {  1,  1,  1, 1 }, { 1, 0 }, { 1.0f, 0.2f, 1.0f }, 1 };
-    g_BoxMesh[4] = { {  1, -1, -1, 1 }, { 0, 0 }, { 1.0f, 1.0f, 0.2f }, 1 };
-    g_BoxMesh[5] = { { -1, -1, -1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 1.0f }, 1 };
-    g_BoxMesh[6] = { { -1,  1, -1, 1 }, { 1, 1 }, { 1.0f, 0.3f, 0.3f }, 1 };
-    g_BoxMesh[7] = { {  1,  1, -1, 1 }, { 1, 0 }, { 0.2f, 1.0f, 0.3f }, 1 };
+    box_mesh_[0] = { {  1, -1,  1, 1 }, { 0, 0 }, { 1.0f, 0.2f, 0.2f }, 1 };
+    box_mesh_[1] = { { -1, -1,  1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 0.2f }, 1 };
+    box_mesh_[2] = { { -1,  1,  1, 1 }, { 1, 1 }, { 0.2f, 0.2f, 1.0f }, 1 };
+    box_mesh_[3] = { {  1,  1,  1, 1 }, { 1, 0 }, { 1.0f, 0.2f, 1.0f }, 1 };
+    box_mesh_[4] = { {  1, -1, -1, 1 }, { 0, 0 }, { 1.0f, 1.0f, 0.2f }, 1 };
+    box_mesh_[5] = { { -1, -1, -1, 1 }, { 0, 1 }, { 0.2f, 1.0f, 1.0f }, 1 };
+    box_mesh_[6] = { { -1,  1, -1, 1 }, { 1, 1 }, { 1.0f, 0.3f, 0.3f }, 1 };
+    box_mesh_[7] = { {  1,  1, -1, 1 }, { 1, 0 }, { 0.2f, 1.0f, 0.3f }, 1 };
 
-    g_BackBuffer = nullptr;    // 后台页面的首指针
-    g_BackSurfacePitch = 0;
+    back_buffer_pointer_ = nullptr;    // 后台页面的首指针
 
-    g_BackSurface = nullptr;
-    g_ScreenSurface = nullptr;
-    g_Window = nullptr;
-    g_WindowRenderAreaWidth = 1024;
-    g_WindowRenderAreaHeight = 768;
-    g_WindowTitle = "Tiny3D";
-    g_IsRunning = true;
-    g_IsMouseDragging = false;
-    g_MouseWndOffsetX = 0;
-    g_MouseWndOffsetY = 0;
-    g_Device = nullptr;
-    g_Alpha = 0.0f;
+    back_surface_ = nullptr;
+    screen_surface_ = nullptr;
+    window_ = nullptr;
+    wnd_render_area_width_ = 1024;
+    wnd_render_area_height_ = 768;
+    window_title_ = "Tiny3D";
+    is_running_ = true;
+    is_mouse_dragging_ = false;
+    mouse_wnd_offset_x_ = 0;
+    mouse_wnd_offset_y_ = 0;
+    render_device_ = nullptr;
+    box_rotation_delta_ = 0.0f;
 }
 
 Tiny3DApp::~Tiny3DApp()
@@ -63,8 +62,8 @@ Tiny3DApp::~Tiny3DApp()
 
 void Tiny3DApp::InitializeGraphicSystem()
 {
-    g_Window = SDL_CreateWindow(g_WindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        g_WindowRenderAreaWidth, g_WindowRenderAreaHeight, SDL_WINDOW_SHOWN);
+    window_ = SDL_CreateWindow(window_title_, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        wnd_render_area_width_, wnd_render_area_height_, SDL_WINDOW_SHOWN);
 
     // 初始化 SDL_image 并设置支持的图片格式
     if (!(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG )))
@@ -74,82 +73,87 @@ void Tiny3DApp::InitializeGraphicSystem()
         return;
     }
 
-    g_ScreenSurface = SDL_GetWindowSurface(g_Window);
+    screen_surface_ = SDL_GetWindowSurface(window_);
 
-    if (g_ScreenSurface == nullptr)
+    if (screen_surface_ == nullptr)
     {
         throw Error(fmt::format("Window surface could not be retrieved! SDL_Error: {0}\n", SDL_GetError()));
     }
 
-    g_BackSurface = SDL_CreateRGBSurface(0, g_WindowRenderAreaWidth, g_WindowRenderAreaHeight, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    back_surface_ = SDL_CreateRGBSurface(0, wnd_render_area_width_, wnd_render_area_height_, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 
-    if (g_BackSurface == nullptr)
+    if (back_surface_ == nullptr)
     {
         throw Error(fmt::format("Surfaces could not be created! SDL_Error: {0}\n", SDL_GetError()));
     }
 }
 
-
 void Tiny3DApp::InitRenderDevice()
 {
-    g_Device = new Device();
-    g_Device->Initialize(g_WindowRenderAreaWidth, g_WindowRenderAreaHeight);
-    g_Device->ResetCamera(3, 0, 0);
-    //g_Device->InitTexture();
-    g_Device->CreateTextureFromFile("assets/images/wood_box.jpg");
+    render_device_ = new Device();
+    render_device_->Initialize(wnd_render_area_width_, wnd_render_area_height_);
+    render_device_->ResetCamera(3, 0, 0);
+    render_device_->CreateTextureFromFile("assets/images/wood_box.jpg");
 }
 
 void Tiny3DApp::ShutdownGraphicSystem()
 {
-    SDL_FreeSurface(g_BackSurface);
-    SDL_DestroyWindow(g_Window);
-    g_BackSurface = nullptr;
-    g_Window = nullptr;
+    SDL_FreeSurface(back_surface_);
+    SDL_DestroyWindow(window_);
+    back_surface_ = nullptr;
+    window_ = nullptr;
     SDL_Quit();
+}
+
+void Tiny3DApp::DestroyRenderDevice()
+{
+    if (nullptr != render_device_)
+    {
+        delete render_device_;
+        render_device_ = nullptr;
+    }
 }
 
 void Tiny3DApp::LockBackSurface()
 {
-    if (g_BackBuffer)
+    if (back_buffer_pointer_)
     {
         return;
     }
 
     //锁定surface
-    int ret = SDL_LockSurface(g_BackSurface);
+    int ret = SDL_LockSurface(back_surface_);
 
     if (0 != ret)
     {
         // 在这里抛出异常
     }
 
-    g_BackBuffer = reinterpret_cast<uint8_t*>(g_BackSurface->pixels);
-    g_BackSurfacePitch = g_BackSurface->pitch;
+    back_buffer_pointer_ = reinterpret_cast<uint8_t*>(back_surface_->pixels);
 }
 
 void Tiny3DApp::UnlockBackSurface()
 {
-    if (nullptr == g_BackBuffer)
+    if (nullptr == back_buffer_pointer_)
         return;
 
-    SDL_UnlockSurface(g_BackSurface);
-    g_BackBuffer = nullptr;
-    g_BackSurfacePitch = 0;
+    SDL_UnlockSurface(back_surface_);
+    back_buffer_pointer_ = nullptr;
 }
 
-void Tiny3DApp::ProcessInput(SDL_Event& event)
+void Tiny3DApp::ProcessInput(SDL_Event& e)
 {
-    if (event.type == SDL_QUIT)
+    if (e.type == SDL_QUIT)
     {
-        g_IsRunning = false;
+        is_running_ = false;
     }
-    else if (event.type == SDL_KEYDOWN)
+    else if (e.type == SDL_KEYDOWN)
     {
-        OnKeyDown(event);
+        OnKeyDown(e);
     }
-    else if (event.type == SDL_KEYUP)
+    else if (e.type == SDL_KEYUP)
     {
-        OnKeyUp(event);
+        OnKeyUp(e);
     }
 }
 
@@ -157,24 +161,37 @@ void Tiny3DApp::OnKeyDown(SDL_Event& e)
 {
     if (e.key.keysym.sym == SDLK_ESCAPE)
     {
-        g_IsRunning = false;
+        is_running_ = false;
     }
 
     SDL_Keycode sym = e.key.keysym.sym;
 
     if (SDLK_LEFT == sym)
     {
-        g_Alpha += 0.01f;
+        box_rotation_delta_ += 0.05f;
     }
     else if (SDLK_RIGHT == sym)
     {
-        g_Alpha -= 0.01f;
+        box_rotation_delta_ -= 0.05f;
     }
 }
 
 void Tiny3DApp::OnKeyUp(SDL_Event& e)
 {
+    SDL_Keycode sym = e.key.keysym.sym;
 
+    switch (sym)
+    {
+    case SDLK_F1:
+        render_device_->set_render_state(RENDER_STATE_WIREFRAME);
+        break;
+    case SDLK_F2:
+        render_device_->set_render_state(RENDER_STATE_COLOR);
+        break;
+    case SDLK_F3:
+        render_device_->set_render_state(RENDER_STATE_TEXTURE);
+        break;
+    }
 }
 
 // 处理鼠标拖动事件
@@ -182,23 +199,23 @@ void Tiny3DApp::OnMouseDragging(SDL_Window* window, SDL_Event& e)
 {
     if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
     {
-        g_IsMouseDragging = true;
+        is_mouse_dragging_ = true;
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
         int windowX, windowY;
         SDL_GetWindowPosition(window, &windowX, &windowY);
-        g_MouseWndOffsetX = mouseX - windowX;
-        g_MouseWndOffsetY = mouseY - windowY;
+        mouse_wnd_offset_x_ = mouseX - windowX;
+        mouse_wnd_offset_y_ = mouseY - windowY;
     }
     else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
     {
-        g_IsMouseDragging = false;
+        is_mouse_dragging_ = false;
     }
-    else if (e.type == SDL_MOUSEMOTION && g_IsMouseDragging)
+    else if (e.type == SDL_MOUSEMOTION && is_mouse_dragging_)
     {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
-        SDL_SetWindowPosition(window, mouseX - g_MouseWndOffsetX, mouseY - g_MouseWndOffsetY);
+        SDL_SetWindowPosition(window, mouseX - mouse_wnd_offset_x_, mouseY - mouse_wnd_offset_y_);
     }
 }
 
@@ -206,39 +223,37 @@ void Tiny3DApp::RenderScene()
 {
     LockBackSurface();
 
-    g_Device->ResetZBuffer();
-    g_Device->SetFrameBufer(g_BackBuffer);
+    render_device_->ResetZBuffer();
 
-    g_Device->DrawBox(g_Alpha, g_BoxMesh.data());
+    render_device_->SetFrameBufer(back_buffer_pointer_);
+
+    render_device_->DrawBox(box_rotation_delta_, box_mesh_.data());
 
     UnlockBackSurface();
 }
 
 void Tiny3DApp::Run()
 {
-    while (g_IsRunning)
+    while (is_running_)
     {
         SDL_Event event;
 
         while (SDL_PollEvent(&event))
         {
             ProcessInput(event);
-            OnMouseDragging(g_Window, event);
+            OnMouseDragging(window_, event);
         }
 
-        g_Device->ResetCamera(3.5, 0, 0);
+        render_device_->ResetCamera(3.5, 0, 0);
 
-        //Start_Clock();
-        SDL_FillRect(g_BackSurface, nullptr, 0xFFc0c0c0); //ARGB
-        SDL_FillRect(g_ScreenSurface, nullptr, 0);
+        SDL_FillRect(back_surface_, nullptr, 0xFFc0c0c0); //ARGB
+        SDL_FillRect(screen_surface_, nullptr, 0);
 
         RenderScene();
 
-        SDL_BlitSurface(g_BackSurface, nullptr, g_ScreenSurface, nullptr);
-        SDL_UpdateWindowSurface(g_Window);
+        SDL_BlitSurface(back_surface_, nullptr, screen_surface_, nullptr);
+        SDL_UpdateWindowSurface(window_);
 
-        g_BackBuffer = nullptr;
-        g_BackSurfacePitch = 0; // 因为交换过，所以这些都需要置空
-        //  Wait_Clock(std::chrono::milliseconds(33));
+        back_buffer_pointer_ = nullptr;
     }
 }

@@ -42,7 +42,6 @@ int main(int argc, char* argv[])
         app->InitializeGraphicSystem();
         app->InitRenderDevice();
         app->Run();
-        app->ShutdownGraphicSystem();
     }
     catch (Error e)
     {
@@ -55,6 +54,7 @@ int main(int argc, char* argv[])
         ErrorMessageBox(std::wstring(L" : Unhandled Exception, aborting"), exception_desc);
     }
 
+    app->DestroyRenderDevice();
     app->ShutdownGraphicSystem();
     delete[] app;
     return 0;

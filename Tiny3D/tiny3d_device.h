@@ -52,11 +52,21 @@ public:
     uint32_t texture_height_;   // 纹理高度
     float max_u_;               // 纹理最大宽度：tex_width - 1
     float max_v_;               // 纹理最大高度：tex_height - 1
-    int render_state_;          // 渲染状态
+    uint32_t render_state_;          // 渲染状态
     uint32_t background_color_; // 背景颜色
     uint32_t foreground_color_; // 线框颜色
 
 public:
+    inline uint32_t render_state() const
+    {
+        return render_state_;
+    }
+
+    inline void set_render_state(uint32_t rs)
+    {
+        render_state_ = rs;
+    }
+
     inline void SetFrameBufer(uint8_t* buffer)
     {
         frame_buffer_ = reinterpret_cast<uint32_t*>(buffer);
@@ -160,6 +170,12 @@ public:
     *************************************************************************************/
     void InitTexture();
 
+    /**************************************************************************************
+    
+    @name: Device::CreateTextureFromFile
+    @return: void
+    @param: const char * file_path
+    *************************************************************************************/
     void CreateTextureFromFile(const char* file_path);
 
     /**************************************************************************************

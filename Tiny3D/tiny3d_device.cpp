@@ -6,13 +6,14 @@
 
 #include "tiny3d_device.h"
 #include "tiny3d_math.h"
+#include "tiny3d_error.h"
 
 
 void Device::Initialize(int width, int height)
 {
     this->texture_width_ = 0;
     this->texture_height_ = 0;
-    this->texture_ = nullptr;// new uint32_t[this->texture_width_ * this->texture_height_];
+    this->texture_ = nullptr;
     this->z_buffer_ = new float[width * height];
     this->max_u_ = 1.0f;
     this->max_v_ = 1.0f;
@@ -183,7 +184,6 @@ void Device::DrawScanline(scanline_t* scanline)
     int32_t x = scanline->left_end_point_x;
     int32_t w = scanline->width;
     int32_t width = static_cast<int32_t>(this->window_width_);
-    //int render_state = this->render_state_;
 
     for (; w > 0; x++, w--)
     {
@@ -264,7 +264,7 @@ void Device::DrawPrimitive(const T3DVertex* v1, const T3DVertex* v2, const T3DVe
     this->transform_.Apply(&c2, &v2->pos);
     this->transform_.Apply(&c3, &v3->pos);
 
-    /*
+
     // 裁剪，注意此处可以完善为具体判断几个点在 cvv内以及同cvv相交平面的坐标比例
     // 进行进一步精细裁剪，将一个分解为几个完全处在 cvv内的三角形
     if (this->transform_.CheckCVV(&c1) != 0)
@@ -273,7 +273,6 @@ void Device::DrawPrimitive(const T3DVertex* v1, const T3DVertex* v2, const T3DVe
         return;
     if (this->transform_.CheckCVV(&c3) != 0)
         return;
-    */
 
     // 把裁剪空间归一化到齐次的NDC空间
     this->transform_.Homogenize(&p1, &c1);
@@ -294,9 +293,9 @@ void Device::DrawPrimitive(const T3DVertex* v1, const T3DVertex* v2, const T3DVe
         t2.pos.w = c2.w;
         t3.pos.w = c3.w;
 
-        T3DVertexRHWInit(&t1); // 初始化 w
-        T3DVertexRHWInit(&t2); // 初始化 w
-        T3DVertexRHWInit(&t3); // 初始化 w
+        T3DVertexRHWInit(&t1); // 重新对t1，t2，t3的纹理映射坐标和颜色值做透视除
+        T3DVertexRHWInit(&t2);
+        T3DVertexRHWInit(&t3); 
 
         // 拆分三角形为0-2个梯形，并且返回可用梯形数量
         n = Trapezoid::SplitTriangleIntoTrapezoids(traps, &t1, &t2, &t3);
@@ -349,56 +348,115 @@ void Device::InitTexture()
 void Device::CreateTextureFromFile(const char* file_path)
 {
     // 使用 SDL_image 库加载 PNG 或 JPG 图片
-    SDL_Surface* imageSurface = IMG_Load(file_path);  // 替换为你的图片路径
-    if (!imageSurface) {
-        //std::cerr << "Unable to load image! IMG_Error: " << IMG_GetError() << std::endl;
-        //SDL_DestroyRenderer(renderer);
-        //SDL_DestroyWindow(window);
+    SDL_Surface* img_surface = IMG_Load(file_path);
+
+    if ( img_surface == nullptr )
+    {
         IMG_Quit();
-        //SDL_Quit();
         return;
     }
 
     // 对 surface 进行读写操作
-    SDL_LockSurface(imageSurface);  // 锁定 surface 以进行直接像素访问
-    texture_width_ = static_cast<uint32_t>(imageSurface->w);
-    texture_height_ = static_cast<uint32_t>(imageSurface->h);
+    SDL_LockSurface(img_surface);  // 锁定 surface 以进行直接像素访问
+    texture_width_ = static_cast<uint32_t>(img_surface->w);
+    texture_height_ = static_cast<uint32_t>(img_surface->h);
     this->texture_ = new uint32_t[texture_width_ * texture_height_];
-    uint8_t* pixels = reinterpret_cast<uint8_t*>(imageSurface->pixels);
-    //   memcpy(this->texture_, imageSurface->pixels, sizeof(uint32_t) * texture_width_ * texture_height_);
 
+    uint32_t bytes_per_px = static_cast<uint32_t>(img_surface->format->BytesPerPixel);
+    uint32_t r_shift = static_cast<uint32_t>(img_surface->format->Rshift);
+    uint32_t g_shift = static_cast<uint32_t>(img_surface->format->Gshift);
+    uint32_t b_shift = static_cast<uint32_t>(img_surface->format->Bshift);
+    uint32_t a_shift = static_cast<uint32_t>(img_surface->format->Ashift);
 
-    for (uint32_t y = 0; y < texture_height_; ++y)
+    uint32_t r_mask = static_cast<uint32_t>(img_surface->format->Rmask);
+    uint32_t g_mask = static_cast<uint32_t>(img_surface->format->Gmask);
+    uint32_t b_mask = static_cast<uint32_t>(img_surface->format->Bmask);
+    uint32_t a_mask = static_cast<uint32_t>(img_surface->format->Amask);
+
+    if (bytes_per_px != 3 && 4 != bytes_per_px)
     {
-        for (uint32_t x = 0; x < texture_width_; ++x)
-        {
-            uint32_t idx = y * texture_width_ * 3 + x * 3;
-            //uint32_t pixel = pixels[idx];  // 获取像素值
-            uint8_t r = pixels[idx + 0];
-            uint8_t g = pixels[idx + 1];
-            uint8_t b = pixels[idx + 2];
-            //SDL_GetRGB(pixel, imageSurface->format, &r, &g, &b);
-
-            uint32_t r32 = static_cast<uint32_t>(r) << 0;
-            uint32_t g32 = static_cast<uint32_t>(g) << 8;
-            uint32_t b32 = static_cast<uint32_t>(b) << 16;
-            uint32_t a32 = static_cast<uint32_t>(255) << 24;
-            // 修改像素值（例如，反转颜色）
-           // r32 = 0;
-          //  g32 = 0xFF;
-          //  b32 = 0;
-            this->texture_[y * texture_width_ + x] = a32 | b32 | g32 | r32;
-
-            // 将修改后的颜色写回像素
-            //pixels[y * width + x] = SDL_MapRGB(imageSurface->format, r, g, b);
-        }
+        IMG_Quit();
+        SDL_UnlockSurface(img_surface);
+        SDL_FreeSurface(img_surface);
+        throw Error("Only support 3 or 4 bytes per pixel image file", __FILE__, __LINE__);
+        return;
     }
 
-    SDL_UnlockSurface(imageSurface);  // 解锁 surface
+    if (3 == bytes_per_px)
+    {
+        uint8_t* pixels = reinterpret_cast<uint8_t*>(img_surface->pixels);
+        uint32_t pitch = static_cast<uint32_t>(img_surface->pitch);  // 每行的字节数
 
-    // 将 surface 转换成纹理并在窗口中显示
-    //SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, imageSurface);
-    SDL_FreeSurface(imageSurface);  // 不再需要 surface 时释放
+        int r_idx, g_idx, b_idx;
+
+        if (r_mask == 0x00FF0000 && g_mask == 0x0000FF00 && b_mask == 0x000000FF) // RGB 顺序
+        {
+            r_idx = 0;
+            g_idx = 1;
+            b_idx = 2;
+        }
+        else if (r_mask == 0x000000FF && g_mask == 0x0000FF00 && b_mask == 0x00FF0000) // BGR 顺序
+        {
+            r_idx = 2;
+            g_idx = 1;
+            b_idx = 0;
+        }
+        else 
+        {
+            SDL_FreeSurface(img_surface);
+            IMG_Quit();
+            throw Error("不支持的颜色格式", __FILE__, __LINE__);
+        }
+
+        for (uint32_t y = 0; y < texture_height_; ++y)
+        {
+            for (uint32_t x = 0; x < texture_width_; ++x)
+            {
+                uint8_t* pixel = pixels + y * pitch + x * 3;
+                uint8_t r = pixel[r_idx];
+                uint8_t g = pixel[g_idx];
+                uint8_t b = pixel[b_idx];
+                uint32_t a32 = static_cast<uint32_t>(255) << 24;
+                uint32_t r32 = static_cast<uint32_t>(r) << 0;
+                uint32_t g32 = static_cast<uint32_t>(g) << 8;
+                uint32_t b32 = static_cast<uint32_t>(b) << 16;
+                this->texture_[y * texture_width_ + x] = a32 | r32 | g32 | b32;
+            }
+        }
+    }
+    else  if (4 == bytes_per_px)
+    {
+        uint32_t* pixels = reinterpret_cast<uint32_t*>(img_surface->pixels);
+        uint32_t pixel;
+        uint8_t r, g, b, a;
+        uint32_t r32, g32, b32, a32;
+
+        for (uint32_t y = 0; y < texture_height_; ++y)
+        {
+            for (uint32_t x = 0; x < texture_width_; ++x)
+            {
+                pixel = pixels[y * texture_width_ + x];
+                SDL_GetRGBA(pixel, img_surface->format, &r, &g, &b, &a);
+                r32 = static_cast<uint32_t>(r) << 0;
+                g32 = static_cast<uint32_t>(g) << 8;
+                b32 = static_cast<uint32_t>(b) << 16;
+                a32 = static_cast<uint32_t>(255) << 24;
+                this->texture_[y * texture_width_ + x] = a32 | r32 | g32 | b32;
+            }
+        }
+    }
+    else
+    {
+        IMG_Quit();
+        SDL_UnlockSurface(img_surface);
+        SDL_FreeSurface(img_surface);
+        throw Error("Only support 3 or 4 bytes per pixel image file", __FILE__, __LINE__);
+        return;
+    }
+
+    IMG_Quit();
+    SDL_UnlockSurface(img_surface);
+    SDL_FreeSurface(img_surface);
 
     this->max_u_ = static_cast<float>(this->texture_width_ - 1);
     this->max_v_ = static_cast<float>(this->texture_height_ - 1);
@@ -418,7 +476,7 @@ void Device::DrawPlane(const T3DVertex* p1, const T3DVertex* p2, const T3DVertex
 void Device::DrawBox(float theta, const T3DVertex* box_vertices)
 {
     T3DMatrix4X4 m;
-    T3DMatrixMakeRotation(&m, -1, -0.5, 1, theta);
+    T3DMatrixMakeRotation(&m, -1.0f, -0.5f, 1.0f, theta);
     transform_.SetWorldMatrix(m);
     transform_.Update();
     DrawPlane(&box_vertices[0], &box_vertices[1], &box_vertices[2], &box_vertices[3]);
